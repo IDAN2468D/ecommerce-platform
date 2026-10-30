@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-
-const GATEWAY_URL = process.env.NEXT_PUBLIC_GATEWAY_URL || "http://localhost:8080";
+import { getGatewayUrl } from "@/lib/api-config";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+    const gatewayUrl = getGatewayUrl();
 
-    const res = await fetch(`${GATEWAY_URL}/api/v1/auth/login`, {
+    const res = await fetch(`${gatewayUrl}/api/v1/auth/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json; charset=utf-8",
@@ -14,9 +14,47 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify(body),
     });
 
-    const data = await res.json();
-    return NextResponse.json(data, { status: res.status });
+    const contentType = res.headers.get("content-type") || "";
+    let data: any = {};
+    if (contentType.includes("json")) {
+      data = await res.json();
+    } else {
+      const text = await res.text();
+      try {
+        data = JSON.parse(text);
+      } catch {
+        data = { error: text || `HTTP ${res.status}` };
+      }
+    }
+
+    if (!res.ok) {
+      const errorMessage =
+        data.detail ||
+        data.message ||
+        (typeof data.error === "string" ? data.error : "פרטי התחברות שגויים") ||
+        `התחברות נכשלה (סטטוס ${res.status})`;
+      return NextResponse.json(
+        { error: errorMessage },
+        { status: res.status }
+      );
+    }
+
+    const user = data.user || {};
+    const responsePayload = {
+      ...data,
+      token: data.token,
+      userId: user.id || data.userId || "",
+      email: user.email || data.email || body.email || "",
+      fullName: user.fullName || data.fullName || "",
+      role: user.role || data.role || "CUSTOMER",
+    };
+
+    return NextResponse.json(responsePayload, { status: res.status });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("Auth login error:", error);
+    return NextResponse.json(
+      { error: error.message || "שגיאת תקשורת עם שרת ה-Gateway" },
+      { status: 500 }
+    );
   }
 }

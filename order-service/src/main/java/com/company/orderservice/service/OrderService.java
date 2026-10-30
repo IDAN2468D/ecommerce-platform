@@ -42,6 +42,7 @@ public class OrderService {
     private final PaymentClient paymentClient;
     private final CouponService couponService;
     private final com.company.orderservice.kafka.OrderEventPublisher orderEventPublisher;
+    private final OutboxService outboxService;
 
     private static final Duration IDEMPOTENCY_WINDOW = Duration.ofHours(24);
 
@@ -82,10 +83,12 @@ public class OrderService {
         }
 
         // 4. Process Payment with Compensating Transaction on Failure
+        UUID orderId = UUID.randomUUID();
         PaymentClient.PaymentResponse paymentResponse;
         try {
-            log.info("Processing payment of {} {} for customer: {}", totalAmount, request.currency(), customerId);
+            log.info("Processing payment of {} {} for customer: {}, orderId: {}", totalAmount, request.currency(), customerId, orderId);
             paymentResponse = processPaymentWithResilience(new PaymentClient.PaymentRequest(
+                    orderId,
                     customerId,
                     totalAmount,
                     request.currency(),
@@ -107,7 +110,7 @@ public class OrderService {
 
         // 5. Persist Order Entity
         OrderEntity orderEntity = OrderEntity.builder()
-                .id(UUID.randomUUID())
+                .id(orderId)
                 .customerId(customerId)
                 .idempotencyKey(idempotencyKey)
                 .status(OrderStatus.CONFIRMED)
@@ -130,21 +133,30 @@ public class OrderService {
         OrderEntity savedOrder = orderRepository.save(orderEntity);
         log.info("Order created successfully with id: {}", savedOrder.getId());
 
+        com.company.common.events.OrderCreatedEvent createdEvent = new com.company.common.events.OrderCreatedEvent(
+                savedOrder.getId(),
+                savedOrder.getCustomerId(),
+                savedOrder.getTotalAmount(),
+                savedOrder.getCurrency(),
+                request.paymentMethodToken(),
+                savedOrder.getIdempotencyKey(),
+                request.items().stream()
+                        .map(i -> new com.company.common.events.OrderCreatedEvent.OrderItemPayload(i.skuCode(), i.quantity(), i.unitPrice()))
+                        .toList(),
+                savedOrder.getCreatedAt()
+        );
+
+        // Transactional Outbox guarantee
+        com.company.orderservice.domain.entity.OutboxEventEntity outboxEvent =
+                outboxService.saveEvent("ORDER", savedOrder.getId().toString(), "OrderCreatedEvent", "order-events", createdEvent);
+
         try {
-            orderEventPublisher.publishOrderCreated(new com.company.common.events.OrderCreatedEvent(
-                    savedOrder.getId(),
-                    savedOrder.getCustomerId(),
-                    savedOrder.getTotalAmount(),
-                    savedOrder.getCurrency(),
-                    request.paymentMethodToken(),
-                    savedOrder.getIdempotencyKey(),
-                    request.items().stream()
-                            .map(i -> new com.company.common.events.OrderCreatedEvent.OrderItemPayload(i.skuCode(), i.quantity(), i.unitPrice()))
-                            .toList(),
-                    savedOrder.getCreatedAt()
-            ));
+            orderEventPublisher.publishOrderCreated(createdEvent);
+            if (outboxEvent != null) {
+                outboxService.markPublished(outboxEvent.getId());
+            }
         } catch (Exception ex) {
-            log.warn("Kafka event publishing skipped or deferred: {}", ex.getMessage());
+            log.warn("Kafka direct event publishing skipped (outbox will retry): {}", ex.getMessage());
         }
         return orderMapper.toResponse(savedOrder);
     }

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateServiceJwt } from "@/lib/auth";
-
-const GATEWAY_URL = process.env.NEXT_PUBLIC_GATEWAY_URL || "http://localhost:8080";
+import { getGatewayUrl } from "@/lib/api-config";
 
 export async function POST(
   request: NextRequest,
@@ -10,8 +9,9 @@ export async function POST(
   try {
     const orderId = params.id;
     const token = generateServiceJwt("usr_demo");
+    const gatewayUrl = getGatewayUrl();
 
-    const res = await fetch(`${GATEWAY_URL}/api/v1/orders/${orderId}/cancel`, {
+    const res = await fetch(`${gatewayUrl}/api/v1/orders/${orderId}/cancel`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,

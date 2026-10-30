@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-
-const GATEWAY_URL = process.env.NEXT_PUBLIC_GATEWAY_URL || "http://localhost:8080";
+import { getGatewayUrl } from "@/lib/api-config";
 
 export async function GET(
   request: NextRequest,
@@ -8,7 +7,8 @@ export async function GET(
 ) {
   try {
     const sku = params.sku;
-    const res = await fetch(`${GATEWAY_URL}/api/v1/inventory/${sku}`, {
+    const gatewayUrl = getGatewayUrl();
+    const res = await fetch(`${gatewayUrl}/api/v1/inventory/${sku}`, {
       cache: "no-store",
     });
 

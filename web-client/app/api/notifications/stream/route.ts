@@ -1,13 +1,13 @@
 import { NextRequest } from "next/server";
-
-const GATEWAY_URL = process.env.NEXT_PUBLIC_GATEWAY_URL || "http://localhost:8080";
+import { getGatewayUrl } from "@/lib/api-config";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const customerId = searchParams.get("customerId") || "usr_demo";
+  const gatewayUrl = getGatewayUrl();
 
   try {
-    const upstream = await fetch(`${GATEWAY_URL}/api/v1/notifications/stream/${customerId}`, {
+    const upstream = await fetch(`${gatewayUrl}/api/v1/notifications/stream/${customerId}`, {
       headers: {
         Accept: "text/event-stream",
       },

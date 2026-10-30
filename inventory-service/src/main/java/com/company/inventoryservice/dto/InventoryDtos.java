@@ -31,6 +31,21 @@ public class InventoryDtos {
         List<InventoryItemResponse> products
     ) implements java.io.Serializable {}
 
+    public record StockReservationTtlResponse(
+        String reservationId,
+        long remainingSeconds,
+        java.time.Instant expiresAt,
+        boolean active
+    ) implements java.io.Serializable {}
+
+    public record FilteredCatalogResponse(
+        List<InventoryItemResponse> products,
+        long totalElements,
+        int totalPages,
+        int currentPage,
+        int pageSize
+    ) implements java.io.Serializable {}
+
     public record InventoryItemResponse(
         UUID id,
         String skuCode,
@@ -40,10 +55,15 @@ public class InventoryDtos {
         BigDecimal unitPrice,
         String description,
         String category,
-        String imageUrl
+        String imageUrl,
+        Double averageRating,
+        Integer reviewCount
     ) implements java.io.Serializable {
         public InventoryItemResponse(UUID id, String skuCode, String productName, int availableQuantity, int reservedQuantity, BigDecimal unitPrice) {
-            this(id, skuCode, productName, availableQuantity, reservedQuantity, unitPrice, null, null, null);
+            this(id, skuCode, productName, availableQuantity, reservedQuantity, unitPrice, null, null, null, 4.9, 12);
+        }
+        public InventoryItemResponse(UUID id, String skuCode, String productName, int availableQuantity, int reservedQuantity, BigDecimal unitPrice, String description, String category, String imageUrl) {
+            this(id, skuCode, productName, availableQuantity, reservedQuantity, unitPrice, description, category, imageUrl, 4.9, 12);
         }
     }
 

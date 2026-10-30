@@ -34,11 +34,14 @@ class PaymentServiceTest {
     @Mock
     private org.springframework.kafka.core.KafkaTemplate<String, Object> kafkaTemplate;
 
+    @Mock
+    private com.company.paymentservice.service.OutboxService outboxService;
+
     private PaymentService paymentService;
 
     @BeforeEach
     void setUp() {
-        paymentService = new PaymentService(paymentRepository, refundRepository, kafkaTemplate);
+        paymentService = new PaymentService(paymentRepository, refundRepository, kafkaTemplate, outboxService);
     }
 
     @Test

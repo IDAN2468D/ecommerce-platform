@@ -2,10 +2,11 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { ShoppingBag, Package, Store, Radio, User, LogOut } from "lucide-react";
+import { ShoppingBag, Package, Store, Radio, User, LogOut, Search } from "lucide-react";
 import { useNotificationStream } from "../lib/useNotificationStream";
 import { NotificationToast } from "./NotificationToast";
 import { NotificationBell } from "./NotificationBell";
+import { ThemeToggle } from "./ThemeToggle";
 
 interface CurrentUser {
   userId: string;
@@ -79,33 +80,46 @@ export const HeaderNav: React.FC = () => {
     <>
       <NotificationToast toast={activeToast} onDismiss={dismissToast} />
 
-      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200">
+      <header className="sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3 group">
             <div className="w-10 h-10 rounded-xl bg-brand-600 text-white flex items-center justify-center font-bold text-xl shadow-md group-hover:bg-brand-700 transition">
               🛍️
             </div>
             <div>
-              <span className="font-bold text-lg text-slate-900 block leading-tight">E-Commerce Platform</span>
-              <span className="text-xs text-slate-500 font-mono">Microservices • Java 21 • Kafka SAGA</span>
+              <span className="font-bold text-lg text-slate-900 dark:text-slate-100 block leading-tight">E-Commerce Platform</span>
+              <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">Microservices • Java 21 • Kafka SAGA</span>
             </div>
           </Link>
 
-          <nav className="flex items-center gap-3 sm:gap-5">
+          <nav className="flex items-center gap-2 sm:gap-4">
+            {/* Quick Command Palette Trigger (Ctrl+K) */}
+            <button
+              onClick={() => window.dispatchEvent(new Event("open-command-palette"))}
+              className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 border border-slate-200/80 dark:border-slate-700 text-xs font-medium transition"
+              title="חיפוש מהיר ופעולות (Ctrl+K)"
+            >
+              <Search className="w-3.5 h-3.5" />
+              <span>חיפוש מהיר...</span>
+              <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-slate-700 text-slate-400 dark:text-slate-300 text-[10px] font-mono border border-slate-200 dark:border-slate-600">
+                ⌘K
+              </kbd>
+            </button>
+
             <Link
               href="/"
-              className="flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-brand-600 transition"
+              className="flex items-center gap-1.5 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-brand-600 dark:hover:text-brand-400 transition"
             >
               <Store className="w-4 h-4" />
-              <span>קטלוג</span>
+              <span className="hidden sm:inline">קטלוג</span>
             </Link>
 
             <Link
               href="/orders"
-              className="flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-brand-600 transition"
+              className="flex items-center gap-1.5 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-brand-600 dark:hover:text-brand-400 transition"
             >
               <Package className="w-4 h-4" />
-              <span>הזמנות ומעקב</span>
+              <span className="hidden sm:inline">הזמנות ומעקב</span>
             </Link>
 
             {/* Notification Bell with live SSE */}
@@ -116,36 +130,41 @@ export const HeaderNav: React.FC = () => {
               onMarkAllAsRead={markAllAsRead}
             />
 
-            <Link
-              href="/cart"
+            {/* Theme Toggle (Dark/Light) */}
+            <ThemeToggle />
+
+            {/* Cart Button (Opens Slide-Over Mini Cart Drawer) */}
+            <button
+              onClick={() => window.dispatchEvent(new Event("open-cart-drawer"))}
               className="relative flex items-center gap-2 px-3.5 py-2 rounded-xl bg-brand-600 text-white text-sm font-semibold hover:bg-brand-700 shadow-sm transition"
+              title="פתח מגירת עגלת קניות"
             >
               <ShoppingBag className="w-4 h-4" />
-              <span>עגלת קניות</span>
+              <span className="hidden sm:inline">עגלת קניות</span>
               {cartCount > 0 && (
                 <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-white text-brand-700 text-xs font-extrabold shadow-sm">
                   {cartCount}
                 </span>
               )}
-            </Link>
+            </button>
 
             {/* User Profile & Logout */}
-            <div className="flex items-center gap-2 bg-slate-50 border border-slate-200/80 rounded-xl py-1.5 px-3">
+            <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 rounded-xl py-1.5 px-3">
               <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-brand-600 to-indigo-600 text-white flex items-center justify-center text-xs font-bold shadow-sm">
                 {currentUser?.fullName ? currentUser.fullName.charAt(0).toUpperCase() : <User className="w-3.5 h-3.5" />}
               </div>
-              <div className="hidden md:flex flex-col text-right">
-                <span className="text-xs font-bold text-slate-900 leading-none">
+              <div className="hidden lg:flex flex-col text-right">
+                <span className="text-xs font-bold text-slate-900 dark:text-slate-100 leading-none">
                   {currentUser?.fullName || "משתמש מחובר"}
                 </span>
-                <span className="text-[10px] text-slate-500 font-mono leading-none mt-0.5">
+                <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono leading-none mt-0.5">
                   {currentUser?.email || ""}
                 </span>
               </div>
               <button
                 onClick={handleLogout}
                 title="התנתק מהחשבון"
-                className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition"
+                className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition"
               >
                 <LogOut className="w-4 h-4" />
               </button>

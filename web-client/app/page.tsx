@@ -14,7 +14,12 @@ import {
   CheckCircle2, 
   AlertCircle,
   PackagePlus,
-  SlidersHorizontal
+  SlidersHorizontal,
+  Scale,
+  Star,
+  ArrowUpDown,
+  Filter,
+  Check,
 } from "lucide-react";
 import { ProductCard } from "../components/ProductCard";
 import { Button } from "../components/ui/Button";
@@ -37,9 +42,18 @@ export default function CatalogPage() {
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>("הכל");
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [minPrice, setMinPrice] = useState<number | "">("");
+  const [maxPrice, setMaxPrice] = useState<number | "">("");
+  const [minRating, setMinRating] = useState<number>(0);
+  const [onlyInStock, setOnlyInStock] = useState<boolean>(false);
+  const [sortBy, setSortBy] = useState<"featured" | "price-asc" | "price-desc" | "name" | "stock">("featured");
 
-  // New product form state
+  // Comparison tray state
+  const [comparedSkus, setComparedSkus] = useState<string[]>([]);
+  const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
+
+  // Add Product modal state
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newSku, setNewSku] = useState("");
   const [newName, setNewName] = useState("");
   const [newPrice, setNewPrice] = useState("");
@@ -89,17 +103,42 @@ export default function CatalogPage() {
     return ["הכל", ...Array.from(set)];
   }, [products]);
 
-  const filteredProducts = useMemo(() => {
-    return products.filter((p) => {
-      const matchesCategory =
-        selectedCategory === "הכל" || p.category === selectedCategory;
-      const matchesSearch =
-        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.skuCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.description.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesCategory && matchesSearch;
+  const toggleCompare = (sku: string) => {
+    setComparedSkus((prev) => {
+      if (prev.includes(sku)) {
+        return prev.filter((s) => s !== sku);
+      }
+      if (prev.length >= 3) {
+        alert("ניתן להשוות עד 3 מוצרים במקביל");
+        return prev;
+      }
+      return [...prev, sku];
     });
-  }, [products, selectedCategory, searchQuery]);
+  };
+
+  const filteredProducts = useMemo(() => {
+    return products
+      .filter((p) => {
+        const matchesCategory =
+          selectedCategory === "הכל" || p.category === selectedCategory;
+        const matchesSearch =
+          p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          p.skuCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          p.description.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesMinPrice = minPrice === "" || p.price >= Number(minPrice);
+        const matchesMaxPrice = maxPrice === "" || p.price <= Number(maxPrice);
+        const matchesStock = !onlyInStock || (p.stock && p.stock.availableQuantity > 0);
+
+        return matchesCategory && matchesSearch && matchesMinPrice && matchesMaxPrice && matchesStock;
+      })
+      .sort((a, b) => {
+        if (sortBy === "price-asc") return a.price - b.price;
+        if (sortBy === "price-desc") return b.price - a.price;
+        if (sortBy === "name") return a.name.localeCompare(b.name, "he");
+        if (sortBy === "stock") return (b.stock?.availableQuantity || 0) - (a.stock?.availableQuantity || 0);
+        return 0;
+      });
+  }, [products, selectedCategory, searchQuery, minPrice, maxPrice, onlyInStock, sortBy]);
 
   const addToCart = (product: Product & { quantity?: number }) => {
     if (typeof window === "undefined") return;
@@ -175,28 +214,27 @@ export default function CatalogPage() {
 
   return (
     <div className="space-y-10">
+      {/* Hero Banner */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-8 sm:p-12 shadow-2xl border border-slate-800">
         <div className="relative z-10 max-w-2xl space-y-5">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-500/20 text-brand-300 text-xs font-semibold border border-brand-400/30">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>פלטפורמת מיקרו-שירותים מבוזרת (EDA + Kafka + Next.js)</span>
+            <span>פלטפורמת מיקרו-שירותים מבוזרת v2.0 (EDA + Kafka + Next.js)</span>
           </div>
           <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight">
             קטלוג מוצרי פרימיום בזמן אמת
           </h1>
           <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
-            תזמור הזמנות מהיר בזמן אמת עם שריון מלאי פסימי, סליקה אידמפוטנטית, תמונות אמיתיות ברזולוציה גבוהה, וקאש מבוזר ב-Redis לקריאות של פחות מ-5ms.
+            תזמור הזמנות מהיר ב-5 שלבי SAGA מלאים, שריון מלאי 10 דקות, ביקורות מאומתות, 5% Cashback VIP, וקאש מבוזר ב-Redis לקריאות של פחות מ-5ms.
           </p>
           <div className="flex flex-wrap items-center gap-4 pt-2">
-            <Link href="/cart">
-              <Button
-                variant="primary"
-                size="lg"
-                icon={<ShoppingCart className="w-5 h-5" />}
-              >
-                מעבר לעגלת הקניות
-              </Button>
-            </Link>
+            <button
+              onClick={() => window.dispatchEvent(new Event("open-cart-drawer"))}
+              className="px-5 py-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold shadow-md hover:shadow-brand-600/30 transition flex items-center gap-2"
+            >
+              <ShoppingCart className="w-5 h-5" />
+              <span>פתח עגלת קניות</span>
+            </button>
             <Button
               onClick={fetchCatalog}
               loading={loading}
@@ -220,46 +258,49 @@ export default function CatalogPage() {
         </div>
       </div>
 
+      {/* Feature Highlights Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-subtle flex items-center gap-4 hover:border-brand-500/40 transition">
-          <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-subtle flex items-center gap-4 hover:border-brand-500/40 transition">
+          <div className="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
             <Zap className="w-6 h-6" />
           </div>
           <div>
-            <h4 className="text-sm font-bold text-slate-900">Virtual Threads & Redis</h4>
-            <p className="text-xs text-slate-500 mt-0.5">קריאת קטלוג מלא מקאש מבוזר ב-Sub-5ms</p>
+            <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">Virtual Threads & Redis</h4>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">קריאת קטלוג מקאש מבוזר ב-Sub-5ms</p>
           </div>
         </div>
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-subtle flex items-center gap-4 hover:border-brand-500/40 transition">
-          <div className="w-12 h-12 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center font-bold">
+        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-subtle flex items-center gap-4 hover:border-brand-500/40 transition">
+          <div className="w-12 h-12 rounded-xl bg-brand-50 dark:bg-brand-950/40 text-brand-600 dark:text-brand-400 flex items-center justify-center font-bold">
             <ShieldCheck className="w-6 h-6" />
           </div>
           <div>
-            <h4 className="text-sm font-bold text-slate-900">Pessimistic Locking</h4>
-            <p className="text-xs text-slate-500 mt-0.5">הגנה מוחלטת מפני מכירת יתר בעומסי שיא</p>
+            <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">Flash Sale 10-Min Lock</h4>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">שריון מלאי מוגבל בזמן ב-Inventory Service</p>
           </div>
         </div>
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-subtle flex items-center gap-4 hover:border-brand-500/40 transition">
-          <div className="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-lg">
-            🖼️
+        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-subtle flex items-center gap-4 hover:border-brand-500/40 transition">
+          <div className="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-lg">
+            ⭐
           </div>
           <div>
-            <h4 className="text-sm font-bold text-slate-900">High-Res Product Assets</h4>
-            <p className="text-xs text-slate-500 mt-0.5">תמונות אמיתיות, קטגוריות ופרטי מפרט מלאים</p>
+            <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">Verified Reviews & 5% VIP</h4>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">דירוגי רוכשים מאומתים וצבירת קאשבק</p>
           </div>
         </div>
       </div>
 
-      <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-subtle space-y-4">
-        <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
-          <div className="relative w-full sm:w-96">
+      {/* Multi-Dimensional Filter & Search Bar */}
+      <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-subtle space-y-4">
+        <div className="flex flex-col lg:flex-row gap-4 justify-between items-stretch lg:items-center">
+          {/* Search Box */}
+          <div className="relative flex-1">
             <Search className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="חיפוש לפי שם מוצר, מקט או מפרט..."
-              className="w-full pl-4 pr-10 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 transition"
+              placeholder="חיפוש לפי שם מוצר, מקט או מפרט טכני..."
+              className="w-full pl-4 pr-10 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 transition"
             />
             {searchQuery && (
               <button
@@ -271,21 +312,67 @@ export default function CatalogPage() {
             )}
           </div>
 
-          <div className="flex items-center gap-2 self-start sm:self-auto text-xs font-semibold text-slate-500">
-            <SlidersHorizontal className="w-4 h-4" />
-            <span>סנן לפי קטגוריה:</span>
+          {/* Quick Filters: Price Range & In-Stock */}
+          <div className="flex flex-wrap items-center gap-3 text-xs">
+            <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-200/80 dark:border-slate-700">
+              <span className="text-slate-500 dark:text-slate-400 font-medium">מחיר:</span>
+              <input
+                type="number"
+                placeholder="מ-"
+                value={minPrice}
+                onChange={(e) => setMinPrice(e.target.value ? Number(e.target.value) : "")}
+                className="w-16 p-1 text-center rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs"
+              />
+              <span className="text-slate-400">-</span>
+              <input
+                type="number"
+                placeholder="עד"
+                value={maxPrice}
+                onChange={(e) => setMaxPrice(e.target.value ? Number(e.target.value) : "")}
+                className="w-16 p-1 text-center rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs"
+              />
+              <span className="text-slate-400 font-bold">₪</span>
+            </div>
+
+            {/* In-Stock Toggle */}
+            <label className="flex items-center gap-2 cursor-pointer bg-slate-50 dark:bg-slate-800 px-3 py-2 rounded-xl border border-slate-200/80 dark:border-slate-700 select-none">
+              <input
+                type="checkbox"
+                checked={onlyInStock}
+                onChange={(e) => setOnlyInStock(e.target.checked)}
+                className="rounded text-brand-600 focus:ring-brand-500 w-3.5 h-3.5"
+              />
+              <span className="font-semibold text-slate-700 dark:text-slate-300">במלאי בלבד</span>
+            </label>
+
+            {/* Sort Dropdown */}
+            <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-200/80 dark:border-slate-700">
+              <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" />
+              <select
+                value={sortBy}
+                onChange={(e: any) => setSortBy(e.target.value)}
+                className="bg-transparent text-slate-800 dark:text-slate-200 font-medium outline-none cursor-pointer"
+              >
+                <option value="featured">מומלץ</option>
+                <option value="price-asc">מחיר: מהנמוך לגבוה</option>
+                <option value="price-desc">מחיר: מהגבוה לנמוך</option>
+                <option value="name">שם מוצר (א-ת)</option>
+                <option value="stock">זמינות במלאי</option>
+              </select>
+            </div>
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2 pt-1 border-t border-slate-100">
+        {/* Categories Pills */}
+        <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
           {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
               className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all ${
                 selectedCategory === cat
-                  ? "bg-slate-900 text-white shadow-sm"
-                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  ? "bg-slate-900 dark:bg-brand-600 text-white shadow-sm"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
               }`}
             >
               {cat}
@@ -294,30 +381,52 @@ export default function CatalogPage() {
         </div>
       </div>
 
+      {/* Catalog Grid Section */}
       <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-200">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-200 dark:border-slate-800">
           <div>
-            <h2 className="text-2xl font-black text-slate-900 tracking-tight">מוצרים זמינים במחסן המרכזי</h2>
-            <p className="text-sm text-slate-500">מוזן בזמן אמת מ-API של Inventory Service בפורט 8082 דרך Spring Cloud Gateway</p>
+            <h2 className="text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">מוצרים זמינים במחסן המרכזי</h2>
+            <p className="text-sm text-slate-500 dark:text-slate-400">מוזן בזמן אמת מ-API של Inventory Service בפורט 8082 דרך Spring Cloud Gateway</p>
           </div>
-          <span className="text-xs font-mono font-semibold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg">
+          <span className="text-xs font-mono font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-lg">
             נמצאו {filteredProducts.length} מתוך {products.length} פריטים
           </span>
         </div>
 
+        {/* Zero-CLS Skeleton Loader during load */}
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-              <div key={i} className="h-96 rounded-3xl bg-slate-100 animate-pulse border border-slate-200/60" />
+              <div
+                key={i}
+                className="h-[430px] rounded-3xl bg-slate-100 dark:bg-slate-800/60 animate-pulse border border-slate-200/60 dark:border-slate-700/60 flex flex-col justify-between p-5"
+              >
+                <div className="space-y-4">
+                  <div className="h-44 w-full bg-slate-200 dark:bg-slate-700 rounded-2xl" />
+                  <div className="h-4 w-3/4 bg-slate-200 dark:bg-slate-700 rounded" />
+                  <div className="h-3 w-1/2 bg-slate-200 dark:bg-slate-700 rounded" />
+                </div>
+                <div className="h-10 w-full bg-slate-200 dark:bg-slate-700 rounded-xl" />
+              </div>
             ))}
           </div>
         ) : filteredProducts.length === 0 ? (
-          <div className="p-12 text-center bg-white rounded-3xl border border-slate-200 space-y-3">
+          <div className="p-12 text-center bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-3">
             <div className="text-5xl">🔍</div>
-            <h3 className="text-lg font-bold text-slate-800">לא נמצאו מוצרים התואמים את החיפוש</h3>
-            <p className="text-sm text-slate-500">נסה לשנות את מילת החיפוש או לבחור קטגוריה אחרת</p>
-            <Button variant="outline" size="sm" onClick={() => { setSearchQuery(""); setSelectedCategory("הכל"); }}>
-              איפוס סינונים
+            <h3 className="text-lg font-bold text-slate-800 dark:text-slate-200">לא נמצאו מוצרים התואמים את הסינון</h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400">נסה לשנות את מילת החיפוש או לאפס את טווח המחירים</p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setSearchQuery("");
+                setSelectedCategory("הכל");
+                setMinPrice("");
+                setMaxPrice("");
+                setOnlyInStock(false);
+              }}
+            >
+              איפוס כל הסינונים
             </Button>
           </div>
         ) : (
@@ -333,28 +442,137 @@ export default function CatalogPage() {
                 category={product.category}
                 stock={product.stock}
                 onAddToCart={addToCart}
+                isCompared={comparedSkus.includes(product.skuCode)}
+                onToggleCompare={toggleCompare}
               />
             ))}
           </div>
         )}
       </div>
 
+      {/* Floating Product Comparison Tray */}
+      {comparedSkus.length > 0 && (
+        <div className="fixed bottom-6 inset-x-4 sm:inset-x-auto sm:right-6 sm:left-6 z-40 max-w-2xl mx-auto bg-slate-900/95 text-white p-4 rounded-2xl border border-slate-700 shadow-2xl backdrop-blur-md flex items-center justify-between gap-4 animate-slide-up">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-brand-600 flex items-center justify-center font-bold">
+              <Scale className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h4 className="text-xs font-bold">השוואת מוצרים פעילה ({comparedSkus.length}/3)</h4>
+              <p className="text-[11px] text-slate-400 font-mono">
+                {comparedSkus.join(" • ")}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsCompareModalOpen(true)}
+              className="px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs transition"
+            >
+              פתח השוואה מפורטת
+            </button>
+            <button
+              onClick={() => setComparedSkus([])}
+              className="p-2 text-slate-400 hover:text-slate-200"
+              title="נקה בחירה"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Detailed Product Comparison Modal */}
+      {isCompareModalOpen && (
+        <div
+          onClick={() => setIsCompareModalOpen(false)}
+          className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white dark:bg-slate-900 rounded-3xl max-w-4xl w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-6 max-h-[90vh] overflow-y-auto"
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+              <div className="flex items-center gap-2 font-black text-slate-900 dark:text-slate-100 text-lg">
+                <Scale className="w-5 h-5 text-brand-600" />
+                <span>השוואת מפרט מוצרים (Multi-Product Spec Comparison)</span>
+              </div>
+              <button
+                onClick={() => setIsCompareModalOpen(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {comparedSkus.map((sku) => {
+                const item = products.find((p) => p.skuCode === sku);
+                if (!item) return null;
+                return (
+                  <div
+                    key={sku}
+                    className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex flex-col justify-between space-y-4"
+                  >
+                    <div className="space-y-3">
+                      <div className="h-36 rounded-xl bg-slate-900 flex items-center justify-center overflow-hidden">
+                        {item.image.startsWith("http") ? (
+                          <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-6xl">{item.image}</span>
+                        )}
+                      </div>
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-brand-500/20 text-brand-600 font-bold">
+                        {item.skuCode}
+                      </span>
+                      <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100 line-clamp-1">{item.name}</h4>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">{item.description}</p>
+                      
+                      <div className="text-xl font-extrabold text-slate-900 dark:text-slate-100">
+                        ₪{item.price.toLocaleString()}
+                      </div>
+                      
+                      <div className="text-xs space-y-1 text-slate-600 dark:text-slate-300 pt-2 border-t border-slate-200 dark:border-slate-700">
+                        <div>קטגוריה: <strong>{item.category}</strong></div>
+                        <div>זמינות: <strong className="text-emerald-600">{item.stock?.availableQuantity || 0} יח׳</strong></div>
+                        <div>דירוג: <strong className="text-amber-500">4.8 ★</strong></div>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        addToCart(item);
+                        window.dispatchEvent(new Event("open-cart-drawer"));
+                      }}
+                      className="w-full py-2.5 rounded-xl bg-brand-600 text-white font-bold text-xs hover:bg-brand-700 transition"
+                    >
+                      הוסף לסל
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Product Modal */}
       {isAddModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-100 space-y-6 animate-scale-in max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-100 dark:border-slate-800 space-y-6 animate-scale-in max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center font-bold">
+                <div className="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-950 text-brand-600 dark:text-brand-400 flex items-center justify-center font-bold">
                   <PackagePlus className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-900 text-lg">הוספת מוצר חדש ל-API</h3>
-                  <p className="text-xs text-slate-500">הזן פרטים ותמונה אמיתית שתסונכרן ב-Kafka וב-PostgreSQL</p>
+                  <h3 className="font-bold text-slate-900 dark:text-slate-100 text-lg">הוספת מוצר חדש ל-API</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">הזן פרטים ותמונה אמיתית שתסונכרן ב-Kafka וב-PostgreSQL</p>
                 </div>
               </div>
               <button
                 onClick={() => setIsAddModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition"
+                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -380,22 +598,22 @@ export default function CatalogPage() {
             <form onSubmit={handleCreateProduct} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">מקט מוצר (SKU) *</label>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">מקט מוצר (SKU) *</label>
                   <input
                     type="text"
                     required
                     placeholder="למשל: SONY-A7-IV"
                     value={newSku}
                     onChange={(e) => setNewSku(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm font-mono uppercase focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm font-mono uppercase focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">קטגוריה *</label>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">קטגוריה *</label>
                   <select
                     value={newCategory}
                     onChange={(e) => setNewCategory(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none bg-white"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none"
                   >
                     <option value="סמארטפונים">סמארטפונים</option>
                     <option value="מחשבים ניידים">מחשבים ניידים</option>
@@ -411,20 +629,20 @@ export default function CatalogPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">שם המוצר המלא *</label>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">שם המוצר המלא *</label>
                 <input
                   type="text"
                   required
                   placeholder="למשל: Sony Alpha 7 IV Full-Frame Mirrorless Camera"
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">מחיר ליחידה (₪) *</label>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">מחיר ליחידה (₪) *</label>
                   <input
                     type="number"
                     step="0.01"
@@ -432,46 +650,46 @@ export default function CatalogPage() {
                     placeholder="למשל: 7999.00"
                     value={newPrice}
                     onChange={(e) => setNewPrice(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm font-bold focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm font-bold focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">כמות מלאי התחלתית *</label>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">כמות מלאי התחלתית *</label>
                   <input
                     type="number"
                     required
                     min="1"
                     value={newQuantity}
                     onChange={(e) => setNewQuantity(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">כתובת תמונה אמיתית (URL)</label>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">כתובת תמונה אמיתית (URL)</label>
                 <input
                   type="url"
                   placeholder="https://images.unsplash.com/..."
                   value={newImageUrl}
                   onChange={(e) => setNewImageUrl(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm font-mono text-xs focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm font-mono text-xs focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none"
                 />
                 <span className="text-[11px] text-slate-400 mt-1 block">הדבק קישור ישיר לתמונה מ-Unsplash או CDN</span>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">תיאור ומפרט המוצר</label>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">תיאור ומפרט המוצר</label>
                 <textarea
                   rows={2}
                   placeholder="תיאור קצר ומפרט טכני של המוצר..."
                   value={newDescription}
                   onChange={(e) => setNewDescription(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none resize-none"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none resize-none"
                 />
               </div>
 
-              <div className="flex justify-end gap-3 pt-3 border-t border-slate-100">
+              <div className="flex justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
                 <Button
                   type="button"
                   variant="outline"

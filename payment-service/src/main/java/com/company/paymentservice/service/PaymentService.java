@@ -1,5 +1,6 @@
 package com.company.paymentservice.service;
 
+import com.company.paymentservice.domain.entity.OutboxEventEntity;
 import com.company.paymentservice.domain.entity.PaymentRefundEntity;
 import com.company.paymentservice.domain.entity.PaymentTransactionEntity;
 import com.company.paymentservice.dto.PaymentDtos.*;
@@ -29,6 +30,7 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final RefundRepository refundRepository;
     private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final OutboxService outboxService;
 
     private static final BigDecimal DAILY_CARD_LIMIT = new BigDecimal("50000.00");
 
@@ -67,6 +69,7 @@ public class PaymentService {
 
         PaymentTransactionEntity transaction = PaymentTransactionEntity.builder()
                 .id(UUID.randomUUID())
+                .orderId(request.orderId())
                 .idempotencyKey(request.idempotencyKey())
                 .customerId(request.customerId())
                 .amount(request.amount())
@@ -80,31 +83,41 @@ public class PaymentService {
         PaymentTransactionEntity saved = paymentRepository.save(transaction);
         log.info("Payment transaction created with ID: {}, status: {}", saved.getId(), status);
 
-        // Publish to Kafka topic 'payment-events'
+        // Publish to Kafka topic 'payment-events' and record in Transactional Outbox
         try {
+            OutboxEventEntity outboxEvent = null;
             if (!declined) {
                 PaymentCapturedEvent event = new PaymentCapturedEvent(
-                        null,
+                        saved.getOrderId(),
+                        saved.getCustomerId(),
                         saved.getId().toString(),
                         saved.getAmount(),
                         saved.getCurrency(),
                         Instant.now()
                 );
+                outboxEvent = outboxService.saveEvent("PAYMENT", saved.getId().toString(), "PaymentCapturedEvent", TOPIC_PAYMENT_EVENTS, event);
                 log.info("Publishing PaymentCapturedEvent to Kafka topic '{}': txId={}", TOPIC_PAYMENT_EVENTS, saved.getId());
                 kafkaTemplate.send(TOPIC_PAYMENT_EVENTS, saved.getId().toString(), event);
+                if (outboxEvent != null) {
+                    outboxService.markPublished(outboxEvent.getId());
+                }
             } else {
                 PaymentFailedEvent event = new PaymentFailedEvent(
-                        null,
+                        saved.getOrderId(),
                         failureReason,
                         request.amount(),
                         request.currency(),
                         Instant.now()
                 );
+                outboxEvent = outboxService.saveEvent("PAYMENT", saved.getId().toString(), "PaymentFailedEvent", TOPIC_PAYMENT_EVENTS, event);
                 log.info("Publishing PaymentFailedEvent to Kafka topic '{}': txId={}", TOPIC_PAYMENT_EVENTS, saved.getId());
                 kafkaTemplate.send(TOPIC_PAYMENT_EVENTS, saved.getId().toString(), event);
+                if (outboxEvent != null) {
+                    outboxService.markPublished(outboxEvent.getId());
+                }
             }
         } catch (Exception ex) {
-            log.warn("Failed to publish payment event to Kafka: {}", ex.getMessage());
+            log.warn("Failed to publish payment event to Kafka (outbox will retry): {}", ex.getMessage());
         }
 
         return new PaymentResponse(!declined, saved.getId().toString(), status, failureReason);
@@ -149,7 +162,7 @@ public class PaymentService {
         paymentRepository.save(tx);
         log.info("Refund {} completed for transaction {}", refundId, tx.getId());
 
-        // Publish to Kafka topic 'payment-events'
+        // Publish to Kafka topic 'payment-events' and record in Outbox
         try {
             PaymentRefundedEvent refundedEvent = new PaymentRefundedEvent(
                     tx.getId(),
@@ -157,10 +170,14 @@ public class PaymentService {
                     request.amount(),
                     Instant.now()
             );
+            OutboxEventEntity outboxEvent = outboxService.saveEvent("PAYMENT", tx.getId().toString(), "PaymentRefundedEvent", TOPIC_PAYMENT_EVENTS, refundedEvent);
             log.info("Publishing PaymentRefundedEvent to Kafka topic '{}': refundId={}", TOPIC_PAYMENT_EVENTS, refundId);
             kafkaTemplate.send(TOPIC_PAYMENT_EVENTS, refundId.toString(), refundedEvent);
+            if (outboxEvent != null) {
+                outboxService.markPublished(outboxEvent.getId());
+            }
         } catch (Exception ex) {
-            log.warn("Failed to publish PaymentRefundedEvent to Kafka: {}", ex.getMessage());
+            log.warn("Failed to publish PaymentRefundedEvent to Kafka (outbox will retry): {}", ex.getMessage());
         }
 
         return new RefundResponse(true, refundId.toString(), "SUCCEEDED");

@@ -51,6 +51,12 @@ class OrderControllerTest {
     private com.company.orderservice.service.CouponService couponService;
 
     @MockBean
+    private com.company.orderservice.service.InvoiceService invoiceService;
+
+    @MockBean
+    private com.company.orderservice.service.OutboxService outboxService;
+
+    @MockBean
     private Tracer tracer;
 
     private CreateOrderRequest sampleRequest() {

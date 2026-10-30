@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateServiceJwt } from "@/lib/auth";
+import { getGatewayUrl } from "@/lib/api-config";
 import crypto from "crypto";
 
-const GATEWAY_URL = process.env.NEXT_PUBLIC_GATEWAY_URL || "http://localhost:8080";
+export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,8 +15,9 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const page = searchParams.get("page") || "0";
     const size = searchParams.get("size") || "10";
+    const gatewayUrl = getGatewayUrl();
 
-    const res = await fetch(`${GATEWAY_URL}/api/v1/orders?page=${page}&size=${size}&sort=createdAt,desc`, {
+    const res = await fetch(`${gatewayUrl}/api/v1/orders?page=${page}&size=${size}&sort=createdAt,desc`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -43,8 +45,9 @@ export async function POST(request: NextRequest) {
       : generateServiceJwt(body.customerId || "usr_demo");
 
     const idempotencyKey = crypto.randomUUID();
+    const gatewayUrl = getGatewayUrl();
 
-    const res = await fetch(`${GATEWAY_URL}/api/v1/orders`, {
+    const res = await fetch(`${gatewayUrl}/api/v1/orders`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

@@ -2,6 +2,7 @@ package com.company.inventoryservice.kafka;
 
 import com.company.common.events.OrderCancelledEvent;
 import com.company.common.events.OrderCreatedEvent;
+import com.company.common.events.ProductRatingUpdatedEvent;
 import com.company.common.events.StockReservationFailedEvent;
 import com.company.common.events.StockReservedEvent;
 import com.company.inventoryservice.dto.InventoryDtos.ReservationResponse;
@@ -20,7 +21,7 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-@KafkaListener(topics = "order-events", groupId = "inventory-service-group")
+@KafkaListener(topics = {"order-events", "review-events"}, groupId = "inventory-service-group")
 public class InventoryKafkaConsumer {
 
     public static final String TOPIC_INVENTORY_EVENTS = "inventory-events";
@@ -59,6 +60,13 @@ public class InventoryKafkaConsumer {
     @KafkaHandler
     public void handleOrderCancelled(OrderCancelledEvent event) {
         log.info("Received OrderCancelledEvent from Kafka for orderId={}", event.orderId());
+    }
+
+    @KafkaHandler
+    public void handleProductRatingUpdated(ProductRatingUpdatedEvent event) {
+        log.info("Received ProductRatingUpdatedEvent from Kafka for skuCode={}, avgRating={}, count={}",
+                event.skuCode(), event.averageRating(), event.reviewCount());
+        inventoryService.updateProductRating(event.skuCode(), event.averageRating(), event.reviewCount());
     }
 
     @KafkaHandler(isDefault = true)

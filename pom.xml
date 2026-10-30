@@ -32,6 +32,10 @@
 		<module>payment-service</module>
 		<module>notification-service</module>
 		<module>auth-service</module>
+		<module>shipping-delivery-service</module>
+		<module>review-rating-service</module>
+		<module>cart-wishlist-service</module>
+		<module>recommendation-loyalty-service</module>
 		<module>api-gateway</module>
 	</modules>
 

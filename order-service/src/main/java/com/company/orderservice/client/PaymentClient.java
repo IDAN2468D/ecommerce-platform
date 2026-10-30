@@ -5,6 +5,7 @@ import org.springframework.web.service.annotation.HttpExchange;
 import org.springframework.web.service.annotation.PostExchange;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 @HttpExchange("/internal/v1/payments")
 public interface PaymentClient {
@@ -16,12 +17,17 @@ public interface PaymentClient {
     RefundResponse refundPayment(@RequestBody RefundRequest request);
 
     record PaymentRequest(
+        UUID orderId,
         String customerId,
         BigDecimal amount,
         String currency,
         String paymentMethodToken,
         String idempotencyKey
-    ) {}
+    ) {
+        public PaymentRequest(String customerId, BigDecimal amount, String currency, String paymentMethodToken, String idempotencyKey) {
+            this(null, customerId, amount, currency, paymentMethodToken, idempotencyKey);
+        }
+    }
 
     record PaymentResponse(
         boolean success,

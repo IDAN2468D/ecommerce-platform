@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AppShell } from "../components/AppShell";
+import { ThemeProvider } from "../components/ThemeProvider";
 
 export const metadata: Metadata = {
-  title: "E-Commerce Enterprise Platform",
-  description: "Next.js 14 App Router Storefront with Apache Kafka SAGA Architecture and Live SSE Notifications",
+  title: "Enterprise E-Commerce Platform v2.0",
+  description: "Distributed Microservices Architecture with Apache Kafka SAGA, MongoDB Atlas, Redis 7 & Next.js 14 RTL",
 };
 
 export default function RootLayout({
@@ -13,9 +14,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="he" dir="rtl">
-      <body className="bg-slate-50 text-slate-900 min-h-screen flex flex-col font-sans">
-        <AppShell>{children}</AppShell>
+    <html lang="he" dir="rtl" suppressHydrationWarning>
+      <body className="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen flex flex-col font-sans transition-colors duration-300">
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+          <AppShell>{children}</AppShell>
+        </ThemeProvider>
       </body>
     </html>
   );

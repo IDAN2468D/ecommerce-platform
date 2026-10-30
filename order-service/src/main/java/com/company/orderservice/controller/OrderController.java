@@ -35,6 +35,8 @@ public class OrderController {
 
     private final OrderService orderService;
     private final com.company.orderservice.service.CouponService couponService;
+    private final com.company.orderservice.service.InvoiceService invoiceService;
+    private final com.company.orderservice.service.OutboxService outboxService;
 
     private String extractCustomerId(Jwt jwt, Principal principal) {
         if (jwt != null && jwt.getSubject() != null) {
@@ -132,5 +134,27 @@ public class OrderController {
             @Valid @RequestBody com.company.orderservice.dto.request.ValidateCouponRequest request) {
         log.info("Validating coupon code: {} for amount: {}", request.couponCode(), request.orderAmount());
         return ResponseEntity.ok(couponService.validateCoupon(request));
+    }
+
+    @GetMapping("/{orderId}/invoice")
+    @Operation(summary = "Download official Hebrew/English PDF tax invoice", description = "Generates and streams an official tax invoice/receipt PDF with full item breakdown, 18% VAT, and SAGA approval stamp.")
+    public ResponseEntity<byte[]> getOrderInvoice(@PathVariable UUID orderId) {
+        log.info("Requesting PDF tax invoice for order: {}", orderId);
+        byte[] pdfBytes = invoiceService.generateInvoicePdf(orderId);
+
+        org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+        headers.setContentType(org.springframework.http.MediaType.APPLICATION_PDF);
+        headers.setContentDisposition(org.springframework.http.ContentDisposition.inline()
+                .filename("invoice-" + orderId + ".pdf")
+                .build());
+        headers.setContentLength(pdfBytes.length);
+
+        return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
+    }
+
+    @GetMapping("/outbox/status")
+    @Operation(summary = "Get transactional outbox events and dead letter queue telemetry")
+    public ResponseEntity<java.util.List<com.company.orderservice.domain.entity.OutboxEventEntity>> getOutboxEvents() {
+        return ResponseEntity.ok(outboxService.getRecentEvents());
     }
 }

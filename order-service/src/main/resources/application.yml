@@ -11,6 +11,9 @@ spring:
   mvc:
     problemdetails:
       enabled: true
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
   data:
     mongodb:
       # /mongodb-connection Best Practices for OLTP Microservice:

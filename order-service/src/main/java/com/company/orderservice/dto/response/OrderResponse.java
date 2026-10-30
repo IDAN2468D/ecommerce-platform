@@ -1,6 +1,7 @@
 package com.company.orderservice.dto.response;
 
 import com.company.orderservice.domain.enums.OrderStatus;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -20,6 +21,11 @@ public record OrderResponse(
     String couponCode,
     BigDecimal discountAmount
 ) {
+    @JsonProperty("id")
+    public UUID id() {
+        return orderId;
+    }
+
     public OrderResponse(
             UUID orderId,
             String customerId,

@@ -32,3 +32,23 @@ scrape_configs:
     metrics_path: '/actuator/prometheus'
     static_configs:
       - targets: ['auth-service:8084']
+
+  - job_name: 'shipping-delivery-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['shipping-delivery-service:8086']
+
+  - job_name: 'review-rating-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['review-rating-service:8087']
+
+  - job_name: 'cart-wishlist-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['cart-wishlist-service:8088']
+
+  - job_name: 'recommendation-loyalty-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['recommendation-loyalty-service:8089']

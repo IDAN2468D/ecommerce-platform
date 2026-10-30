@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-
-const GATEWAY_URL = process.env.NEXT_PUBLIC_GATEWAY_URL || "http://localhost:8080";
+import { getGatewayUrl } from "@/lib/api-config";
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get("category");
     const query = category ? `?category=${encodeURIComponent(category)}` : "";
+    const gatewayUrl = getGatewayUrl();
 
-    const res = await fetch(`${GATEWAY_URL}/api/v1/products${query}`, {
+    const res = await fetch(`${gatewayUrl}/api/v1/products${query}`, {
       cache: "no-store",
     });
 
@@ -29,7 +29,8 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const res = await fetch(`${GATEWAY_URL}/api/v1/products`, {
+    const gatewayUrl = getGatewayUrl();
+    const res = await fetch(`${gatewayUrl}/api/v1/products`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json; charset=utf-8",

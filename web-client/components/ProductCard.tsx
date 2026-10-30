@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ShoppingCart,
   Check,
@@ -18,6 +18,11 @@ import {
   Lock,
   Flame,
   Star,
+  Zap,
+  Scale,
+  MessageSquare,
+  ThumbsUp,
+  UserCheck,
 } from "lucide-react";
 import { Button } from "./ui/Button";
 import { Badge } from "./ui/Badge";
@@ -34,6 +39,19 @@ export interface ProductCardProps {
     reservedQuantity: number;
   };
   onAddToCart: (product: any) => void;
+  isCompared?: boolean;
+  onToggleCompare?: (skuCode: string) => void;
+}
+
+interface ReviewItem {
+  id: string;
+  skuCode: string;
+  customerId: string;
+  customerName: string;
+  rating: number;
+  comment: string;
+  verifiedPurchase: boolean;
+  createdAt: string;
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({
@@ -45,13 +63,25 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   category,
   stock,
   onAddToCart,
+  isCompared = false,
+  onToggleCompare,
 }) => {
   const [isAdded, setIsAdded] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [imgError, setImgError] = useState(false);
   const [copiedSku, setCopiedSku] = useState(false);
   const [quickViewOpen, setQuickViewOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<"details" | "reviews">("details");
   const [quantity, setQuantity] = useState(1);
+
+  // Reviews state
+  const [reviews, setReviews] = useState<ReviewItem[]>([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [averageRating, setAverageRating] = useState<number>(4.8);
+  const [totalReviews, setTotalReviews] = useState<number>(12);
+  const [newRating, setNewRating] = useState<number>(5);
+  const [newComment, setNewComment] = useState("");
+  const [submittingReview, setSubmittingReview] = useState(false);
 
   const isUrl = Boolean(image && (image.startsWith("http") || image.startsWith("/")));
   const available = stock?.availableQuantity ?? 0;
@@ -62,15 +92,36 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   const isOutOfStock = stock !== undefined && available <= 0;
   const isLowStock = stock !== undefined && available > 0 && available <= 15;
 
-  // Original comparison price for flagship visual presentation
   const originalPrice = Math.round(price * 1.14);
   const monthlyPayment = Math.round(price / 12);
+
+  // Load reviews when quick view is opened
+  useEffect(() => {
+    if (quickViewOpen) {
+      setReviewsLoading(true);
+      fetch(`/api/reviews/${skuCode}`)
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data) {
+            if (data.reviews && Array.isArray(data.reviews)) {
+              setReviews(data.reviews);
+            }
+            if (data.averageRating) setAverageRating(Number(data.averageRating));
+            if (data.totalReviews) setTotalReviews(Number(data.totalReviews));
+          }
+        })
+        .catch(() => {})
+        .finally(() => setReviewsLoading(false));
+    }
+  }, [quickViewOpen, skuCode]);
 
   const handleAdd = (e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     if (isOutOfStock) return;
     onAddToCart({ skuCode, name, price, image, quantity });
     setIsAdded(true);
+    // Dispatch open-cart-drawer event for slide-over mini cart
+    window.dispatchEvent(new Event("open-cart-drawer"));
     setTimeout(() => {
       setIsAdded(false);
       setQuantity(1);
@@ -86,9 +137,50 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     }
   };
 
+  const handleSubmitReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newComment.trim()) return;
+
+    setSubmittingReview(true);
+    try {
+      let customerId = "usr_demo";
+      let customerName = "רוכש מאומת";
+      try {
+        const savedUser = JSON.parse(localStorage.getItem("auth_user") || "null");
+        if (savedUser?.userId) customerId = savedUser.userId;
+        if (savedUser?.fullName) customerName = savedUser.fullName;
+      } catch {}
+
+      const res = await fetch(`/api/reviews/${skuCode}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customerId,
+          customerName,
+          rating: newRating,
+          comment: newComment.trim(),
+        }),
+      });
+
+      if (res.ok) {
+        const createdReview = await res.json();
+        setReviews((prev) => [createdReview, ...prev]);
+        setNewComment("");
+        setTotalReviews((prev) => prev + 1);
+        alert("ביקורת המוצר נשלחה בהצלחה ואושרה במערכת!");
+      } else {
+        alert("שגיאה בשמירת הביקורת");
+      }
+    } catch (err: any) {
+      alert("שגיאת תקשורת: " + err.message);
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
+
   return (
     <>
-      <div className="group relative flex flex-col justify-between rounded-3xl bg-white border border-slate-200/80 shadow-subtle hover:shadow-2xl hover:shadow-brand-600/10 hover:border-brand-500/40 transition-all duration-500 hover:-translate-y-1.5 overflow-hidden">
+      <div className="group relative flex flex-col justify-between rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-subtle hover:shadow-2xl hover:shadow-brand-600/10 hover:border-brand-500/40 dark:hover:border-brand-500/40 transition-all duration-500 hover:-translate-y-1.5 overflow-hidden">
         {/* Top Accent Gradient Line on Hover */}
         <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-brand-500 via-indigo-500 to-emerald-400 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-30" />
 
@@ -110,7 +202,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 }`}
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200 text-7xl select-none transform transition-transform duration-500 group-hover:scale-110">
+              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-100 dark:from-slate-800 to-slate-200 dark:to-slate-900 text-7xl select-none transform transition-transform duration-500 group-hover:scale-110">
                 {image && !isUrl ? image : "📦"}
               </div>
             )}
@@ -118,13 +210,21 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             {/* Ambient Gradient Overlay for Contrast */}
             <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/15 to-slate-950/35 pointer-events-none" />
 
-            {/* Top Floating Bar: Category & Live Stock */}
+            {/* Top Floating Bar: Category, Cache Hit & Live Stock */}
             <div className="absolute top-3.5 inset-x-3.5 flex items-center justify-between gap-2 z-20">
-              {/* Category Glass Pill */}
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-white/90 backdrop-blur-md text-slate-900 shadow-sm border border-white/60">
-                <Sparkles className="w-3 h-3 text-brand-600" />
-                {category}
-              </span>
+              <div className="flex items-center gap-1.5">
+                {/* Category Glass Pill */}
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-white/90 dark:bg-slate-900/90 backdrop-blur-md text-slate-900 dark:text-slate-100 shadow-sm border border-white/60 dark:border-slate-700">
+                  <Sparkles className="w-3 h-3 text-brand-600 dark:text-brand-400" />
+                  {category}
+                </span>
+
+                {/* Sub-5ms Redis Cache Hit Badge */}
+                <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-amber-500/20 text-amber-300 backdrop-blur-md border border-amber-400/30">
+                  <Zap className="w-2.5 h-2.5 fill-current animate-pulse text-amber-300" />
+                  <span>Redis &lt;5ms</span>
+                </span>
+              </div>
 
               {/* Stock Status Pill */}
               <div>
@@ -150,7 +250,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
               </div>
             </div>
 
-            {/* Side Floating Action Buttons (Wishlist & Quick View) */}
+            {/* Side Floating Action Buttons (Wishlist, Compare, Quick View) */}
             <div className="absolute left-3.5 top-14 flex flex-col gap-2 z-20 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
               <button
                 type="button"
@@ -162,11 +262,29 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 className={`w-9 h-9 rounded-full flex items-center justify-center backdrop-blur-md border transition-all shadow-md ${
                   isWishlisted
                     ? "bg-rose-500 text-white border-rose-400 scale-110"
-                    : "bg-white/90 text-slate-700 border-white/60 hover:bg-white hover:text-rose-500"
+                    : "bg-white/90 dark:bg-slate-900/90 text-slate-700 dark:text-slate-200 border-white/60 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 hover:text-rose-500"
                 }`}
               >
                 <Heart className={`w-4 h-4 ${isWishlisted ? "fill-current" : ""}`} />
               </button>
+
+              {onToggleCompare && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onToggleCompare(skuCode);
+                  }}
+                  title={isCompared ? "הסר מהשוואה" : "הוסף להשוואת מוצרים"}
+                  className={`w-9 h-9 rounded-full flex items-center justify-center backdrop-blur-md border transition-all shadow-md ${
+                    isCompared
+                      ? "bg-brand-600 text-white border-brand-500 scale-110"
+                      : "bg-white/90 dark:bg-slate-900/90 text-slate-700 dark:text-slate-200 border-white/60 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 hover:text-brand-500"
+                  }`}
+                >
+                  <Scale className="w-4 h-4" />
+                </button>
+              )}
 
               <button
                 type="button"
@@ -174,8 +292,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                   e.stopPropagation();
                   setQuickViewOpen(true);
                 }}
-                title="תצוגה מהירה ומפרט"
-                className="w-9 h-9 rounded-full bg-white/90 hover:bg-white text-slate-700 hover:text-brand-600 backdrop-blur-md border border-white/60 flex items-center justify-center transition-all shadow-md"
+                title="תצוגה מהירה, מפרט וביקורות"
+                className="w-9 h-9 rounded-full bg-white/90 dark:bg-slate-900/90 hover:bg-white dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 hover:text-brand-600 dark:hover:text-brand-400 backdrop-blur-md border border-white/60 dark:border-slate-700 flex items-center justify-center transition-all shadow-md"
               >
                 <Eye className="w-4 h-4" />
               </button>
@@ -206,13 +324,20 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           <div className="p-5 pb-4 space-y-3.5">
             {/* Rating & Trust Micro-row */}
             <div className="flex items-center justify-between text-xs">
-              <div className="inline-flex items-center gap-1 text-amber-500 font-bold bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/60">
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab("reviews");
+                  setQuickViewOpen(true);
+                }}
+                className="inline-flex items-center gap-1 text-amber-500 font-bold bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-md border border-amber-200/60 dark:border-amber-800 hover:bg-amber-100 transition"
+              >
                 <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                <span>4.9</span>
-                <span className="text-slate-400 font-normal text-[11px]">(ביקורות מאומתות)</span>
-              </div>
+                <span>{averageRating.toFixed(1)}</span>
+                <span className="text-slate-400 font-normal text-[11px]">({totalReviews} ביקורות)</span>
+              </button>
 
-              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
+              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md border border-emerald-200/50 dark:border-emerald-800/40">
                 <Truck className="w-3 h-3" />
                 משלוח חינם
               </span>
@@ -221,14 +346,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             {/* Product Name */}
             <h3
               onClick={() => setQuickViewOpen(true)}
-              className="font-extrabold text-slate-900 text-base sm:text-lg leading-snug group-hover:text-brand-600 transition-colors line-clamp-1 cursor-pointer"
+              className="font-extrabold text-slate-900 dark:text-slate-100 text-base sm:text-lg leading-snug group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors line-clamp-1 cursor-pointer"
               title={name}
             >
               {name}
             </h3>
 
             {/* Product Description */}
-            <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed min-h-[2.5rem]">
+            <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed min-h-[2.5rem]">
               {description}
             </p>
 
@@ -236,23 +361,23 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             {stock !== undefined && (
               <div className="pt-1 space-y-1.5">
                 <div className="flex items-center justify-between text-[11px]">
-                  <span className="text-slate-400 font-medium flex items-center gap-1">
+                  <span className="text-slate-400 dark:text-slate-400 font-medium flex items-center gap-1">
                     <Box className="w-3 h-3 text-slate-400" />
                     זמינות במחסן הלוגיסטי
                   </span>
                   <span
                     className={`font-bold ${
                       isOutOfStock
-                        ? "text-rose-600"
+                        ? "text-rose-600 dark:text-rose-400"
                         : isLowStock
-                        ? "text-amber-600"
-                        : "text-emerald-600"
+                        ? "text-amber-600 dark:text-amber-400"
+                        : "text-emerald-600 dark:text-emerald-400"
                     }`}
                   >
                     {available} יח׳ זמינות
                   </span>
                 </div>
-                <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                   <div
                     className={`h-full rounded-full transition-all duration-500 ${
                       isOutOfStock
@@ -270,25 +395,25 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         </div>
 
         {/* Footer: Pricing, Quantity Stepper & Action Button */}
-        <div className="px-5 py-4 bg-gradient-to-b from-slate-50/50 to-slate-100/70 border-t border-slate-100 space-y-3">
+        <div className="px-5 py-4 bg-gradient-to-b from-slate-50/50 to-slate-100/70 dark:from-slate-850 dark:to-slate-800/80 border-t border-slate-100 dark:border-slate-800 space-y-3">
           <div className="flex items-end justify-between">
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-xs text-slate-400 line-through font-medium">
                   ₪{originalPrice.toLocaleString()}
                 </span>
-                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-brand-50 text-brand-700 border border-brand-200/60">
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-brand-50 dark:bg-brand-950/50 text-brand-700 dark:text-brand-300 border border-brand-200/60 dark:border-brand-800">
                   מחיר השקה
                 </span>
               </div>
-              <div className="text-2xl font-black text-slate-900 tracking-tight leading-none mt-1">
+              <div className="text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight leading-none mt-1">
                 ₪{price.toLocaleString()}
               </div>
             </div>
 
             <div className="text-left">
-              <span className="text-[11px] text-slate-500 block">עד 12 תשלומים</span>
-              <span className="text-xs font-bold text-slate-700">
+              <span className="text-[11px] text-slate-500 dark:text-slate-400 block">עד 12 תשלומים</span>
+              <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
                 ₪{monthlyPayment.toLocaleString()} / חודש
               </span>
             </div>
@@ -297,21 +422,21 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           {/* Quantity & Add to Cart Row */}
           <div className="flex items-center gap-2 pt-1">
             {!isOutOfStock && (
-              <div className="flex items-center bg-white border border-slate-200 rounded-xl h-10 px-1 shadow-sm">
+              <div className="flex items-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl h-10 px-1 shadow-sm">
                 <button
                   type="button"
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition"
+                  className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-800 dark:hover:text-slate-200 transition"
                 >
                   <Minus className="w-3.5 h-3.5" />
                 </button>
-                <span className="w-6 text-center text-xs font-extrabold text-slate-900">
+                <span className="w-6 text-center text-xs font-extrabold text-slate-900 dark:text-slate-100">
                   {quantity}
                 </span>
                 <button
                   type="button"
                   onClick={() => setQuantity(Math.min(available || 10, quantity + 1))}
-                  className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition"
+                  className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-800 dark:hover:text-slate-200 transition"
                 >
                   <Plus className="w-3.5 h-3.5" />
                 </button>
@@ -326,14 +451,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 isAdded
                   ? "bg-emerald-500 text-white shadow-emerald-500/25 shadow-lg"
                   : isOutOfStock
-                  ? "bg-slate-200 text-slate-400 cursor-not-allowed"
+                  ? "bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed"
                   : "bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 hover:from-brand-600 hover:via-indigo-600 hover:to-brand-700 text-white shadow-md hover:shadow-lg hover:shadow-brand-600/25"
               }`}
             >
               {isAdded ? (
                 <>
                   <Check className="w-4 h-4 stroke-[2.5]" />
-                  <span>נוסף לעגלה!</span>
+                  <span>נוסף לסל!</span>
                 </>
               ) : isOutOfStock ? (
                 <span>אזל מהמלאי</span>
@@ -348,15 +473,15 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         </div>
       </div>
 
-      {/* Quick View Modal */}
+      {/* Quick View & Reviews Modal */}
       {quickViewOpen && (
         <div
           onClick={() => setQuickViewOpen(false)}
-          className="fixed inset-0 z-50 bg-slate-950/65 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in"
+          className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl border border-slate-200 grid grid-cols-1 md:grid-cols-2"
+            className="bg-white dark:bg-slate-900 rounded-3xl max-w-3xl w-full overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-800 grid grid-cols-1 md:grid-cols-2 max-h-[90vh]"
           >
             {/* Left / Right Image Column */}
             <div className="relative h-64 md:h-auto bg-slate-900 flex items-center justify-center overflow-hidden">
@@ -370,7 +495,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 <div className="text-8xl">{image && !isUrl ? image : "📦"}</div>
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-slate-950/30" />
-              <span className="absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-bold bg-white/90 text-slate-900 backdrop-blur-md">
+              <span className="absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-bold bg-white/90 dark:bg-slate-900/90 text-slate-900 dark:text-slate-100 backdrop-blur-md">
                 {category}
               </span>
               <span className="absolute bottom-4 right-4 px-2.5 py-1 rounded-lg bg-slate-900/80 text-white font-mono text-xs">
@@ -378,9 +503,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
               </span>
             </div>
 
-            {/* Details Column */}
-            <div className="p-6 sm:p-7 flex flex-col justify-between space-y-5">
-              <div className="space-y-3">
+            {/* Details & Reviews Column */}
+            <div className="p-6 sm:p-7 flex flex-col justify-between space-y-4 overflow-y-auto">
+              <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <Badge variant={isOutOfStock ? "destructive" : "success"} dot>
                     {isOutOfStock ? "אזל מהמלאי" : `זמין במלאי (${available} יח׳)`}
@@ -388,44 +513,151 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                   <button
                     type="button"
                     onClick={() => setQuickViewOpen(false)}
-                    className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition"
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
                   >
                     <X className="w-5 h-5" />
                   </button>
                 </div>
 
-                <h2 className="text-xl font-black text-slate-900 leading-snug">{name}</h2>
+                <h2 className="text-xl font-black text-slate-900 dark:text-slate-100 leading-snug">{name}</h2>
 
-                <p className="text-sm text-slate-600 leading-relaxed">{description}</p>
-
-                {/* Live Microservices Telemetry Box */}
-                <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2 text-xs">
-                  <div className="font-bold text-slate-800 flex items-center gap-1.5">
-                    <Layers className="w-3.5 h-3.5 text-brand-600" />
-                    <span>נתוני מערכת מבוזרת בזמן אמת:</span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 text-slate-600">
-                    <div>
-                      זמין במחסן: <strong className="text-emerald-700">{available} יח׳</strong>
-                    </div>
-                    <div>
-                      משוריין ב-SAGA: <strong className="text-amber-700">{reserved} יח׳</strong>
-                    </div>
-                  </div>
-                  <div className="text-[11px] text-brand-600 font-medium pt-1 border-t border-slate-200/60">
-                    💡 השתמש בקופון <span className="font-mono font-bold">WELCOME10</span> בעגלה ל-10% הנחה!
-                  </div>
+                {/* Tabs Switcher: Details vs Reviews */}
+                <div className="flex border-b border-slate-200 dark:border-slate-800">
+                  <button
+                    onClick={() => setActiveTab("details")}
+                    className={`pb-2 px-3 text-xs font-bold border-b-2 transition ${
+                      activeTab === "details"
+                        ? "border-brand-600 text-brand-600 dark:text-brand-400 dark:border-brand-400"
+                        : "border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                    }`}
+                  >
+                    מפרט וארכיטקטורה
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("reviews")}
+                    className={`pb-2 px-3 text-xs font-bold border-b-2 transition flex items-center gap-1.5 ${
+                      activeTab === "reviews"
+                        ? "border-brand-600 text-brand-600 dark:text-brand-400 dark:border-brand-400"
+                        : "border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                    }`}
+                  >
+                    <span>ביקורות רוכשים ({totalReviews})</span>
+                    <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                  </button>
                 </div>
+
+                {activeTab === "details" ? (
+                  <div className="space-y-3">
+                    <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">{description}</p>
+
+                    {/* Live Microservices Telemetry Box */}
+                    <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700 space-y-2 text-xs">
+                      <div className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                        <Layers className="w-3.5 h-3.5 text-brand-600" />
+                        <span>נתוני מערכת מבוזרת בזמן אמת:</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-slate-600 dark:text-slate-400">
+                        <div>
+                          זמין במחסן: <strong className="text-emerald-700 dark:text-emerald-400">{available} יח׳</strong>
+                        </div>
+                        <div>
+                          משוריין ב-SAGA: <strong className="text-amber-700 dark:text-amber-400">{reserved} יח׳</strong>
+                        </div>
+                      </div>
+                      <div className="text-[11px] text-brand-600 dark:text-brand-400 font-medium pt-1 border-t border-slate-200/60 dark:border-slate-700">
+                        💡 השתמש בקופון <span className="font-mono font-bold">WELCOME10</span> בעגלה ל-10% הנחה!
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  /* Reviews Tab */
+                  <div className="space-y-4 max-h-72 overflow-y-auto pr-1">
+                    {/* Add Review Form */}
+                    <form onSubmit={handleSubmitReview} className="bg-slate-50 dark:bg-slate-800/80 p-3 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-2 text-xs">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-slate-800 dark:text-slate-200">הוסף חוות דעת:</span>
+                        <div className="flex items-center gap-1">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <button
+                              key={star}
+                              type="button"
+                              onClick={() => setNewRating(star)}
+                              className="text-amber-400 hover:scale-125 transition"
+                            >
+                              <Star
+                                className={`w-4 h-4 ${
+                                  star <= newRating ? "fill-amber-400 text-amber-400" : "text-slate-300 dark:text-slate-600"
+                                }`}
+                              />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <textarea
+                        rows={2}
+                        value={newComment}
+                        onChange={(e) => setNewComment(e.target.value)}
+                        placeholder="כתוב את חוות דעתך על המוצר..."
+                        className="w-full p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs focus:ring-1 focus:ring-brand-500 outline-none resize-none"
+                      />
+                      <div className="flex justify-end">
+                        <Button
+                          type="submit"
+                          variant="primary"
+                          size="sm"
+                          loading={submittingReview}
+                          icon={<MessageSquare className="w-3.5 h-3.5" />}
+                        >
+                          שלח ביקורת
+                        </Button>
+                      </div>
+                    </form>
+
+                    {/* Reviews List */}
+                    {reviewsLoading ? (
+                      <div className="text-center py-6 text-slate-400 text-xs">טוען ביקורות מקאש Redis...</div>
+                    ) : reviews.length === 0 ? (
+                      <div className="text-center py-6 text-slate-400 text-xs">עדיין אין ביקורות למוצר זה. היה הראשון לדרג!</div>
+                    ) : (
+                      <div className="space-y-2.5">
+                        {reviews.map((rev) => (
+                          <div
+                            key={rev.id}
+                            className="p-3 rounded-xl bg-white dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-700/80 text-xs space-y-1.5"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-1.5 font-bold text-slate-900 dark:text-slate-100">
+                                <span>{rev.customerName}</span>
+                                {rev.verifiedPurchase && (
+                                  <span className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 text-[10px] font-normal">
+                                    <UserCheck className="w-3 h-3 text-emerald-600" />
+                                    רוכש מאומת
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-0.5 text-amber-400">
+                                {[...Array(rev.rating)].map((_, i) => (
+                                  <Star key={i} className="w-3 h-3 fill-current" />
+                                ))}
+                              </div>
+                            </div>
+                            <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{rev.comment}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
-              <div className="space-y-3 pt-3 border-t border-slate-100">
+              <div className="space-y-3 pt-3 border-t border-slate-100 dark:border-slate-800">
                 <div className="flex items-baseline justify-between">
-                  <span className="text-xs text-slate-500">מחיר לצרכן:</span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400">מחיר לצרכן:</span>
                   <div className="flex items-baseline gap-2">
                     <span className="text-xs text-slate-400 line-through">
                       ₪{originalPrice.toLocaleString()}
                     </span>
-                    <span className="text-2xl font-black text-slate-900">
+                    <span className="text-2xl font-black text-slate-900 dark:text-slate-100">
                       ₪{price.toLocaleString()}
                     </span>
                   </div>

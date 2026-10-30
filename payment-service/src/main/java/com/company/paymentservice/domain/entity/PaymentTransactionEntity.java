@@ -23,6 +23,9 @@ public class PaymentTransactionEntity {
     @Builder.Default
     private UUID id = UUID.randomUUID();
 
+    @Indexed
+    private UUID orderId;
+
     @Indexed(unique = true)
     private String idempotencyKey;
 

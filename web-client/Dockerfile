@@ -3,11 +3,14 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
+RUN mkdir -p public
 RUN npm run build
 
 FROM node:20-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
+ENV PORT=3000
+ENV GATEWAY_URL=http://api-gateway:8080
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/.next ./.next

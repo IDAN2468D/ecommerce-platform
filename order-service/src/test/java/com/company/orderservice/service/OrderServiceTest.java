@@ -56,6 +56,9 @@ class OrderServiceTest {
     @Mock
     private com.company.orderservice.kafka.OrderEventPublisher orderEventPublisher;
 
+    @Mock
+    private OutboxService outboxService;
+
     private final OrderMapper orderMapper = Mappers.getMapper(OrderMapper.class);
 
     private OrderService orderService;
@@ -65,7 +68,7 @@ class OrderServiceTest {
 
     @BeforeEach
     void setUp() {
-        orderService = new OrderService(orderRepository, orderMapper, inventoryClient, paymentClient, couponService, orderEventPublisher);
+        orderService = new OrderService(orderRepository, orderMapper, inventoryClient, paymentClient, couponService, orderEventPublisher, outboxService);
         lenient().when(couponService.applyAndConsumeCoupon(any(), any()))
                 .thenAnswer(inv -> new CouponService.CouponApplicationResult(null, BigDecimal.ZERO, inv.getArgument(1)));
     }

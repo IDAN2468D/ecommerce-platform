@@ -35,11 +35,17 @@ class InventoryServiceTest {
     @Mock
     private org.springframework.kafka.core.KafkaTemplate<String, Object> kafkaTemplate;
 
+    @Mock
+    private org.springframework.data.mongodb.core.MongoTemplate mongoTemplate;
+
+    @Mock
+    private com.company.inventoryservice.service.OutboxService outboxService;
+
     private InventoryService inventoryService;
 
     @BeforeEach
     void setUp() {
-        inventoryService = new InventoryService(inventoryRepository, reservationRepository, kafkaTemplate);
+        inventoryService = new InventoryService(inventoryRepository, reservationRepository, kafkaTemplate, mongoTemplate, outboxService);
     }
 
     @Test

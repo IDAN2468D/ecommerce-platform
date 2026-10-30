@@ -15,7 +15,7 @@ import java.util.Map;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-@KafkaListener(topics = {"order-events", "inventory-events", "payment-events", "user-events"}, groupId = "notification-service-group")
+@KafkaListener(topics = {"order-events", "inventory-events", "payment-events", "user-events", "shipping-events"}, groupId = "notification-service-group")
 public class NotificationKafkaConsumer {
 
     private final NotificationService notificationService;
@@ -142,6 +142,48 @@ public class NotificationKafkaConsumer {
                 "fullName", event.fullName(),
                 "title", "👋 התחברת בהצלחה!",
                 "message", "שמחים לראותך שוב, " + event.fullName() + ". אסימון JWT הונפק ונשמר.",
+                "timestamp", System.currentTimeMillis()
+        ));
+    }
+
+    @KafkaHandler
+    public void handleShipmentScheduled(ShipmentScheduledEvent event) {
+        log.info("Notification service received ShipmentScheduledEvent for trackingNumber={}", event.trackingNumber());
+        String targetUser = event.customerId() != null ? event.customerId() : "usr_demo";
+        sseNotificationService.dispatchNotification(targetUser, "SHIPMENT_SCHEDULED", Map.of(
+                "orderId", event.orderId().toString(),
+                "shipmentId", event.shipmentId().toString(),
+                "trackingNumber", event.trackingNumber(),
+                "carrier", event.carrier(),
+                "title", "🚚 המשלוח שלך שוריין בהצלחה!",
+                "message", "מספר מעקב " + event.trackingNumber() + " הוקצה באמצעות " + event.carrier() + ".",
+                "timestamp", System.currentTimeMillis()
+        ));
+    }
+
+    @KafkaHandler
+    public void handleOrderDispatched(OrderDispatchedEvent event) {
+        log.info("Notification service received OrderDispatchedEvent for orderId={}, status={}", event.orderId(), event.status());
+        String targetUser = event.customerId() != null ? event.customerId() : "usr_demo";
+        sseNotificationService.dispatchNotification(targetUser, "ORDER_DISPATCHED", Map.of(
+                "orderId", event.orderId().toString(),
+                "trackingNumber", event.trackingNumber(),
+                "status", event.status(),
+                "title", "📦 עדכון סטטוס משלוח: " + event.status(),
+                "message", "משלוח מספר " + event.trackingNumber() + " עודכן לסטטוס: " + event.status(),
+                "timestamp", System.currentTimeMillis()
+        ));
+    }
+
+    @KafkaHandler
+    public void handleShipmentCancelled(ShipmentCancelledEvent event) {
+        log.info("Notification service received ShipmentCancelledEvent for orderId={}", event.orderId());
+        String targetUser = event.customerId() != null ? event.customerId() : "usr_demo";
+        sseNotificationService.dispatchNotification(targetUser, "SHIPMENT_CANCELLED", Map.of(
+                "orderId", event.orderId().toString(),
+                "trackingNumber", event.trackingNumber() != null ? event.trackingNumber() : "N/A",
+                "title", "🛑 המשלוח בוטל",
+                "message", "המשלוח בוטל בהצלחה במסגרת ביטול ההזמנה.",
                 "timestamp", System.currentTimeMillis()
         ));
     }

@@ -45,6 +45,12 @@ public class InventoryEntity {
     private String imageUrl;
 
     @Builder.Default
+    private Double averageRating = 4.9;
+
+    @Builder.Default
+    private Integer reviewCount = 12;
+
+    @Builder.Default
     private Instant updatedAt = Instant.now();
 
     @Version

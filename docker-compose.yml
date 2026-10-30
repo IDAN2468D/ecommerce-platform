@@ -4,6 +4,8 @@ services:
     container_name: platform-mongodb
     ports:
       - "27017:27017"
+    command: mongod --wiredTigerCacheSizeGB 0.25
+    mem_limit: 512m
     volumes:
       - mongodb_platform_data:/data/db
     healthcheck:
@@ -19,7 +21,8 @@ services:
     container_name: platform-redis
     ports:
       - "6379:6379"
-    command: redis-server --appendonly yes
+    command: redis-server --appendonly yes --maxmemory 128mb --maxmemory-policy allkeys-lru
+    mem_limit: 256m
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -33,6 +36,9 @@ services:
     container_name: platform-zipkin
     ports:
       - "9411:9411"
+    environment:
+      JAVA_OPTS: "-Xms64m -Xmx256m -XX:+UseG1GC"
+    mem_limit: 384m
     networks:
       - platform-network
 
@@ -43,6 +49,7 @@ services:
       - "9092:9092"
       - "29092:29092"
     environment:
+      KAFKA_JVM_PERFORMANCE_OPTS: "-Xms256m -Xmx512m"
       KAFKA_NODE_ID: 1
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
       KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092'
@@ -57,6 +64,7 @@ services:
       KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
       KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
       CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
+    mem_limit: 768m
     networks:
       - platform-network
 
@@ -66,8 +74,10 @@ services:
     ports:
       - "8090:8080"
     environment:
+      JAVA_OPTS: "-Xms64m -Xmx256m -XX:+UseG1GC"
       KAFKA_CLUSTERS_0_NAME: platform-cluster
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+    mem_limit: 384m
     depends_on:
       - kafka
     networks:
@@ -81,10 +91,12 @@ services:
     ports:
       - "8082:8082"
     environment:
+      JAVA_OPTS: "-XX:+UseG1GC -Xms64m -Xmx384m -Dspring.threads.virtual.enabled=true"
       MONGODB_URI: ${INVENTORY_MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=50&minPoolSize=10&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       REDIS_HOST: redis
       REDIS_PORT: 6379
+    mem_limit: 512m
     depends_on:
       redis:
         condition: service_healthy
@@ -101,8 +113,10 @@ services:
     ports:
       - "8083:8083"
     environment:
+      JAVA_OPTS: "-XX:+UseG1GC -Xms64m -Xmx384m -Dspring.threads.virtual.enabled=true"
       MONGODB_URI: ${PAYMENT_MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=50&minPoolSize=10&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    mem_limit: 512m
     depends_on:
       kafka:
         condition: service_started
@@ -117,7 +131,9 @@ services:
     ports:
       - "8085:8085"
     environment:
+      JAVA_OPTS: "-XX:+UseG1GC -Xms64m -Xmx384m -Dspring.threads.virtual.enabled=true"
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    mem_limit: 512m
     depends_on:
       kafka:
         condition: service_started
@@ -132,10 +148,12 @@ services:
     ports:
       - "8081:8081"
     environment:
+      JAVA_OPTS: "-XX:+UseG1GC -Xms64m -Xmx384m -Dspring.threads.virtual.enabled=true"
       MONGODB_URI: ${ORDER_MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=50&minPoolSize=10&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
       INVENTORY_SERVICE_URL: http://inventory-service:8082
       PAYMENT_SERVICE_URL: http://payment-service:8083
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    mem_limit: 512m
     depends_on:
       kafka:
         condition: service_started
@@ -154,9 +172,95 @@ services:
     ports:
       - "8084:8084"
     environment:
+      JAVA_TOOL_OPTIONS: "-Xms64m -Xmx384m"
       MONGODB_URI: ${AUTH_MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=50&minPoolSize=10&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    mem_limit: 512m
     depends_on:
+      kafka:
+        condition: service_started
+    networks:
+      - platform-network
+
+  shipping-delivery-service:
+    build:
+      context: ./shipping-delivery-service
+      dockerfile: Dockerfile
+    container_name: shipping-delivery-service
+    ports:
+      - "8086:8086"
+    environment:
+      JAVA_TOOL_OPTIONS: "-Xms64m -Xmx384m"
+      MONGODB_URI: ${SHIPPING_MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=50&minPoolSize=10&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    mem_limit: 512m
+    depends_on:
+      kafka:
+        condition: service_started
+    networks:
+      - platform-network
+
+  review-rating-service:
+    build:
+      context: ./review-rating-service
+      dockerfile: Dockerfile
+    container_name: review-rating-service
+    ports:
+      - "8087:8087"
+    environment:
+      JAVA_TOOL_OPTIONS: "-Xms64m -Xmx384m"
+      MONGODB_URI: ${REVIEW_MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=50&minPoolSize=10&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    mem_limit: 512m
+    depends_on:
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    networks:
+      - platform-network
+
+  cart-wishlist-service:
+    build:
+      context: ./cart-wishlist-service
+      dockerfile: Dockerfile
+    container_name: cart-wishlist-service
+    ports:
+      - "8088:8088"
+    environment:
+      JAVA_TOOL_OPTIONS: "-Xms64m -Xmx384m"
+      MONGODB_URI: ${CART_MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=50&minPoolSize=10&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    mem_limit: 512m
+    depends_on:
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    networks:
+      - platform-network
+
+  recommendation-loyalty-service:
+    build:
+      context: ./recommendation-loyalty-service
+      dockerfile: Dockerfile
+    container_name: recommendation-loyalty-service
+    ports:
+      - "8089:8089"
+    environment:
+      JAVA_TOOL_OPTIONS: "-Xms64m -Xmx384m"
+      MONGODB_URI: ${LOYALTY_MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=50&minPoolSize=10&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    mem_limit: 512m
+    depends_on:
+      redis:
+        condition: service_healthy
       kafka:
         condition: service_started
     networks:
@@ -170,17 +274,44 @@ services:
     ports:
       - "8080:8080"
     environment:
+      JAVA_OPTS: "-XX:+UseG1GC -Xms64m -Xmx384m"
       ORDER_SERVICE_URL: http://order-service:8081
       INVENTORY_SERVICE_URL: http://inventory-service:8082
       PAYMENT_SERVICE_URL: http://payment-service:8083
       NOTIFICATION_SERVICE_URL: http://notification-service:8085
       AUTH_SERVICE_URL: http://auth-service:8084
+      SHIPPING_SERVICE_URL: http://shipping-delivery-service:8086
+      REVIEW_SERVICE_URL: http://review-rating-service:8087
+      CART_SERVICE_URL: http://cart-wishlist-service:8088
+      LOYALTY_SERVICE_URL: http://recommendation-loyalty-service:8089
+    mem_limit: 512m
     depends_on:
       - order-service
       - inventory-service
       - payment-service
       - notification-service
       - auth-service
+      - shipping-delivery-service
+      - review-rating-service
+      - cart-wishlist-service
+      - recommendation-loyalty-service
+    networks:
+      - platform-network
+
+  web-client:
+    build:
+      context: ./web-client
+      dockerfile: Dockerfile
+    container_name: web-client
+    ports:
+      - "3000:3000"
+    environment:
+      GATEWAY_URL: http://api-gateway:8080
+      NEXT_PUBLIC_GATEWAY_URL: http://localhost:8080
+      PORT: 3000
+    mem_limit: 384m
+    depends_on:
+      - api-gateway
     networks:
       - platform-network
 
@@ -189,6 +320,7 @@ services:
     container_name: platform-prometheus
     ports:
       - "9090:9090"
+    mem_limit: 256m
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
     networks:
@@ -203,6 +335,7 @@ services:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_USERS_ALLOW_SIGN_UP=false
+    mem_limit: 256m
     volumes:
       - ./grafana/provisioning:/etc/grafana/provisioning:ro
     depends_on:
