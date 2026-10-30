@@ -1,0 +1,504 @@
+{
+  "info": {
+    "_postman_id": "a9e61234-582b-4fc4-bb11-477d9e7943c2",
+    "name": "E-Commerce Microservices Platform",
+    "description": "אוסף קריאות Postman מלא עבור פלטפורמת המיקרו-שירותים (Spring Boot 3, Java 21). כולל ניתוב דרך ה-API Gateway, תזמור SAGA, שאילתות מלאי, סליקה והתראות.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Automatically generate valid JWT signed with HMAC-SHA256 for order-service",
+          "function base64url(source) {",
+          "    var encodedSource = CryptoJS.enc.Base64.stringify(source);",
+          "    encodedSource = encodedSource.replace(/=+$/, '');",
+          "    encodedSource = encodedSource.replace(/\\+/g, '-');",
+          "    encodedSource = encodedSource.replace(/\\//g, '_');",
+          "    return encodedSource;",
+          "}",
+          "",
+          "var header = { \"alg\": \"HS256\", \"typ\": \"JWT\" };",
+          "var now = Math.floor(Date.now() / 1000);",
+          "var payload = { \"sub\": \"usr_demo\", \"iat\": now, \"exp\": now + 86400 };",
+          "",
+          "var stringifiedHeader = CryptoJS.enc.Utf8.parse(JSON.stringify(header));",
+          "var encodedHeader = base64url(stringifiedHeader);",
+          "",
+          "var stringifiedData = CryptoJS.enc.Utf8.parse(JSON.stringify(payload));",
+          "var encodedData = base64url(stringifiedData);",
+          "",
+          "var token = encodedHeader + \".\" + encodedData;",
+          "var secret = atob(\"b3JkZXItc2VydmljZS1kZWZhdWx0LXNlY3JldC1rZXktMzItYnl0ZXMhIQ==\");",
+          "var signature = CryptoJS.HmacSHA256(token, secret);",
+          "var encodedSignature = base64url(signature);",
+          "",
+          "var jwt = token + \".\" + encodedSignature;",
+          "pm.variables.set(\"bearerToken\", jwt);"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string",
+      "description": "כתובת ה-API Gateway המרכזית"
+    },
+    {
+      "key": "orderServiceUrl",
+      "value": "http://localhost:8081",
+      "type": "string",
+      "description": "כתובת ישירה ל-Order Service"
+    },
+    {
+      "key": "inventoryServiceUrl",
+      "value": "http://localhost:8082",
+      "type": "string",
+      "description": "כתובת ישירה ל-Inventory Service"
+    },
+    {
+      "key": "paymentServiceUrl",
+      "value": "http://localhost:8083",
+      "type": "string",
+      "description": "כתובת ישירה ל-Payment Service"
+    },
+    {
+      "key": "notificationServiceUrl",
+      "value": "http://localhost:8085",
+      "type": "string",
+      "description": "כתובת ישירה ל-Notification Service"
+    },
+    {
+      "key": "bearerToken",
+      "value": "",
+      "type": "string",
+      "description": "נוצר ומתעדכן דינמית ע\"י Pre-request Script לפני כל שליחה (מונע סריקת Secrets ע\"י Postman Vault)"
+    },
+    {
+      "key": "orderId",
+      "value": "",
+      "type": "string",
+      "description": "מזהה הזמנה שנוצר דינמית (מתעדכן אוטומטית ע\"י סקריפט בדיקה ביצירת הזמנה)"
+    },
+    {
+      "key": "paymentTransactionId",
+      "value": "",
+      "type": "string",
+      "description": "מזהה טרנזקציית תשלום (מתעדכן אוטומטית ע\"י סקריפט בדיקה ביצירת הזמנה)"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Health Checks & Gateway",
+      "description": "בדיקות חיות (Health Checks) של כל המיקרו-שירותים וה-Gateway",
+      "item": [
+        {
+          "name": "Gateway Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/actuator/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["actuator", "health"]
+            },
+            "description": "בדיקת סטטוס תקינות של ה-API Gateway"
+          },
+          "response": []
+        },
+        {
+          "name": "Orders Service Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{orderServiceUrl}}/actuator/health",
+              "host": ["{{orderServiceUrl}}"],
+              "path": ["actuator", "health"]
+            },
+            "description": "בדיקת סטטוס תקינות של Order Service"
+          },
+          "response": []
+        },
+        {
+          "name": "Inventory Service Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{inventoryServiceUrl}}/actuator/health",
+              "host": ["{{inventoryServiceUrl}}"],
+              "path": ["actuator", "health"]
+            },
+            "description": "בדיקת סטטוס תקינות של Inventory Service"
+          },
+          "response": []
+        },
+        {
+          "name": "Payment Service Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{paymentServiceUrl}}/actuator/health",
+              "host": ["{{paymentServiceUrl}}"],
+              "path": ["actuator", "health"]
+            },
+            "description": "בדיקת סטטוס תקינות של Payment Service"
+          },
+          "response": []
+        },
+        {
+          "name": "Notification Service Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{notificationServiceUrl}}/actuator/health",
+              "host": ["{{notificationServiceUrl}}"],
+              "path": ["actuator", "health"]
+            },
+            "description": "בדיקת סטטוס תקינות של Notification Service"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2. Orders Service",
+      "description": "ניהול הזמנות ותזמור תהליך SAGA מלא",
+      "item": [
+        {
+          "name": "Create Order (SAGA Flow)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201 Created\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 201) {",
+                  "    var data = pm.response.json();",
+                  "    if (data.orderId) {",
+                  "        pm.collectionVariables.set(\"orderId\", data.orderId);",
+                  "        console.log(\"Saved orderId to variable:\", data.orderId);",
+                  "    }",
+                  "    if (data.paymentTransactionId) {",
+                  "        pm.collectionVariables.set(\"paymentTransactionId\", data.paymentTransactionId);",
+                  "        console.log(\"Saved paymentTransactionId to variable:\", data.paymentTransactionId);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearerToken}}"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}",
+                "description": "מזהה ייחודי למניעת חיובים והזמנות כפולות (מוגרל אוטומטית)"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currency\": \"ILS\",\n  \"paymentMethodToken\": \"pm_card_visa_demo\",\n  \"items\": [\n    {\n      \"skuCode\": \"IPHONE-16-PRO-256\",\n      \"quantity\": 1,\n      \"unitPrice\": 4899.00\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "orders"]
+            },
+            "description": "יצירת הזמנה חדשה דרך ה-Gateway. מפעיל שריון מלאי, סליקת תשלום ואישור הזמנה."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Order by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/orders/{{orderId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "orders", "{{orderId}}"]
+            },
+            "description": "שליפת פרטי הזמנה ומצבה לפי מזהה הזמנה שנשמר במשתנה orderId"
+          },
+          "response": []
+        },
+        {
+          "name": "List Customer Orders (Pagination)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/orders?page=0&size=10&sort=createdAt,desc",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "orders"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                },
+                {
+                  "key": "sort",
+                  "value": "createdAt,desc"
+                }
+              ]
+            },
+            "description": "קבלת רשימת הזמנות ממוספרת (Pagination) של הלקוח המאומת"
+          },
+          "response": []
+        },
+        {
+          "name": "Cancel Order (SAGA Compensation)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/orders/{{orderId}}/cancel",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "orders", "{{orderId}}", "cancel"]
+            },
+            "description": "ביטול הזמנה מאושרת. מפעיל טרנזקציות פיצוי של SAGA: שחרור המלאי וביצוע זיכוי תשלום (Refund)."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3. Inventory Service",
+      "description": "ניהול ושריון מלאי מחסנים ומניעת מכירת יתר",
+      "item": [
+        {
+          "name": "Get Stock by SKU",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/inventory/IPHONE-16-PRO-256",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "inventory", "IPHONE-16-PRO-256"]
+            },
+            "description": "בדיקת מלאי זמין, כמות משוריינת ומחיר לפי מק\"ט (SKU)"
+          },
+          "response": []
+        },
+        {
+          "name": "Add or Restock Inventory Item",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"skuCode\": \"MACBOOK-PRO-M3\",\n  \"productName\": \"Apple MacBook Pro 16 M3 Max 36GB\",\n  \"quantity\": 20,\n  \"unitPrice\": 14299.00\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/inventory",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "inventory"]
+            },
+            "description": "הוספת מוצר חדש או חידוש מלאי למחסן"
+          },
+          "response": []
+        },
+        {
+          "name": "Internal: Reserve Stock",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[\n  {\n    \"skuCode\": \"IPHONE-16-PRO-256\",\n    \"quantity\": 1\n  }\n]"
+            },
+            "url": {
+              "raw": "{{inventoryServiceUrl}}/internal/v1/inventory/reserve",
+              "host": ["{{inventoryServiceUrl}}"],
+              "path": ["internal", "v1", "inventory", "reserve"]
+            },
+            "description": "נקודת קצה פנימית של שריון מלאי (Pessimistic Lock)"
+          },
+          "response": []
+        },
+        {
+          "name": "Internal: Release Stock",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reservationId\": \"{{$guid}}\",\n  \"items\": [\n    {\n      \"skuCode\": \"IPHONE-16-PRO-256\",\n      \"quantity\": 1\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{inventoryServiceUrl}}/internal/v1/inventory/release",
+              "host": ["{{inventoryServiceUrl}}"],
+              "path": ["internal", "v1", "inventory", "release"]
+            },
+            "description": "נקודת קצה פנימית לשחרור שריון מלאי (פיצוי SAGA)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "4. Payment Service",
+      "description": "סליקה אידמפוטנטית, ניהול טרנזקציות וזיכויים",
+      "item": [
+        {
+          "name": "Get Payment Transaction by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/payments/transactions/{{paymentTransactionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "payments", "transactions", "{{paymentTransactionId}}"]
+            },
+            "description": "שליפת פרטי עסקת תשלום לפי מזהה טרנזקציה שנשמר במשתנה"
+          },
+          "response": []
+        },
+        {
+          "name": "Internal: Process Payment Charge",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": \"usr_demo\",\n  \"amount\": 4899.00,\n  \"currency\": \"ILS\",\n  \"paymentMethodToken\": \"pm_card_visa_demo\",\n  \"idempotencyKey\": \"{{$guid}}\"\n}"
+            },
+            "url": {
+              "raw": "{{paymentServiceUrl}}/internal/v1/payments/charge",
+              "host": ["{{paymentServiceUrl}}"],
+              "path": ["internal", "v1", "payments", "charge"]
+            },
+            "description": "חיוב אשראי ישיר דרך שירות התשלומים הפנימי עם מפתח אידמפוטנטיות"
+          },
+          "response": []
+        },
+        {
+          "name": "Internal: Refund Payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"transactionId\": \"{{paymentTransactionId}}\",\n  \"amount\": 4899.00,\n  \"reason\": \"Refund triggered via Postman test\"\n}"
+            },
+            "url": {
+              "raw": "{{paymentServiceUrl}}/internal/v1/payments/refund",
+              "host": ["{{paymentServiceUrl}}"],
+              "path": ["internal", "v1", "payments", "refund"]
+            },
+            "description": "ביצוע החזר כספי (Refund) לטרנזקציה קיימת"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "5. Notification Service",
+      "description": "שליחת התראות רב-ערוציות (Email, SMS, Push) ומעקב היסטוריה",
+      "item": [
+        {
+          "name": "Send Notification",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": \"usr_alice\",\n  \"channel\": \"EMAIL\",\n  \"subject\": \"Order #{{orderId}} Confirmed\",\n  \"message\": \"Your order has been placed successfully and will ship soon.\",\n  \"referenceId\": \"{{orderId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/notifications/send",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "notifications", "send"]
+            },
+            "description": "שליחת הודעת התראה ללקוח דרך ערוץ נבחר (EMAIL, SMS, PUSH)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Customer Notification History",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/notifications/history/usr_alice",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "notifications", "history", "usr_alice"]
+            },
+            "description": "שליפת היסטוריית כל ההתראות שנשלחו עבור לקוח ספציפי"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

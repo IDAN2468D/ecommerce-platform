@@ -1,0 +1,13 @@
+server:
+  port: 0
+
+spring:
+  application:
+    name: payment-service-test
+  threads:
+    virtual:
+      enabled: true
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/payments_test_db?uuidRepresentation=standard
+      auto-index-creation: true
