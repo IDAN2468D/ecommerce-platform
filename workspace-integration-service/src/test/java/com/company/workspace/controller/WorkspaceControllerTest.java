@@ -31,6 +31,9 @@ class WorkspaceControllerTest {
     private WorkspaceSyncService syncService;
 
     @MockBean
+    private com.company.workspace.domain.WorkspaceLinkRepository linkRepository;
+
+    @MockBean
     private McpToolGateway toolGateway;
 
     @Test

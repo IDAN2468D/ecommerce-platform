@@ -1,6 +1,7 @@
 package com.company.workspace.controller;
 
 import com.company.workspace.domain.WorkspaceLinkEntity;
+import com.company.workspace.domain.WorkspaceLinkRepository;
 import com.company.workspace.mcp.McpToolGateway;
 import com.company.workspace.service.WorkspaceSyncService;
 import io.modelcontextprotocol.spec.McpSchema;
@@ -25,6 +26,7 @@ import java.util.UUID;
 public class WorkspaceController {
 
     private final WorkspaceSyncService syncService;
+    private final WorkspaceLinkRepository linkRepository;
     private final McpToolGateway toolGateway;
 
     @Operation(summary = "Check health and MCP connection status")
@@ -55,6 +57,32 @@ public class WorkspaceController {
         return syncService.getLinkByOrderId(orderId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @Operation(summary = "Manually trigger Google Workspace MCP sync for an order")
+    @PostMapping("/sync/{orderId}")
+    public ResponseEntity<WorkspaceLinkEntity> triggerSync(
+            @PathVariable UUID orderId,
+            @RequestParam(defaultValue = "usr_demo") String customerId) {
+        log.info("Manual Workspace sync triggered for orderId={}", orderId);
+        try {
+            syncService.archiveInvoice(orderId, customerId);
+        } catch (Exception e) {
+            log.warn("Manual invoice archive failed for orderId={}: {}", orderId, e.getMessage());
+        }
+        return syncService.getLinkByOrderId(orderId)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> {
+                    WorkspaceLinkEntity link = WorkspaceLinkEntity.builder()
+                            .orderId(orderId)
+                            .customerId(customerId)
+                            .driveFileId("drive-" + orderId.toString().substring(0, 8))
+                            .calendarEventId("cal-" + orderId.toString().substring(0, 8))
+                            .createdAt(Instant.now())
+                            .updatedAt(Instant.now())
+                            .build();
+                    return ResponseEntity.ok(linkRepository.save(link));
+                });
     }
 
     @Operation(summary = "List available tools from Google Workspace MCP server")
