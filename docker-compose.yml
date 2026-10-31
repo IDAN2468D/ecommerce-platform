@@ -278,7 +278,7 @@ services:
       WORKSPACE_USER_EMAIL: ${WORKSPACE_USER_EMAIL:-operations@yourcompany.com}
     mem_limit: 256m
     volumes:
-      - workspace_mcp_credentials:/app/credentials
+      - ./credentials:/app/credentials:ro
     networks:
       - platform-network
 
@@ -295,6 +295,8 @@ services:
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       WORKSPACE_MCP_URL: http://google-workspace-mcp:8000
       WORKSPACE_USER_EMAIL: ${WORKSPACE_USER_EMAIL:-operations@yourcompany.com}
+      DRIVE_INVOICES_FOLDER_ID: ${DRIVE_INVOICES_FOLDER_ID:-invoices_folder_default}
+      CALENDAR_ID: ${CALENDAR_ID:-primary}
       INVOICE_SOURCE_URL_TEMPLATE: http://order-service:8081/api/v1/orders/%s/invoice
     mem_limit: 512m
     depends_on:
@@ -392,4 +394,3 @@ networks:
 
 volumes:
   mongodb_platform_data:
-  workspace_mcp_credentials:
