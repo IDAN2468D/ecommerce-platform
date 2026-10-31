@@ -23,13 +23,13 @@ workspace:
     endpoint: ${WORKSPACE_MCP_ENDPOINT:/mcp}
     request-timeout: 20s
     auth-token: ${MCP_AUTH_TOKEN:}
-    user-email: ${WORKSPACE_USER_EMAIL:operations@yourcompany.com}
+    user-email: ${WORKSPACE_USER_EMAIL:idankzm@gmail.com}
     tools:
       drive-create-file: ${MCP_TOOL_DRIVE_CREATE:create_drive_file}
       calendar-create-event: ${MCP_TOOL_CALENDAR_CREATE:manage_event}
       calendar-delete-event: ${MCP_TOOL_CALENDAR_DELETE:manage_event}
     drive:
-      invoices-folder-id: ${DRIVE_INVOICES_FOLDER_ID:invoices_folder_default}
+      invoices-folder-id: ${DRIVE_INVOICES_FOLDER_ID:18Dinq5x46OWcqmTEljaXytGHd4jJ-aRw}
       invoice-source-url-template: ${INVOICE_SOURCE_URL_TEMPLATE:http://order-service:8081/api/v1/orders/%s/invoice}
     calendar:
       calendar-id: ${CALENDAR_ID:primary}

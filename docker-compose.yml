@@ -279,7 +279,7 @@ services:
       WORKSPACE_MCP_PORT: "8000"
       FASTMCP_PORT: "8000"
       GOOGLE_APPLICATION_CREDENTIALS: /app/credentials/credentials.json
-      WORKSPACE_USER_EMAIL: ${WORKSPACE_USER_EMAIL:-operations@yourcompany.com}
+      WORKSPACE_USER_EMAIL: ${WORKSPACE_USER_EMAIL:-idankzm@gmail.com}
     mem_limit: 256m
     volumes:
       - ./credentials:/app/credentials:ro
@@ -298,8 +298,8 @@ services:
       MONGODB_URI: ${WORKSPACE_MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=50&minPoolSize=10&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       WORKSPACE_MCP_URL: http://google-workspace-mcp:8000
-      WORKSPACE_USER_EMAIL: ${WORKSPACE_USER_EMAIL:-operations@yourcompany.com}
-      DRIVE_INVOICES_FOLDER_ID: ${DRIVE_INVOICES_FOLDER_ID:-invoices_folder_default}
+      WORKSPACE_USER_EMAIL: ${WORKSPACE_USER_EMAIL:-idankzm@gmail.com}
+      DRIVE_INVOICES_FOLDER_ID: ${DRIVE_INVOICES_FOLDER_ID:-18Dinq5x46OWcqmTEljaXytGHd4jJ-aRw}
       CALENDAR_ID: ${CALENDAR_ID:-primary}
       INVOICE_SOURCE_URL_TEMPLATE: http://order-service:8081/api/v1/orders/%s/invoice
     mem_limit: 512m
