@@ -84,6 +84,7 @@ public class WorkspaceSyncService {
         Instant end = start.plus(props.calendar().deliveryWindow());
 
         Map<String, Object> args = new LinkedHashMap<>();
+        args.put("action", "create");
         args.put("user_google_email", props.userEmail());
         args.put("calendar_id", props.calendar().calendarId());
         args.put("summary", "משלוח הזמנה " + event.orderId().toString().substring(0, 8).toUpperCase());
@@ -115,6 +116,7 @@ public class WorkspaceSyncService {
                 .ifPresentOrElse(link -> {
                     log.info("Executing SAGA compensation: Deleting Calendar event {} for cancelled orderId={}...", link.getCalendarEventId(), event.orderId());
                     mcp.call(props.tools().calendarDeleteEvent(), Map.of(
+                            "action", "delete",
                             "user_google_email", props.userEmail(),
                             "calendar_id", props.calendar().calendarId(),
                             "event_id", link.getCalendarEventId()

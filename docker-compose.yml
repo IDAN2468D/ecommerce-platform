@@ -274,6 +274,10 @@ services:
     ports:
       - "8000:8000"
     environment:
+      WORKSPACE_MCP_HOST: "0.0.0.0"
+      FASTMCP_HOST: "0.0.0.0"
+      WORKSPACE_MCP_PORT: "8000"
+      FASTMCP_PORT: "8000"
       GOOGLE_APPLICATION_CREDENTIALS: /app/credentials/credentials.json
       WORKSPACE_USER_EMAIL: ${WORKSPACE_USER_EMAIL:-operations@yourcompany.com}
     mem_limit: 256m
