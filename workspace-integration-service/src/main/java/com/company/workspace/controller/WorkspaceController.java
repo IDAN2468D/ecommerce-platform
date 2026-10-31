@@ -85,6 +85,28 @@ public class WorkspaceController {
                 });
     }
 
+    @Operation(summary = "Start Google OAuth flow for user authentication")
+    @GetMapping("/auth/start")
+    public ResponseEntity<Map<String, Object>> startAuth(
+            @RequestParam(defaultValue = "idankzm@gmail.com") String email) {
+        log.info("Starting Google OAuth flow for email={}", email);
+        try {
+            McpSchema.CallToolResult result = toolGateway.call("start_google_auth", Map.of(
+                    "service_name", "drive",
+                    "user_google_email", email
+            ));
+            String text = McpToolGateway.textOf(result);
+            return ResponseEntity.ok(Map.of(
+                    "status", "AUTH_URL_GENERATED",
+                    "message", text,
+                    "email", email
+            ));
+        } catch (Exception e) {
+            log.error("Failed to start Google OAuth flow: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @Operation(summary = "List available tools from Google Workspace MCP server")
     @GetMapping("/tools")
     public ResponseEntity<List<String>> listTools() {
