@@ -11,7 +11,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -23,6 +26,28 @@ public class WorkspaceController {
 
     private final WorkspaceSyncService syncService;
     private final McpToolGateway toolGateway;
+
+    @Operation(summary = "Check health and MCP connection status")
+    @GetMapping({"/health", "/status"})
+    public ResponseEntity<Map<String, Object>> health() {
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("service", "workspace-integration-service");
+        response.put("status", "UP");
+        response.put("timestamp", Instant.now().toString());
+        try {
+            List<String> tools = toolGateway.listTools().stream()
+                    .map(McpSchema.Tool::name)
+                    .toList();
+            response.put("mcpServerConnected", true);
+            response.put("availableTools", tools);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.warn("MCP health check degraded: {}", e.getMessage());
+            response.put("mcpServerConnected", false);
+            response.put("warning", "MCP server not reachable or initializing: " + e.getMessage());
+            return ResponseEntity.ok(response);
+        }
+    }
 
     @Operation(summary = "Get Google Workspace links for an order", description = "Returns Google Drive file ID and Google Calendar event ID associated with the order")
     @GetMapping("/links/{orderId}")
