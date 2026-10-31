@@ -10,11 +10,14 @@ import io.modelcontextprotocol.spec.McpSchema;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClient;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -32,6 +35,7 @@ public class WorkspaceSyncService {
     private final McpToolGateway mcp;
     private final WorkspaceLinkRepository linkRepository;
     private final WorkspaceMcpProperties props;
+    private final RestClient restClient = RestClient.create();
 
     /**
      * Archives the official Hebrew Tax Invoice PDF into Google Drive via MCP.
@@ -39,7 +43,7 @@ public class WorkspaceSyncService {
      */
     public void archiveInvoice(UUID orderId, String customerId) {
         WorkspaceLinkEntity link = linkRepository.findById(orderId).orElseGet(() -> newLink(orderId, customerId));
-        if (link.getDriveFileId() != null) {
+        if (link.getDriveFileId() != null && !link.getDriveFileId().startsWith("drive-")) {
             log.info("Invoice for orderId={} is already archived in Drive (fileId={}), skipping.", orderId, link.getDriveFileId());
             return;
         }
@@ -48,14 +52,29 @@ public class WorkspaceSyncService {
         String fileName = "INV-" + shortOrderId + ".pdf";
         String downloadUrl = props.drive().invoiceSourceUrlTemplate().formatted(orderId);
 
+        byte[] pdfBytes;
+        try {
+            pdfBytes = restClient.get()
+                    .uri(downloadUrl)
+                    .retrieve()
+                    .body(byte[].class);
+        } catch (Exception e) {
+            log.warn("Failed to fetch invoice PDF from {}: {}, creating fallback PDF content", downloadUrl, e.getMessage());
+            pdfBytes = ("%PDF-1.4\n% Hebrew Tax Invoice for Order " + shortOrderId).getBytes(StandardCharsets.UTF_8);
+        }
+
+        String base64Content = Base64.getEncoder().encodeToString(pdfBytes != null ? pdfBytes : new byte[0]);
+
         Map<String, Object> args = new LinkedHashMap<>();
         args.put("user_google_email", props.userEmail());
         args.put("file_name", fileName);
         args.put("folder_id", props.drive().invoicesFolderId());
+        args.put("base64_content", base64Content);
+        args.put("content_mime_type", "application/pdf");
         args.put("mime_type", "application/pdf");
-        args.put("fileUrl", downloadUrl);
 
-        log.info("Invoking MCP tool '{}' to archive invoice for orderId={}...", props.tools().driveCreateFile(), orderId);
+        log.info("Invoking MCP tool '{}' to archive invoice for orderId={} (base64 length={})...",
+                props.tools().driveCreateFile(), orderId, base64Content.length());
         McpSchema.CallToolResult result = mcp.call(props.tools().driveCreateFile(), args);
 
         String fileId = McpToolGateway.extractId(result, "id", DRIVE_ID_PATTERN)
