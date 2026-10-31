@@ -23,6 +23,7 @@
 		<springdoc.version>2.6.0</springdoc.version>
 		<resilience4j.version>2.2.0</resilience4j.version>
 		<wiremock.version>3.9.2</wiremock.version>
+		<mcp-sdk.version>2.1.0</mcp-sdk.version>
 	</properties>
 
 	<modules>
@@ -36,6 +37,7 @@
 		<module>review-rating-service</module>
 		<module>cart-wishlist-service</module>
 		<module>recommendation-loyalty-service</module>
+		<module>workspace-integration-service</module>
 		<module>api-gateway</module>
 	</modules>
 

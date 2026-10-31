@@ -76,6 +76,12 @@ spring:
           predicates:
             - Path=/api/v1/recommendations/**
 
+        # 10. Workspace Integration Service Route (Google Drive & Calendar via MCP)
+        - id: workspace-service-route
+          uri: ${WORKSPACE_SERVICE_URL:http://localhost:8091}
+          predicates:
+            - Path=/api/v1/workspace/**
+
 management:
   endpoints:
     web:

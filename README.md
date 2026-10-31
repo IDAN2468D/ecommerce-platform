@@ -110,9 +110,14 @@ flowchart TD
 - מנגנון אינוולידציה אוטומטי (`@CacheEvict`) בעת שריון או עדכון מלאי.
 
 ### 6. מערך ניטור וטלמטריה (Full Observability Stack)
-- **Prometheus** (פורט 9090) – מגרד מדדים חיים (Metrics) מכל 5 המיקרו-שירותים דרך Spring Boot Actuator.
+- **Prometheus** (פורט 9090) – מגרד מדדים חיים (Metrics) מכל המיקרו-שירותים דרך Spring Boot Actuator.
 - **Grafana** (פורט 3001) – דשבורד מובנה ומוכן מראש עם גרפים של Throughput, זמני תגובה, ניצולת Heap ו-Virtual Threads.
 - **OpenZipkin** (פורט 9411) – מעקב מבוזר (Distributed Tracing) אחר כל בקשת HTTP ואירוע Kafka.
+
+### 7. אינטגרציית Google Workspace באמצעות Model Context Protocol (MCP)
+- **ארכוב חשבוניות מס ב-Google Drive**: בעת קליטת אירוע `PaymentCapturedEvent`, השירות שולף את החשבונית ומעלה אותה אוטומטית ל-Google Drive דרך כלי ה-MCP `create_drive_file`.
+- **ניהול אירועי אספקה ב-Google Calendar**: בעת קליטת `ShipmentScheduledEvent`, השירות יוצר אירוע ביומן הלקוח דרך כלי ה-MCP `create_event`. בעת ביטול משלוח (`ShipmentCancelledEvent`), מבוצע פיצוי SAGA ומחיקת האירוע דרך `delete_event`.
+- **אידמפוטנטיות ועמידות (Fault Tolerance)**: שמירת קישורים ומזהים חיצוניים ב-MongoDB Atlas (`workspace_links`) ומנגנוני Resilience4j Circuit Breaker ו-Retry עם Exponential Backoff.
 
 ---
 
@@ -126,10 +131,12 @@ flowchart TD
 ├── api-gateway/                       # Spring Cloud Gateway (Port 8080)
 ├── auth-service/                      # אימות והרשמה עם JWT ו-BCrypt (Port 8084)
 ├── common-events/                     # מודול אירועים משותף ל-Kafka SAGA
+├── google-workspace-mcp/              # קונטיינר Sidecar לשרת MCP (Streamable HTTP) עבור Google Drive & Calendar
 ├── inventory-service/                 # שירות מלאי, מוצרים וקאש Redis (Port 8082)
 ├── notification-service/              # שירות התראות מבוסס SSE ו-Kafka (Port 8085)
 ├── order-service/                     # שירות הזמנות, מנוע קופונים ו-SAGA (Port 8081)
 ├── payment-service/                   # שירות תשלומים וזיכויים (Port 8083)
+├── workspace-integration-service/     # מיקרו-שירות אינטגרציה עם Model Context Protocol (MCP SDK 2.1.0) (Port 8091)
 ├── web-client/                        # ממשק משתמש Next.js 14 App Router (Port 3000)
 ├── grafana/                           # הגדרות פרוביז'נינג ודשבורדים מוכנים ל-Grafana
 ├── docker-compose.yml                 # פריסת כלל הקונטיינרים והתשתיות
@@ -191,6 +198,8 @@ npm run start
 | **Inventory Service** | `http://localhost:8082` | שירות קטלוג ומלאי עם Redis |
 | **Payment Service** | `http://localhost:8083` | שירות תשלומים וזיכויים |
 | **Notification Service** | `http://localhost:8085` | שירות ערוץ שידור חי SSE |
+| **Workspace Integration Service** | `http://localhost:8091` | אינטגרציית Google Drive & Calendar באמצעות Model Context Protocol (MCP) |
+| **Google Workspace MCP Server** | `http://localhost:8000` | שרת MCP Sidecar (Streamable HTTP) לגישה ל-Google Workspace APIs |
 | **Kafka UI** | `http://localhost:8090` | ממשק ניהול Topics ואירועים ב-Kafka |
 | **Prometheus** | `http://localhost:9090` | שרת איסוף מטריקות וטלמטריה |
 | **Grafana** | `http://localhost:3001` | דשבורדים חיים (משתמש: `admin`, סיסמה: `admin`) |

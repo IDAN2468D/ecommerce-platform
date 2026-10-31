@@ -52,3 +52,8 @@ scrape_configs:
     metrics_path: '/actuator/prometheus'
     static_configs:
       - targets: ['recommendation-loyalty-service:8089']
+
+  - job_name: 'workspace-integration-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['workspace-integration-service:8091']

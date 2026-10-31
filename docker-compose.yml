@@ -266,6 +266,47 @@ services:
     networks:
       - platform-network
 
+  google-workspace-mcp:
+    build:
+      context: ./google-workspace-mcp
+      dockerfile: Dockerfile
+    container_name: google-workspace-mcp
+    ports:
+      - "8000:8000"
+    environment:
+      GOOGLE_APPLICATION_CREDENTIALS: /app/credentials/credentials.json
+      WORKSPACE_USER_EMAIL: ${WORKSPACE_USER_EMAIL:-operations@yourcompany.com}
+    mem_limit: 256m
+    volumes:
+      - workspace_mcp_credentials:/app/credentials
+    networks:
+      - platform-network
+
+  workspace-integration-service:
+    build:
+      context: ./workspace-integration-service
+      dockerfile: Dockerfile
+    container_name: workspace-integration-service
+    ports:
+      - "8091:8091"
+    environment:
+      JAVA_TOOL_OPTIONS: "-Xms64m -Xmx384m"
+      MONGODB_URI: ${WORKSPACE_MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=50&minPoolSize=10&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      WORKSPACE_MCP_URL: http://google-workspace-mcp:8000
+      WORKSPACE_USER_EMAIL: ${WORKSPACE_USER_EMAIL:-operations@yourcompany.com}
+      INVOICE_SOURCE_URL_TEMPLATE: http://order-service:8081/api/v1/orders/%s/invoice
+    mem_limit: 512m
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+      google-workspace-mcp:
+        condition: service_started
+    networks:
+      - platform-network
+
   api-gateway:
     build:
       context: ./api-gateway
@@ -284,6 +325,7 @@ services:
       REVIEW_SERVICE_URL: http://review-rating-service:8087
       CART_SERVICE_URL: http://cart-wishlist-service:8088
       LOYALTY_SERVICE_URL: http://recommendation-loyalty-service:8089
+      WORKSPACE_SERVICE_URL: http://workspace-integration-service:8091
     mem_limit: 512m
     depends_on:
       - order-service
@@ -295,6 +337,7 @@ services:
       - review-rating-service
       - cart-wishlist-service
       - recommendation-loyalty-service
+      - workspace-integration-service
     networks:
       - platform-network
 
@@ -349,3 +392,4 @@ networks:
 
 volumes:
   mongodb_platform_data:
+  workspace_mcp_credentials:
