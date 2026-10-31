@@ -280,11 +280,12 @@ services:
       FASTMCP_PORT: "8000"
       GOOGLE_CLIENT_SECRET_PATH: /app/credentials/client_secret.json
       GOOGLE_CLIENT_SECRETS: /app/credentials/client_secret.json
+      WORKSPACE_MCP_CREDENTIALS_DIR: /app/credentials/tokens
       GOOGLE_APPLICATION_CREDENTIALS: /app/credentials/credentials.json
       WORKSPACE_USER_EMAIL: ${WORKSPACE_USER_EMAIL:-idankzm@gmail.com}
     mem_limit: 256m
     volumes:
-      - ./credentials:/app/credentials:ro
+      - ./credentials:/app/credentials
     networks:
       - platform-network
 

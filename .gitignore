@@ -42,6 +42,7 @@ dist/
 *.pem
 *.key
 credentials/*.json
+credentials/tokens/
 credentials.json
 
 # IDEs & OS
