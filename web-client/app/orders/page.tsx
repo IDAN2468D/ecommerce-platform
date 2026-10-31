@@ -16,6 +16,8 @@ import {
   ExternalLink,
   ChevronRight,
   Sparkles,
+  Calendar,
+  Cloud,
 } from "lucide-react";
 import { SagaTracker } from "../../components/SagaTracker";
 import { Button } from "../../components/ui/Button";
@@ -52,9 +54,19 @@ interface ShipmentInfo {
   estimatedDeliveryDate?: string;
 }
 
+interface WorkspaceLinks {
+  orderId: string;
+  driveFileId?: string;
+  calendarEventId?: string;
+  customerId?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [shipments, setShipments] = useState<Record<string, ShipmentInfo>>({});
+  const [workspaceLinks, setWorkspaceLinks] = useState<Record<string, WorkspaceLinks>>({});
   const [loading, setLoading] = useState(true);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
   const [notification, setNotification] = useState<string | null>(null);
@@ -82,7 +94,7 @@ export default function OrdersPage() {
         });
         setOrders(orderList);
 
-        // Fetch shipping info for each confirmed order
+        // Fetch shipping & workspace MCP info for each confirmed order
         orderList.forEach((ord) => {
           if (ord.status === "CONFIRMED" && ord.id) {
             fetch(`/api/shipping/${ord.id}`)
@@ -90,6 +102,15 @@ export default function OrdersPage() {
               .then((shipment) => {
                 if (shipment && shipment.trackingNumber) {
                   setShipments((prev) => ({ ...prev, [ord.id]: shipment }));
+                }
+              })
+              .catch(() => {});
+
+            fetch(`/api/workspace/${ord.id}`)
+              .then((r) => (r.ok ? r.json() : null))
+              .then((links) => {
+                if (links && (links.driveFileId || links.calendarEventId)) {
+                  setWorkspaceLinks((prev) => ({ ...prev, [ord.id]: links }));
                 }
               })
               .catch(() => {});
@@ -215,6 +236,7 @@ export default function OrdersPage() {
             const isCancelled = order.status === "CANCELLED";
             const sagaStatus = isConfirmed ? "COMPLETED" : isCancelled ? "CANCELLED" : "PENDING";
             const shipment = shipments[order.id];
+            const workspace = workspaceLinks[order.id];
 
             return (
               <Card
@@ -269,6 +291,21 @@ export default function OrdersPage() {
                       <ExternalLink className="w-3 h-3 text-slate-400" />
                     </a>
 
+                    {/* Google Drive Invoice Link via MCP */}
+                    {workspace?.driveFileId && (
+                      <a
+                        href={`https://drive.google.com/file/d/${workspace.driveFileId}/view`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 text-xs font-bold transition border border-emerald-200 dark:border-emerald-800 shadow-sm"
+                        title="צפה בחשבונית המאורכבת ב-Google Drive דרך שרת ה-MCP"
+                      >
+                        <Cloud className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                        <span>Google Drive</span>
+                        <ExternalLink className="w-3 h-3 text-emerald-500/70" />
+                      </a>
+                    )}
+
                     {isConfirmed && (
                       <Button
                         onClick={() => handleCancelOrder(order.id)}
@@ -285,6 +322,44 @@ export default function OrdersPage() {
 
                 {/* SAGA 5-Stage Visual Pipeline */}
                 <SagaTracker status={sagaStatus} orderId={order.id} />
+
+                {/* Google Workspace MCP Integration Sync Banner */}
+                {workspace && (workspace.driveFileId || workspace.calendarEventId) && (
+                  <div className="p-3 rounded-xl bg-purple-500/10 border border-purple-500/20 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-purple-900 dark:text-purple-200">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-purple-600 dark:text-purple-400 shrink-0" />
+                      <span>
+                        <strong>Google Workspace MCP:</strong> החשבונית ומועד האספקה סונכרנו בהצלחה ל-Drive ול-Calendar דרך פרוטוקול MCP.
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      {workspace.driveFileId && (
+                        <a
+                          href={`https://drive.google.com/file/d/${workspace.driveFileId}/view`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 font-mono text-[11px] px-2.5 py-1 rounded-lg bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 hover:bg-emerald-200 transition"
+                        >
+                          <Cloud className="w-3.5 h-3.5 text-emerald-600" />
+                          <span>Drive: #{workspace.driveFileId.substring(0, 8)}</span>
+                          <ExternalLink className="w-3 h-3 text-emerald-500" />
+                        </a>
+                      )}
+                      {workspace.calendarEventId && (
+                        <a
+                          href="https://calendar.google.com"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 font-mono text-[11px] px-2.5 py-1 rounded-lg bg-blue-100 dark:bg-blue-950/60 text-blue-800 dark:text-blue-300 border border-blue-300 dark:border-blue-800 hover:bg-blue-200 transition"
+                        >
+                          <Calendar className="w-3.5 h-3.5 text-blue-600" />
+                          <span>Calendar: #{workspace.calendarEventId.substring(0, 8)}</span>
+                          <ExternalLink className="w-3 h-3 text-blue-500" />
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 {/* Real-time Shipping Delivery Card */}
                 {shipment && (

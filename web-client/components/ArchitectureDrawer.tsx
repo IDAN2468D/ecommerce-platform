@@ -164,7 +164,7 @@ export const ArchitectureDrawer: React.FC = () => {
             </div>
 
             {/* Metrics Ribbon */}
-            <div className="grid grid-cols-3 gap-2 p-4 bg-slate-950/40 border-b border-slate-800/80 font-mono text-center">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-4 bg-slate-950/40 border-b border-slate-800/80 font-mono text-center">
               <div className="p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/50">
                 <div className="text-[10px] text-slate-400">REDIS LATENCY</div>
                 <div className="text-sm font-bold text-emerald-400 mt-0.5">1.8 ms</div>
@@ -173,7 +173,20 @@ export const ArchitectureDrawer: React.FC = () => {
               <div className="p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/50">
                 <div className="text-[10px] text-slate-400">KAFKA CLUSTER</div>
                 <div className="text-sm font-bold text-brand-400 mt-0.5">KRaft Mode</div>
-                <div className="text-[9px] text-slate-500">4 Microservice Topics</div>
+                <div className="text-[9px] text-slate-500">Events Backbone</div>
+              </div>
+              <div className="p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/50">
+                <div className="text-[10px] text-slate-400">WORKSPACE MCP</div>
+                <a
+                  href="/api/workspace/health"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-xs font-bold text-purple-400 hover:text-purple-300 mt-1"
+                >
+                  <span>Drive & Cal</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+                <div className="text-[9px] text-emerald-400 font-bold">Port 8091 • Active</div>
               </div>
               <div className="p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/50">
                 <div className="text-[10px] text-slate-400">OPENZIPKIN TRACE</div>
