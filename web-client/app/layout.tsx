@@ -5,8 +5,8 @@ import { ThemeProvider } from "../components/ThemeProvider";
 import { CurrencyProvider } from "../context/CurrencyContext";
 
 export const metadata: Metadata = {
-  title: "Enterprise E-Commerce Platform v2.0",
-  description: "Distributed Microservices Architecture with Apache Kafka SAGA, MongoDB Atlas, Redis 7 & Next.js 14 RTL",
+  title: "Store 2026 • חנות מוצרי פרימיום וטכנולוגיה",
+  description: "חנות אלקטרוניקה וטכנולוגיה פרימיום עם משלוח מהיר עד הבית, 5% Cashback לחברי מועדון ואחריות יבואן רשמי",
 };
 
 export default function RootLayout({

@@ -138,7 +138,7 @@ export const CartDrawer: React.FC = () => {
             <div className="bg-amber-50 dark:bg-amber-950/40 border-b border-amber-200 dark:border-amber-900/50 px-4 py-2 flex items-center justify-between text-xs text-amber-900 dark:text-amber-200">
               <div className="flex items-center gap-1.5 font-medium">
                 <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400 animate-spin-slow" />
-                <span>המלאי משוריין עבורך ב-Redis:</span>
+                <span>הפריטים בסל שמורים עבורך:</span>
               </div>
               <span className="font-mono font-bold text-sm bg-white dark:bg-slate-800 px-2 py-0.5 rounded border border-amber-300 dark:border-amber-700">
                 {formatTimer(timerSeconds)}
