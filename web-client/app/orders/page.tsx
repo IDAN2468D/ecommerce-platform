@@ -19,7 +19,7 @@ import {
   Calendar,
   Cloud,
 } from "lucide-react";
-import { SagaTracker } from "../../components/SagaTracker";
+import { OrderTracker } from "../../components/store/OrderTracker";
 import { Button } from "../../components/ui/Button";
 import { Badge } from "../../components/ui/Badge";
 import { Card } from "../../components/ui/Card";
@@ -210,12 +210,12 @@ export default function OrdersPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-5">
         <div>
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-50 dark:bg-brand-950/60 text-brand-700 dark:text-brand-300 text-xs font-semibold border border-brand-200 dark:border-brand-800 mb-2">
-            <ShieldCheck className="w-3.5 h-3.5" />
-            <span>ניהול עסקאות מבוזרות v2.0</span>
+            <Package className="w-3.5 h-3.5" />
+            <span>ההזמנות שלי • מעקב משלוחים חי</span>
           </div>
-          <h1 className="text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight">מעקב הזמנות ומצב SAGA</h1>
+          <h1 className="text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight">היסטוריית הזמנות ומעקב</h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            תזמור SAGA ב-5 שלבים, הפקת חשבוניות מס רשמיות ב-PDF, ומעקב שילוח חי ב-Kafka KRaft
+            מעקב משלוח בזמן אמת, פירוט פריטי הרכישה והורדת חשבוניות מס דיגיטליות
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -286,7 +286,7 @@ export default function OrdersPage() {
                         variant={isConfirmed ? "success" : isCancelled ? "destructive" : "warning"}
                         dot
                       >
-                        {isConfirmed ? "הושלמה בהצלחה (SAGA שלב 5)" : isCancelled ? "בוטלה ופוצתה" : "בתהליך"}
+                        {isConfirmed ? "הושלמה בהצלחה" : isCancelled ? "בוטלה" : "בתהליך"}
                       </Badge>
                     </div>
                     <div className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-2">
@@ -373,14 +373,20 @@ export default function OrdersPage() {
                         size="sm"
                         icon={<XCircle className="w-4 h-4" />}
                       >
-                        בטל הזמנה (SAGA)
+                        בטל הזמנה
                       </Button>
                     )}
                   </div>
                 </div>
 
-                {/* SAGA 5-Stage Visual Pipeline */}
-                <SagaTracker status={sagaStatus} orderId={order.id} />
+                {/* Customer Friendly Order Stepper */}
+                <OrderTracker
+                  status={order.status}
+                  shipmentStatus={shipment?.status}
+                  trackingNumber={shipment?.trackingNumber}
+                  carrier={shipment?.carrier}
+                  estimatedDeliveryDate={shipment?.estimatedDeliveryDate}
+                />
 
                 {/* Google Workspace MCP Integration Panel */}
                 <div className="p-3.5 rounded-2xl bg-gradient-to-r from-purple-500/10 via-indigo-500/5 to-purple-500/10 border border-purple-500/20 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-slate-800 dark:text-slate-200">

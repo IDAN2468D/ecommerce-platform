@@ -46,3 +46,16 @@ management:
 logging:
   pattern:
     level: "%5p [${spring.application.name:recommendation-loyalty-service},%X{traceId:-},%X{spanId:-}]"
+
+rag:
+  vector:
+    collection-name: catalog_embeddings
+    index-name: vector_index
+    dimensions: 768
+    top-k-default: 4
+  llm:
+    provider: gemini
+    model: ${GEMINI_MODEL:gemini-3.5-flash-lite}
+    api-key: ${GEMINI_API_KEY:demo_key}
+    temperature: 0.2
+    max-tokens: 1000

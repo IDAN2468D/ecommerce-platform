@@ -81,6 +81,11 @@ body {
   padding-top: max(0.5rem, env(safe-area-inset-top));
 }
 
+.dark body {
+  background: #060608;
+  color: #f8fafc;
+}
+
 /* Liquid Glass 4.0 Pro Glassmorphism */
 .liquid-glass {
   background: rgba(15, 23, 42, 0.8);
@@ -90,11 +95,27 @@ body {
   box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.1);
 }
 
+.liquid-glass-card {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
 .liquid-glass-light {
   background: rgba(255, 255, 255, 0.88);
   backdrop-filter: blur(24px) saturate(190%);
   -webkit-backdrop-filter: blur(24px) saturate(190%);
   border: 1px solid rgba(245, 158, 11, 0.2);
   box-shadow: 0 10px 30px -10px rgba(245, 158, 11, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.8);
+}
+
+.glow-brand {
+  box-shadow: 0 0 25px -4px rgba(37, 99, 235, 0.45);
+}
+
+.glow-amber {
+  box-shadow: 0 0 25px -4px rgba(245, 158, 11, 0.4);
 }
 

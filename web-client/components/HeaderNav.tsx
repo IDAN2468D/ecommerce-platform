@@ -91,10 +91,10 @@ export const HeaderNav: React.FC = () => {
             </div>
             <div className="text-right">
               <span className="font-extrabold text-sm sm:text-lg text-slate-900 dark:text-slate-100 block leading-tight">
-                E-Commerce
+                Store 2026
               </span>
-              <span className="hidden sm:block text-[11px] text-slate-500 dark:text-amber-400/80 font-mono">
-                Microservices • Kafka SAGA • MCP
+              <span className="hidden sm:block text-[11px] text-slate-500 dark:text-amber-400/80 font-medium">
+                חנות הפרימיום הרשמית • משלוחים חינם
               </span>
             </div>
           </Link>
@@ -207,20 +207,20 @@ export const HeaderNav: React.FC = () => {
         </div>
       </header>
 
-      {/* Ultra-compact Mobile Telemetry Ticker */}
-      <div className="bg-gradient-to-r from-slate-900 via-slate-950 to-slate-900 text-slate-300 py-1 px-3 text-[11px] font-mono border-b border-slate-800 flex items-center justify-between gap-2 overflow-x-auto no-scrollbar">
-        <div className="flex items-center gap-1.5 shrink-0">
-          <span className={`w-2 h-2 rounded-full ${connected ? "bg-emerald-400 animate-pulse" : "bg-amber-400"}`} />
-          <span className="text-slate-400 text-[10px]">
-            {connected ? "Kafka SSE מחובר בזמן אמת" : "מתחבר ל-Kafka..."}
+      {/* Consumer E-Commerce Trust Bar */}
+      <div className="bg-gradient-to-r from-slate-900 via-slate-950 to-slate-900 text-slate-300 py-1.5 px-3 text-[11px] border-b border-slate-800/80 flex items-center justify-between gap-3 overflow-x-auto no-scrollbar" dir="rtl">
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="text-slate-200 font-semibold text-[11px]">
+            🚚 משלוח מהיר עד פתח הבית חינם בהזמנה מעל ₪500
           </span>
         </div>
-        <div className="flex items-center gap-2 text-[10px] text-slate-400 shrink-0">
-          <span className="text-amber-400/90 font-semibold">⚡ Redis &lt;5ms</span>
+        <div className="flex items-center gap-3 text-[11px] text-slate-400 shrink-0">
+          <span className="text-amber-400 font-bold">💎 5% Cashback VIP</span>
           <span>•</span>
-          <span className="text-emerald-400/90 font-semibold">5% Cashback</span>
+          <span className="text-emerald-400 font-semibold">🔒 רכישה מאובטחת SSL</span>
           <span>•</span>
-          <span className="text-cyan-400/90 font-semibold">MCP Sync</span>
+          <span className="text-cyan-400 font-semibold">🛡️ אחריות יבואן רשמי</span>
         </div>
       </div>
     </>

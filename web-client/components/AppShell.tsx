@@ -5,7 +5,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { HeaderNav } from "./HeaderNav";
 import { CartDrawer } from "./CartDrawer";
 import { CommandPalette } from "./CommandPalette";
-import { ArchitectureDrawer } from "./ArchitectureDrawer";
 import { RagAssistantDrawer } from "./RagAssistantDrawer";
 import { FloatingAiButton } from "./FloatingAiButton";
 import { MobileBottomNav } from "./MobileBottomNav";
@@ -75,8 +74,22 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
       <main className="flex-1 max-w-7xl w-full mx-auto px-3.5 sm:px-6 lg:px-8 py-4 sm:py-8 pb-24 md:pb-8">
         {children}
       </main>
-      <footer className="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-6 mb-16 md:mb-0 text-center text-xs text-slate-500 dark:text-slate-400 transition-colors">
-        <p>© 2026 E-Commerce Distributed Platform • Powered by Spring Boot 3, Apache Kafka & Next.js</p>
+      <footer className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-t border-slate-200/80 dark:border-slate-800 py-8 mb-16 md:mb-0 text-center text-xs text-slate-500 dark:text-slate-400 transition-colors">
+        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <span className="text-base font-extrabold text-slate-900 dark:text-slate-100">🛍️ חנות האלקטרוניקה</span>
+            <span>•</span>
+            <span>קנייה ישירה ומאובטחת</span>
+          </div>
+          <div className="flex items-center gap-4 text-[11px]">
+            <span>משלוח חינם מעל ₪500</span>
+            <span>•</span>
+            <span>5% Cashback VIP</span>
+            <span>•</span>
+            <span>שירות לקוחות 24/7</span>
+          </div>
+          <p>© 2026 כל הזכויות שמורות • קנייה מאובטחת בתקן PCI-DSS</p>
+        </div>
       </footer>
 
       {/* Mobile Ergonomic Bottom Dock */}
@@ -88,7 +101,6 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
       {/* Global Interactive Overlays */}
       <CartDrawer />
       <CommandPalette />
-      <ArchitectureDrawer />
       <RagAssistantDrawer />
     </div>
   );
