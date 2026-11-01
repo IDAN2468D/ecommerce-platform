@@ -43,6 +43,7 @@ export const MobileBottomNav: React.FC = () => {
   const isCatalog = pathname === "/";
   const isOrders = pathname === "/orders";
   const isCart = pathname === "/cart";
+  const isProfile = pathname === "/profile";
 
   const handleOpenSearch = () => {
     window.dispatchEvent(new Event("open-command-palette"));
@@ -128,39 +129,32 @@ export const MobileBottomNav: React.FC = () => {
           <span className="text-[10px] tracking-tight">עגלה</span>
         </button>
 
-        {/* 5. Account / User Profile */}
-        <div className="flex flex-col items-center justify-center gap-1 h-full py-1">
-          {user ? (
-            <button
-              type="button"
-              onClick={() => {
-                if (confirm(`מחובר בתור: ${user.fullName || user.email}\nהאם ברצונך להתנתק?`)) {
-                  localStorage.removeItem("auth_token");
-                  localStorage.removeItem("auth_user");
-                  window.dispatchEvent(new Event("auth-changed"));
-                  window.location.href = "/login";
-                }
-              }}
-              className="flex flex-col items-center justify-center gap-0.5 active:scale-95 transition-transform text-slate-500 dark:text-slate-400"
-              title="לחץ להתנתקות"
-            >
-              <div className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 flex items-center justify-center text-[11px] font-bold">
+        {/* 5. Account / User Profile & MCPs */}
+        <Link
+          href="/profile"
+          className={`flex flex-col items-center justify-center gap-1 h-full py-1 active:scale-95 transition-transform ${
+            isProfile
+              ? "text-brand-600 dark:text-amber-400 font-bold"
+              : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
+          }`}
+          title="פרופיל אישי וחיבורי MCP"
+        >
+          <div className="relative">
+            {user ? (
+              <div className="w-6 h-6 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/40 flex items-center justify-center text-[11px] font-bold">
                 {user.fullName ? user.fullName.charAt(0) : "👤"}
               </div>
-              <span className="text-[10px] tracking-tight truncate max-w-[48px]">
-                {user.fullName ? user.fullName.split(" ")[0] : "חשבון"}
-              </span>
-            </button>
-          ) : (
-            <Link
-              href="/login"
-              className="flex flex-col items-center justify-center gap-1 active:scale-95 transition-transform text-slate-500 dark:text-slate-400"
-            >
+            ) : (
               <User className="w-5 h-5" />
-              <span className="text-[10px] tracking-tight">התחבר</span>
-            </Link>
-          )}
-        </div>
+            )}
+            {isProfile && (
+              <span className="absolute -bottom-1 inset-x-0 mx-auto w-1.5 h-1.5 rounded-full bg-brand-600 dark:bg-amber-400" />
+            )}
+          </div>
+          <span className="text-[10px] tracking-tight truncate max-w-[48px]">
+            {user?.fullName ? user.fullName.split(" ")[0] : "פרופיל"}
+          </span>
+        </Link>
       </div>
     </nav>
   );

@@ -176,19 +176,25 @@ export const HeaderNav: React.FC = () => {
             </button>
 
             {/* User Profile & Logout - Desktop */}
-            <div className="hidden sm:flex items-center gap-2 bg-slate-100 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl py-1 px-2.5">
-              <div className="w-6 h-6 rounded-lg bg-gradient-to-tr from-brand-600 to-indigo-600 text-white flex items-center justify-center text-xs font-bold shadow-xs">
-                {currentUser?.fullName ? currentUser.fullName.charAt(0).toUpperCase() : <User className="w-3 h-3" />}
-              </div>
-              <div className="hidden lg:flex flex-col text-right">
-                <span className="text-xs font-bold text-slate-900 dark:text-slate-100 leading-none">
-                  {currentUser?.fullName || "משתמש"}
-                </span>
-              </div>
+            <div className="hidden sm:flex items-center gap-1.5 bg-slate-100 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl py-1 px-2">
+              <Link
+                href="/profile"
+                className="flex items-center gap-2 hover:opacity-80 transition group"
+                title="צפה בפרופיל ובחיבורי ה-MCP"
+              >
+                <div className="w-6 h-6 rounded-lg bg-gradient-to-tr from-brand-600 to-indigo-600 text-white flex items-center justify-center text-xs font-bold shadow-xs group-hover:scale-105 transition-transform">
+                  {currentUser?.fullName ? currentUser.fullName.charAt(0).toUpperCase() : <User className="w-3 h-3" />}
+                </div>
+                <div className="hidden lg:flex flex-col text-right">
+                  <span className="text-xs font-bold text-slate-900 dark:text-slate-100 leading-none">
+                    {currentUser?.fullName || "פרופיל משתמש"}
+                  </span>
+                </div>
+              </Link>
               <button
                 onClick={handleLogout}
                 title="התנתק"
-                className="p-1 text-slate-400 hover:text-rose-600 rounded-lg transition"
+                className="p-1 text-slate-400 hover:text-rose-600 rounded-lg transition mr-1"
               >
                 <LogOut className="w-3.5 h-3.5" />
               </button>
