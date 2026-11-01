@@ -63,10 +63,11 @@ public class WorkspaceController {
     @PostMapping("/sync/{orderId}")
     public ResponseEntity<WorkspaceLinkEntity> triggerSync(
             @PathVariable UUID orderId,
-            @RequestParam(defaultValue = "usr_demo") String customerId) {
-        log.info("Manual Workspace sync triggered for orderId={}", orderId);
+            @RequestParam(defaultValue = "usr_demo") String customerId,
+            @RequestParam(defaultValue = "true") boolean force) {
+        log.info("Manual Workspace sync triggered for orderId={}, force={}", orderId, force);
         try {
-            syncService.archiveInvoice(orderId, customerId);
+            syncService.archiveInvoice(orderId, customerId, force);
         } catch (Exception e) {
             log.warn("Manual invoice archive failed for orderId={}: {}", orderId, e.getMessage());
         }
