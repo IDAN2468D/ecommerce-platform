@@ -19,7 +19,7 @@ interface CartItem {
 }
 
 export default function CartPage() {
-  const { formatPrice } = useCurrency();
+  const { formatPrice, currency } = useCurrency();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [checkoutStep, setCheckoutStep] = useState(0);
@@ -60,11 +60,7 @@ export default function CartPage() {
   const handleApplyCoupon = async (code: string) => {
     setCouponError(null);
     try {
-      const res = await fetch("/api/orders/coupons/validate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code }),
-      });
+      const res = await fetch("/api/orders/coupons/validate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ code }) });
       if (res.ok) {
         const data = await res.json();
         setAppliedCoupon({ code: data.code, percent: data.discountPercent });
@@ -81,7 +77,7 @@ export default function CartPage() {
     setLoading(true);
     setCheckoutStep(1);
     try {
-      await new Promise((r) => setTimeout(r, 600));
+      await new Promise((r) => setTimeout(r, 400));
       setCheckoutStep(2);
       let customerId = "usr_demo";
       try {
@@ -89,17 +85,24 @@ export default function CartPage() {
         if (u?.userId) customerId = u.userId;
       } catch {}
 
+      const savedToken = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (savedToken && !["null", "undefined", ""].includes(savedToken.trim())) {
+        headers["Authorization"] = `Bearer ${savedToken}`;
+      }
+
       const orderPayload = {
+        currency: currency || "ILS",
+        paymentMethodToken: paymentToken || "pm_card_visa_ok",
         customerId,
-        items: cart.map((i) => ({ skuCode: i.skuCode, productName: i.productName || i.name || i.skuCode, quantity: i.quantity, unitPrice: i.price || i.unitPrice || 0 })),
         couponCode: appliedCoupon?.code || null,
-        paymentToken,
+        items: cart.map((i) => ({ skuCode: i.skuCode, quantity: i.quantity, unitPrice: i.price ?? i.unitPrice ?? 0 })),
       };
 
-      const res = await fetch("/api/orders", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(orderPayload) });
+      const res = await fetch("/api/orders", { method: "POST", headers, body: JSON.stringify(orderPayload) });
       if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.message || "שגיאה בביצוע ההזמנה");
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || err.error || err.detail || `שגיאה (${res.status}) בביצוע ההזמנה`);
       }
       setCheckoutStep(3);
       await new Promise((r) => setTimeout(r, 400));
@@ -110,7 +113,7 @@ export default function CartPage() {
       window.dispatchEvent(new Event("cart-updated"));
       setIsReceiptOpen(true);
     } catch (err: any) {
-      alert("שגיאה בביצוע ההזמנה: " + err.message);
+      alert("שגיאה בביצוע ההזמנה: " + (err.message || "אנא נסה שוב מאוחר יותר"));
     } finally {
       setLoading(false);
       setCheckoutStep(0);
@@ -118,13 +121,9 @@ export default function CartPage() {
   };
 
   const receiptData: DigitalReceiptData | null = orderResult ? {
-    orderId: orderResult.orderId,
-    items: orderResult.items || [],
-    subtotal: orderResult.subtotal || subtotal,
-    discountAmount: orderResult.discountAmount || discountAmount,
-    finalTotal: orderResult.totalAmount || finalTotal,
-    couponCode: orderResult.couponCode,
-    createdAt: orderResult.createdAt,
+    orderId: orderResult.orderId, items: orderResult.items || [], subtotal: orderResult.subtotal || subtotal,
+    discountAmount: orderResult.discountAmount || discountAmount, finalTotal: orderResult.totalAmount || finalTotal,
+    couponCode: orderResult.couponCode, createdAt: orderResult.createdAt,
   } : null;
 
   const formatTimer = (s: number) => `${Math.floor(s / 60).toString().padStart(2, "0")}:${(s % 60).toString().padStart(2, "0")}`;
