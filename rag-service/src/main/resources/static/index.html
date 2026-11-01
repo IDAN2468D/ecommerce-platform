@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise AI RAG Service • Google Gemini gemini-3.5-flash-lite</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Assistant', sans-serif; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-amber-500 selection:text-slate-950">
+
+    <!-- Top Glow -->
+    <div class="fixed top-0 left-1/2 -translate-x-1/2 w-[600px] h-64 bg-amber-500/10 blur-[120px] pointer-events-none"></div>
+
+    <div class="max-w-4xl mx-auto w-full px-4 py-8 flex-1 flex flex-col">
+        <!-- Header -->
+        <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-800/80">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-indigo-600 flex items-center justify-center text-2xl shadow-lg shadow-amber-500/20">
+                    🤖
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-xl sm:text-2xl font-black tracking-tight text-white">AI RAG Microservice</h1>
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                            UP • Port 8092
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-400 font-mono mt-0.5">
+                        MongoDB Atlas Vector Search • Java 21 Virtual Threads • Google Gemini
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <a href="/swagger-ui/index.html" class="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-400 border border-slate-700 text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+                    <span>📘 Swagger UI</span>
+                </a>
+                <a href="/api/v1/rag/health" target="_blank" class="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+                    <span>🩺 Health JSON</span>
+                </a>
+            </div>
+        </header>
+
+        <!-- Architecture Specs Row -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 my-6">
+            <div class="p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
+                <span class="text-[11px] text-slate-400 font-medium block mb-1">מודל LLM פעיל</span>
+                <div class="text-base font-black text-amber-400 font-mono">gemini-3.5-flash-lite</div>
+                <div class="text-[10px] text-slate-500 mt-0.5">Google Gemini GenAI Provider</div>
+            </div>
+            <div class="p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
+                <span class="text-[11px] text-slate-400 font-medium block mb-1">מאגר נתונים וקטורי</span>
+                <div class="text-base font-black text-emerald-400 font-mono">Atlas Vector Search</div>
+                <div class="text-[10px] text-slate-500 mt-0.5">768 Dim • Cosine HNSW Index</div>
+            </div>
+            <div class="p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
+                <span class="text-[11px] text-slate-400 font-medium block mb-1">מנגנון ביצוע מקבילי</span>
+                <div class="text-base font-black text-indigo-400 font-mono">Java 21 Loom</div>
+                <div class="text-[10px] text-slate-500 mt-0.5">Virtual Threads (Non-blocking I/O)</div>
+            </div>
+        </div>
+
+        <!-- Interactive RAG Chat Playground -->
+        <div class="flex-1 rounded-3xl bg-slate-900/40 border border-slate-800 p-6 flex flex-col shadow-2xl backdrop-blur-xl">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-2">
+                    <span class="text-base font-bold text-white">בדיקת שאילתת RAG בזמן אמת</span>
+                    <span class="text-xs text-slate-400">(שליפה וקטורית + ביסוס תשובה מ-Gemini)</span>
+                </div>
+                <span id="latencyBadge" class="hidden text-xs font-mono px-2.5 py-0.5 rounded-full bg-slate-800 text-amber-400 border border-slate-700"></span>
+            </div>
+
+            <!-- Quick sample pills -->
+            <div class="flex flex-wrap items-center gap-1.5 mb-4">
+                <span class="text-xs text-slate-500">שאלות לדוגמה:</span>
+                <button onclick="setQuery('איזה אוזניות מומלצות לטיסות ולביטול רעשים?')" class="text-xs px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700 transition">
+                    🎧 אוזניות לטיסות
+                </button>
+                <button onclick="setQuery('אני מחפש מטען מהיר וקומפקטי של אפל או אנקר')" class="text-xs px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700 transition">
+                    ⚡ מטען מהיר קומפקטי
+                </button>
+                <button onclick="setQuery('מה ההבדל בין סמארטפון אייפון לסמסונג אולטרה?')" class="text-xs px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700 transition">
+                    📱 סמארטפון דגל
+                </button>
+            </div>
+
+            <!-- Query Input Form -->
+            <form id="ragForm" class="flex gap-2 mb-6">
+                <input
+                    id="queryInput"
+                    type="text"
+                    required
+                    placeholder="הקלד כאן שאלה על מוצרים, מפרט, מחירים או המלצות..."
+                    class="flex-1 bg-slate-950 border border-slate-700 rounded-2xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 transition"
+                />
+                <button
+                    id="submitBtn"
+                    type="submit"
+                    class="px-5 py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 font-bold text-sm transition shadow-lg shadow-amber-500/20 flex items-center gap-1.5 shrink-0"
+                >
+                    <span>שאל</span>
+                    <span>✨</span>
+                </button>
+            </form>
+
+            <!-- Output Box -->
+            <div id="resultBox" class="hidden flex-1 flex flex-col gap-4">
+                <!-- Answer -->
+                <div class="p-5 rounded-2xl bg-slate-950 border border-slate-800/80">
+                    <div class="flex items-center justify-between mb-2 pb-2 border-b border-slate-800">
+                        <span class="text-xs font-bold text-amber-400">תשובה מבוססת מקטלוג (Grounded Answer):</span>
+                        <span id="modelLabel" class="text-[11px] font-mono text-slate-500">gemini-3.5-flash-lite</span>
+                    </div>
+                    <div id="answerText" class="text-sm text-slate-200 leading-relaxed whitespace-pre-line"></div>
+                </div>
+
+                <!-- Citations -->
+                <div>
+                    <h4 class="text-xs font-bold text-slate-400 mb-2">מוצרים שנשלפו מ-MongoDB Atlas Vector Search (ציטוטים):</h4>
+                    <div id="citationsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+                </div>
+            </div>
+
+            <!-- Loading Spinner -->
+            <div id="loadingBox" class="hidden py-12 text-center">
+                <div class="inline-block w-8 h-8 border-3 border-amber-500/30 border-t-amber-500 rounded-full animate-spin mb-2"></div>
+                <p class="text-xs text-slate-400 font-mono">מבצע שליפה וקטורית ומעבד עם Gemini gemini-3.5-flash-lite...</p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-8 pt-4 border-t border-slate-900 text-center text-xs text-slate-500 font-mono">
+            Enterprise E-Commerce Platform • AI RAG Component • Spring Boot 3.3.5 • Java 21 Virtual Threads
+        </footer>
+    </div>
+
+    <script>
+        function setQuery(text) {
+            document.getElementById('queryInput').value = text;
+            document.getElementById('ragForm').dispatchEvent(new Event('submit'));
+        }
+
+        document.getElementById('ragForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const query = document.getElementById('queryInput').value.trim();
+            if (!query) return;
+
+            const submitBtn = document.getElementById('submitBtn');
+            const loadingBox = document.getElementById('loadingBox');
+            const resultBox = document.getElementById('resultBox');
+            const latencyBadge = document.getElementById('latencyBadge');
+            const answerText = document.getElementById('answerText');
+            const citationsGrid = document.getElementById('citationsGrid');
+
+            submitBtn.disabled = true;
+            loadingBox.classList.remove('hidden');
+            resultBox.classList.add('hidden');
+            latencyBadge.classList.add('hidden');
+
+            try {
+                const startTime = performance.now();
+                const res = await fetch('/api/v1/rag/query', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: query, topK: 4 })
+                });
+
+                if (!res.ok) throw new Error('Query failed with status ' + res.status);
+                const data = await res.json();
+
+                const elapsed = Math.round(performance.now() - startTime);
+                latencyBadge.textContent = '⚡ ' + (data.latencyMs || elapsed) + 'ms';
+                latencyBadge.classList.remove('hidden');
+
+                answerText.textContent = data.answer;
+                document.getElementById('modelLabel').textContent = data.model || 'gemini-3.5-flash-lite';
+
+                citationsGrid.innerHTML = '';
+                if (data.citations && data.citations.length > 0) {
+                    data.citations.forEach(c => {
+                        const card = document.createElement('div');
+                        card.className = 'p-3 rounded-xl bg-slate-950 border border-slate-800/80 text-xs flex flex-col justify-between';
+                        card.innerHTML = `
+                            <div>
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="font-bold text-white truncate max-w-[200px]">${c.title}</span>
+                                    <span class="font-mono text-[10px] text-amber-400">${c.skuCode}</span>
+                                </div>
+                                <p class="text-slate-400 text-[11px] line-clamp-2 mb-2">${c.snippet || ''}</p>
+                            </div>
+                            <div class="flex items-center justify-between pt-2 border-t border-slate-900 text-[11px]">
+                                <span class="font-bold text-emerald-400">₪${(c.price || 0).toLocaleString()}</span>
+                                <span class="text-slate-500 font-mono">התאמה: ${Math.round((c.relevanceScore || 0.8) * 100)}%</span>
+                            </div>
+                        `;
+                        citationsGrid.appendChild(card);
+                    });
+                } else {
+                    citationsGrid.innerHTML = '<div class="text-slate-500 text-xs">לא נשלפו ציטוטים תואמים</div>';
+                }
+
+                resultBox.classList.remove('hidden');
+            } catch (err) {
+                alert('שגיאה בשאילתה: ' + err.message);
+            } finally {
+                loadingBox.classList.add('hidden');
+                submitBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
