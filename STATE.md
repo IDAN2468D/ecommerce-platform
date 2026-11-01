@@ -34,6 +34,13 @@
 - [x] 4.3 שדרוג `app/login/page.tsx`, `app/register/page.tsx` ו-`RagAssistantDrawer.tsx`.
 - [x] 4.4 אימות `npm run build` מקצה לקצה ופריסה במכולה.
 
+### Sprint 5: Redesigned Auth Experience (Login, Register & Google Sign-In Integration)
+- [x] 5.1 יצירת `web-client/app/api/auth/google/route.ts` לטיפול באימות Google והנפקת JWT חוקי
+- [x] 5.2 יצירת `web-client/components/store/GoogleSignInModal.tsx` לחלון בחירת חשבון Google מעוצב ואינטראקטיבי
+- [x] 5.3 עיצוב מחדש של `web-client/app/login/page.tsx` בשפת Liquid Glass 4.0 Pro (Light/Dark Mode, Password Toggle, Demo VIP Login)
+- [x] 5.4 עיצוב מחדש של `web-client/app/register/page.tsx` בשפת Liquid Glass 4.0 Pro עם הצטרפות מיידית ל-VIP Platinum
+- [x] 5.5 אימות `npm run build`, עדכון מכולת Docker וסנכרון Git
+
 ---
 
 ## 🚦 Track A & B Archive (Completed)
