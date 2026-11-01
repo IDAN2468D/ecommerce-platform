@@ -1,9 +1,9 @@
 # Architectural Specification: Enterprise AI RAG Microservice (rag-service)
 
 - **Document ID**: SPEC-2026-RAG-001
-- **Status**: APPROVED
+- **Status**: IMPLEMENTED & VERIFIED
 - **Date**: 2026-11-01
-- **Target Stack**: Java 21 LTS (Virtual Threads), Spring Boot 3.4.x / 3.3.5, Spring AI, MongoDB Atlas Vector Search, Apache Kafka, Docker Compose
+- **Target Stack**: Java 21 LTS (Virtual Threads), Spring Boot 3.3.5, MongoDB Atlas Vector Search, Google Gemini gemini-3.5-flash-lite, Apache Kafka, Docker Compose
 
 ---
 
