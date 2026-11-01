@@ -337,28 +337,28 @@ export default function CatalogPage() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-200 dark:border-slate-800">
           <div>
-            <h2 className="text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">מוצרים זמינים במחסן המרכזי</h2>
-            <p className="text-sm text-slate-500 dark:text-slate-400">מוזן בזמן אמת מ-API של Inventory Service בפורט 8082 דרך Spring Cloud Gateway</p>
+            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight">מוצרים נבחרים בקטלוג</h2>
+            <p className="text-sm text-slate-500 dark:text-slate-400">משלוח מהיר עד פתח הבית, צבירת 5% Cashback VIP ואחריות יבואן רשמית</p>
           </div>
-          <span className="text-xs font-mono font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-lg">
+          <span className="text-xs font-mono font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-3.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700">
             נמצאו {filteredProducts.length} מתוך {products.length} פריטים
           </span>
         </div>
 
         {/* Zero-CLS Skeleton Loader during load */}
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
               <div
                 key={i}
-                className="h-[430px] rounded-3xl bg-slate-100 dark:bg-slate-800/60 animate-pulse border border-slate-200/60 dark:border-slate-700/60 flex flex-col justify-between p-5"
+                className="h-[560px] rounded-3xl bg-slate-100 dark:bg-slate-900/60 animate-pulse border border-slate-200/60 dark:border-slate-800 flex flex-col justify-between p-6"
               >
-                <div className="space-y-4">
-                  <div className="h-44 w-full bg-slate-200 dark:bg-slate-700 rounded-2xl" />
-                  <div className="h-4 w-3/4 bg-slate-200 dark:bg-slate-700 rounded" />
-                  <div className="h-3 w-1/2 bg-slate-200 dark:bg-slate-700 rounded" />
+                <div className="space-y-5">
+                  <div className="h-64 sm:h-72 w-full bg-slate-200 dark:bg-slate-800 rounded-2xl" />
+                  <div className="h-6 w-3/4 bg-slate-200 dark:bg-slate-800 rounded-lg" />
+                  <div className="h-4 w-1/2 bg-slate-200 dark:bg-slate-800 rounded-lg" />
                 </div>
-                <div className="h-10 w-full bg-slate-200 dark:bg-slate-700 rounded-xl" />
+                <div className="h-12 w-full bg-slate-200 dark:bg-slate-800 rounded-2xl" />
               </div>
             ))}
           </div>
@@ -382,7 +382,7 @@ export default function CatalogPage() {
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredProducts.map((product) => (
               <ProductCard
                 key={product.skuCode}
