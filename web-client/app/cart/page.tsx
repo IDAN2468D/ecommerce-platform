@@ -247,7 +247,7 @@ export default function CartPage() {
       };
 
       const headers: Record<string, string> = { "Content-Type": "application/json" };
-      if (savedToken) {
+      if (savedToken && !["null", "undefined", ""].includes(savedToken.trim())) {
         headers["Authorization"] = `Bearer ${savedToken}`;
       }
 
@@ -257,10 +257,19 @@ export default function CartPage() {
         body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
+      let data: any = {};
+      try {
+        const text = await res.text();
+        data = text ? JSON.parse(text) : {};
+      } catch {
+        data = { error: "תגובת שרת לא תקינה" };
+      }
 
       if (!res.ok) {
-        throw new Error(data.error || data.detail || "הזמנה נכשלה בסרבר");
+        if (res.status === 401) {
+          localStorage.removeItem("auth_token");
+        }
+        throw new Error(data.error || data.detail || data.message || "הזמנה נכשלה בשרת");
       }
 
       setSagaStep(3);

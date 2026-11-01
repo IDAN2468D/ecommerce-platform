@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getGatewayUrl } from "@/lib/api-config";
+import { getGatewayUrl, safeParseJson } from "@/lib/api-config";
 
 export async function POST(
   request: NextRequest,
@@ -22,8 +22,8 @@ export async function POST(
       body: JSON.stringify(body),
     });
 
-    const data = await res.json();
-    return NextResponse.json(data, { status: res.status });
+    const { data, status } = await safeParseJson(res);
+    return NextResponse.json(data, { status });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

@@ -78,12 +78,18 @@ export default function OrdersPage() {
     try {
       const headers: Record<string, string> = {};
       const savedToken = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
-      if (savedToken) {
+      if (savedToken && !["null", "undefined", ""].includes(savedToken.trim())) {
         headers["Authorization"] = `Bearer ${savedToken}`;
       }
       const res = await fetch("/api/orders?page=0&size=20", { headers });
       if (res.ok) {
-        const data = await res.json();
+        let data: any = {};
+        try {
+          const text = await res.text();
+          data = text ? JSON.parse(text) : {};
+        } catch {
+          data = {};
+        }
         const rawList = Array.isArray(data) ? data : data.content || [];
         const orderList: Order[] = rawList.map((ord: any) => {
           const actualId = ord.id || ord.orderId || "";
