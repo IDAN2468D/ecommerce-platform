@@ -57,6 +57,17 @@ export async function GET(request: NextRequest) {
   }
 }
 
+const SKU_ALIASES: Record<string, string> = {
+  "IPHONE-16-PRO": "IPHONE-16-PRO-256",
+  "IPHONE-16-PRO-MAX": "IPHONE-16-PRO-256",
+  "MACBOOK-PRO-M4": "MACBOOK-PRO-M3",
+  "SONY-WH1000XM5": "SONY-WH-1000XM5",
+  "DELL-XPS-15": "SKU-LAPTOP-PRO",
+  "CASE-PRO-CLEAR": "CASE-CLEAR-MAGSAFE",
+  "POWERBANK-20000": "CASE-CLEAR-MAGSAFE",
+  "MAGSAFE-CHARGER": "CASE-CLEAR-MAGSAFE",
+};
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -68,13 +79,13 @@ export async function POST(request: NextRequest) {
     const idempotencyKey = crypto.randomUUID();
     const gatewayUrl = getGatewayUrl();
 
-    // Contract-safe normalization for OrderService CreateOrderRequest
+    // Contract-safe normalization for OrderService CreateOrderRequest & SKU alias resolution
     const normalizedPayload = {
       currency: (body.currency || "ILS").toUpperCase().slice(0, 3),
       paymentMethodToken: body.paymentMethodToken || body.paymentToken || "pm_card_visa_ok",
       couponCode: body.couponCode || null,
       items: (body.items || []).map((item: any) => ({
-        skuCode: item.skuCode,
+        skuCode: SKU_ALIASES[item.skuCode] || item.skuCode,
         quantity: Math.max(1, Number(item.quantity) || 1),
         unitPrice: Number(item.unitPrice ?? item.price ?? 0),
       })),

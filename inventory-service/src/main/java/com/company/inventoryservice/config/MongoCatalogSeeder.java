@@ -29,6 +29,11 @@ public class MongoCatalogSeeder implements CommandLineRunner {
                         "סמארטפונים",
                         "https://images.unsplash.com/photo-1695048133142-1a20484d2569?auto=format&fit=crop&w=800&q=80"),
 
+                item("IPHONE-16-PRO", "Apple iPhone 16 Pro 256GB Desert Titanium", 50, "4899.00",
+                        "שבב A18 Pro עוצמתי בטכנולוגיית 3 ננומטר, מסך Super Retina XDR 120Hz, כפתור Camera Control וגימור טיטניום יוקרתי.",
+                        "סמארטפונים",
+                        "https://images.unsplash.com/photo-1695048133142-1a20484d2569?auto=format&fit=crop&w=800&q=80"),
+
                 item("SAMSUNG-S24-ULTRA", "Samsung Galaxy S24 Ultra 512GB Titanium Gray", 45, "5199.00",
                         "מערך צילום 200MP מקצועי, מסך Dynamic AMOLED 2X שטוח 120Hz, מעבד Snapdragon 8 Gen 3 ועט S-Pen מובנה.",
                         "סמארטפונים",

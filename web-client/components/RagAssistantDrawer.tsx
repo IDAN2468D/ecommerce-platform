@@ -175,14 +175,23 @@ export const RagAssistantDrawer: React.FC = () => {
 
   const handleAddToCart = (citation: Citation) => {
     try {
+      const SKU_ALIASES: Record<string, string> = {
+        "IPHONE-16-PRO": "IPHONE-16-PRO-256",
+        "IPHONE-16-PRO-MAX": "IPHONE-16-PRO-256",
+        "MACBOOK-PRO-M4": "MACBOOK-PRO-M3",
+        "SONY-WH1000XM5": "SONY-WH-1000XM5",
+        "DELL-XPS-15": "SKU-LAPTOP-PRO",
+        "CASE-PRO-CLEAR": "CASE-CLEAR-MAGSAFE",
+      };
+      const canonicalSku = SKU_ALIASES[citation.skuCode] || citation.skuCode;
       const currentCart = JSON.parse(localStorage.getItem("cart") || "[]");
-      const existingIndex = currentCart.findIndex((i: any) => i.skuCode === citation.skuCode);
+      const existingIndex = currentCart.findIndex((i: any) => i.skuCode === canonicalSku || i.skuCode === citation.skuCode);
 
       if (existingIndex > -1) {
         currentCart[existingIndex].quantity = (currentCart[existingIndex].quantity || 1) + 1;
       } else {
         currentCart.push({
-          skuCode: citation.skuCode,
+          skuCode: canonicalSku,
           productName: citation.title,
           unitPrice: citation.price,
           quantity: 1,
