@@ -11,7 +11,6 @@ import {
   LogOut,
   Search,
   Coins,
-  Sparkles,
   Crown,
   Truck,
   ShieldCheck,
@@ -250,13 +249,13 @@ export const HeaderNav: React.FC = () => {
               </nav>
             </div>
 
-            {/* ZONE 2 (Center): Omnibox Command Search & Inline AI Assistant Pill */}
+            {/* ZONE 2 (Center): Omnibox Command Search */}
             <div className="flex-1 max-w-md mx-auto hidden md:flex items-center">
-              <div className="w-full flex items-center justify-between gap-2 p-1 pr-3.5 rounded-2xl bg-slate-100/90 dark:bg-slate-900/90 hover:bg-slate-100 dark:hover:bg-slate-900 border border-slate-200/90 dark:border-white/10 focus-within:border-amber-500/50 transition-all shadow-inner">
+              <div className="w-full flex items-center justify-between gap-2 p-1 px-3.5 rounded-2xl bg-slate-100/90 dark:bg-slate-900/90 hover:bg-slate-100 dark:hover:bg-slate-900 border border-slate-200/90 dark:border-white/10 focus-within:border-amber-500/50 transition-all shadow-inner">
                 <button
                   type="button"
                   onClick={() => window.dispatchEvent(new Event("open-command-palette"))}
-                  className="flex-1 flex items-center gap-2.5 text-right text-xs text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 py-1.5 transition"
+                  className="w-full flex items-center gap-2.5 text-right text-xs text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 py-1.5 transition"
                   title="חיפוש מהיר בקטלוג (Ctrl+K)"
                 >
                   <Search className="w-4 h-4 text-slate-400 shrink-0" />
@@ -265,24 +264,12 @@ export const HeaderNav: React.FC = () => {
                     ⌘K
                   </kbd>
                 </button>
-
-                <div className="h-4 w-[1px] bg-slate-300 dark:bg-slate-800 shrink-0" />
-
-                <button
-                  type="button"
-                  onClick={() => window.dispatchEvent(new Event("open-rag-drawer"))}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/15 via-indigo-500/15 to-brand-500/15 hover:from-amber-500/25 hover:to-indigo-500/25 border border-amber-500/30 text-slate-900 dark:text-amber-300 text-xs font-extrabold transition shrink-0 group active:scale-95"
-                  title="פתיחת יועץ הקניות החכם (AI)"
-                >
-                  <Sparkles className="w-3.5 h-3.5 text-amber-500 group-hover:rotate-12 transition-transform" />
-                  <span>יועץ AI</span>
-                </button>
               </div>
             </div>
 
-            {/* ZONE 3 (Left): Action Dock (Mobile AI/Search, Notifications, Theme, Rich Cart, User Capsule) */}
+            {/* ZONE 3 (Left): Action Dock (Mobile Search, Notifications, Theme, Rich Cart, User Capsule) */}
             <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
-              {/* Mobile Quick Search & AI Triggers */}
+              {/* Mobile Quick Search Trigger */}
               <button
                 type="button"
                 onClick={() => window.dispatchEvent(new Event("open-command-palette"))}
@@ -290,16 +277,6 @@ export const HeaderNav: React.FC = () => {
                 title="חיפוש מהיר"
               >
                 <Search className="w-4 h-4" />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => window.dispatchEvent(new Event("open-rag-drawer"))}
-                className="md:hidden flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-600 dark:text-amber-300 text-xs font-bold"
-                title="יועץ קניות AI"
-              >
-                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                <span>AI</span>
               </button>
 
               {/* Live Notification Bell */}
