@@ -22,15 +22,21 @@ export default function OrdersPage() {
     setLoading(true);
     try {
       let customerId = "usr_demo";
+      let authToken: string | null = null;
       try {
         const u = JSON.parse(localStorage.getItem("auth_user") || "null");
         if (u?.userId) customerId = u.userId;
+        authToken = localStorage.getItem("auth_token");
       } catch {}
 
-      const res = await fetch("/api/orders", { headers: { "X-Customer-Id": customerId } });
+      const headers: Record<string, string> = { "X-Customer-Id": customerId };
+      if (authToken) headers["Authorization"] = `Bearer ${authToken}`;
+
+      const res = await fetch("/api/orders?page=0&size=50", { headers });
       if (res.ok) {
         const data = await res.json();
-        const list = data.map((o: any) => ({ ...o, id: o.id || o.orderId }));
+        const rawList = Array.isArray(data) ? data : (data?.content || []);
+        const list = rawList.map((o: any) => ({ ...o, id: o.id || o.orderId }));
         setOrders(list);
 
         list.forEach((ord: any) => {
@@ -40,6 +46,8 @@ export default function OrdersPage() {
           }
         });
       }
+    } catch (err) {
+      console.error("Failed to load orders:", err);
     } finally {
       setLoading(false);
     }
@@ -166,6 +174,26 @@ export default function OrdersPage() {
                         בטל הזמנה
                       </Button>
                     )}
+                  </div>
+                </div>
+
+                {/* Items summary & Total */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800/80">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400">פריטים בהזמנה:</span>
+                    {(order.items || []).map((it: any, idx: number) => (
+                      <span key={idx} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 text-xs border border-slate-200/60 dark:border-slate-700 font-medium">
+                        <span className="font-bold text-slate-800 dark:text-slate-200">{it.skuCode}</span>
+                        <span className="text-slate-400 font-mono">×{it.quantity}</span>
+                        <span className="font-mono text-amber-600 dark:text-amber-400 font-semibold">{formatPrice(it.unitPrice)}</span>
+                      </span>
+                    ))}
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-xs text-slate-400">סה״כ שולם:</span>
+                    <span className="text-base font-black font-mono text-slate-900 dark:text-amber-400">
+                      {formatPrice(order.totalAmount || 0)}
+                    </span>
                   </div>
                 </div>
 

@@ -15,11 +15,12 @@ export async function GET(request: NextRequest) {
   try {
     const authHeader = request.headers.get("authorization");
     const rawToken = authHeader && authHeader.startsWith("Bearer ") ? authHeader.substring(7) : null;
-    let token = isUsableToken(rawToken) ? rawToken! : generateServiceJwt("usr_demo");
+    const customerIdHeader = request.headers.get("x-customer-id") || "usr_demo";
+    let token = isUsableToken(rawToken) ? rawToken! : generateServiceJwt(customerIdHeader);
 
     const { searchParams } = new URL(request.url);
     const page = searchParams.get("page") || "0";
-    const size = searchParams.get("size") || "10";
+    const size = searchParams.get("size") || "20";
     const gatewayUrl = getGatewayUrl();
 
     let res = await fetch(`${gatewayUrl}/api/v1/orders?page=${page}&size=${size}&sort=createdAt,desc`, {
@@ -31,7 +32,7 @@ export async function GET(request: NextRequest) {
 
     // If 401 Unauthorized (e.g. user token expired or invalid), fallback to valid service token
     if (res.status === 401) {
-      const fallbackToken = generateServiceJwt("usr_demo");
+      const fallbackToken = generateServiceJwt(customerIdHeader);
       if (token !== fallbackToken) {
         token = fallbackToken;
         res = await fetch(`${gatewayUrl}/api/v1/orders?page=${page}&size=${size}&sort=createdAt,desc`, {
