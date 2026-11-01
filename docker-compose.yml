@@ -316,6 +316,28 @@ services:
     networks:
       - platform-network
 
+  rag-service:
+    build:
+      context: ./rag-service
+      dockerfile: Dockerfile
+    container_name: rag-service
+    ports:
+      - "8092:8092"
+    environment:
+      JAVA_TOOL_OPTIONS: "-Xms64m -Xmx384m -Dspring.threads.virtual.enabled=true"
+      MONGODB_URI: ${RAG_MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=50&minPoolSize=10&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.5-flash-lite}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-demo_key}
+    mem_limit: 512m
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    networks:
+      - platform-network
+
   api-gateway:
     build:
       context: ./api-gateway
@@ -335,6 +357,7 @@ services:
       CART_SERVICE_URL: http://cart-wishlist-service:8088
       LOYALTY_SERVICE_URL: http://recommendation-loyalty-service:8089
       WORKSPACE_SERVICE_URL: http://workspace-integration-service:8091
+      RAG_SERVICE_URL: http://rag-service:8092
     mem_limit: 512m
     depends_on:
       - order-service
@@ -347,6 +370,7 @@ services:
       - cart-wishlist-service
       - recommendation-loyalty-service
       - workspace-integration-service
+      - rag-service
     networks:
       - platform-network
 

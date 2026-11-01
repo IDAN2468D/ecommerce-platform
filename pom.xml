@@ -39,6 +39,7 @@
 		<module>recommendation-loyalty-service</module>
 		<module>workspace-integration-service</module>
 		<module>api-gateway</module>
+		<module>rag-service</module>
 	</modules>
 
 	<dependencyManagement>

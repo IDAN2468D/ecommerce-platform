@@ -1,0 +1,69 @@
+server:
+  port: 8092
+  shutdown: graceful
+
+spring:
+  application:
+    name: rag-service
+  threads:
+    virtual:
+      enabled: true
+  mvc:
+    problemdetails:
+      enabled: true
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/ecommerce_db?maxPoolSize=50&minPoolSize=10&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
+      auto-index-creation: true
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:29092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: rag-service-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "com.company.common.events,com.company.*,*"
+
+rag:
+  vector:
+    collection-name: catalog_embeddings
+    index-name: vector_index
+    dimensions: 768
+    num-candidates: 100
+    top-k-default: 4
+  llm:
+    provider: google-gemini
+    model: ${GEMINI_MODEL:gemini-3.5-flash-lite}
+    api-key: ${GEMINI_API_KEY:demo_key}
+    temperature: 0.2
+    max-tokens: 1024
+    api-url: ${GEMINI_API_URL:https://generativelanguage.googleapis.com/v1beta/models}
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      geminiLlm:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        slowCallRateThreshold: 50
+        slowCallDurationThreshold: 5000ms
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+
+logging:
+  pattern:
+    level: "%5p [${spring.application.name:rag-service},%X{traceId:-},%X{spanId:-}]"

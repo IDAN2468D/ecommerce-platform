@@ -82,6 +82,12 @@ spring:
           predicates:
             - Path=/api/v1/workspace/**
 
+        # 11. AI RAG Service Route (MongoDB Atlas Vector Search & Google Gemini)
+        - id: rag-service-route
+          uri: ${RAG_SERVICE_URL:http://localhost:8092}
+          predicates:
+            - Path=/api/v1/rag/**
+
 management:
   endpoints:
     web:
