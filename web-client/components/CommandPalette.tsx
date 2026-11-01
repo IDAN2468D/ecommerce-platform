@@ -16,6 +16,7 @@ import {
   ArrowRight,
   ExternalLink,
 } from "lucide-react";
+import { useCurrency } from "../context/CurrencyContext";
 
 interface ProductItem {
   skuCode: string;
@@ -27,6 +28,7 @@ interface ProductItem {
 }
 
 export const CommandPalette: React.FC = () => {
+  const { formatPrice } = useCurrency();
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [products, setProducts] = useState<ProductItem[]>([]);
@@ -148,7 +150,7 @@ export const CommandPalette: React.FC = () => {
                     </div>
                     <div className="text-left">
                       <div className="font-bold text-sm text-emerald-600 dark:text-emerald-400">
-                        ₪{product.unitPrice}
+                        {formatPrice(product.unitPrice)}
                       </div>
                       <span className="text-[10px] text-slate-400">
                         {product.availableQuantity > 0 ? `במלאי: ${product.availableQuantity}` : "אזל מהמלאי"}

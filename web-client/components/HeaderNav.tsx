@@ -7,6 +7,7 @@ import { useNotificationStream } from "../lib/useNotificationStream";
 import { NotificationToast } from "./NotificationToast";
 import { NotificationBell } from "./NotificationBell";
 import { ThemeToggle } from "./ThemeToggle";
+import { useCurrency } from "../context/CurrencyContext";
 
 interface CurrentUser {
   userId: string;
@@ -18,7 +19,7 @@ interface CurrentUser {
 export const HeaderNav: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
   const [cartCount, setCartCount] = useState(0);
-  const [currency, setCurrency] = useState<"ILS" | "USD">("ILS");
+  const { currency, toggleCurrency } = useCurrency();
 
   // Sync auth user from localStorage
   const loadUser = () => {
@@ -76,14 +77,6 @@ export const HeaderNav: React.FC = () => {
       window.removeEventListener("storage", updateCount);
     };
   }, []);
-
-  // Handle currency toggle (rapidapi_currency MCP backed)
-  const toggleCurrency = () => {
-    const next = currency === "ILS" ? "USD" : "ILS";
-    setCurrency(next);
-    localStorage.setItem("user_currency", next);
-    window.dispatchEvent(new CustomEvent("currency-changed", { detail: next }));
-  };
 
   return (
     <>

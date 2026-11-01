@@ -26,6 +26,7 @@ import { Button } from "../../components/ui/Button";
 import { Badge } from "../../components/ui/Badge";
 import { Input } from "../../components/ui/Input";
 import { Card } from "../../components/ui/Card";
+import { useCurrency } from "../../context/CurrencyContext";
 
 interface CartItem {
   skuCode: string;
@@ -53,9 +54,9 @@ interface RecommendedItem {
 
 export default function CartPage() {
   const router = useRouter();
+  const { formatPrice, currency } = useCurrency();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [paymentToken, setPaymentToken] = useState("pm_card_visa_ok");
-  const [currency, setCurrency] = useState("ILS");
   const [loading, setLoading] = useState(false);
   const [sagaStep, setSagaStep] = useState<number>(0);
   const [orderResult, setOrderResult] = useState<any>(null);
@@ -343,7 +344,7 @@ export default function CartPage() {
             </div>
             <div>
               <span className="text-slate-500 dark:text-slate-400 block">סכום סופי שחויב:</span>
-              <span className="font-bold text-slate-900 dark:text-slate-100">₪{orderResult.totalAmount.toLocaleString()}</span>
+              <span className="font-bold text-slate-900 dark:text-slate-100">{formatPrice(orderResult.totalAmount)}</span>
             </div>
             <div>
               <span className="text-slate-500 dark:text-slate-400 block">קופון שנוצל:</span>
@@ -402,7 +403,7 @@ export default function CartPage() {
                       <h4 className="font-bold text-slate-900 dark:text-slate-100 text-sm sm:text-base">{item.name}</h4>
                       <span className="text-xs font-mono text-slate-400">{item.skuCode}</span>
                       <div className="font-black text-slate-900 dark:text-slate-100 text-sm mt-1">
-                        ₪{item.price.toLocaleString()}
+                        {formatPrice(item.price)}
                       </div>
                     </div>
                   </div>
@@ -481,7 +482,7 @@ export default function CartPage() {
                     >
                       <div>
                         <div className="font-bold text-slate-900 dark:text-slate-100">{rec.name || rec.skuCode}</div>
-                        <div className="text-slate-500 font-mono">₪{rec.price?.toLocaleString() || "199"}</div>
+                        <div className="text-slate-500 font-mono">{formatPrice(rec.price || 199)}</div>
                       </div>
                       <button
                         onClick={() => {
@@ -608,20 +609,20 @@ export default function CartPage() {
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between text-slate-600 dark:text-slate-400">
                   <span>סכום ביניים:</span>
-                  <span className="font-semibold text-slate-900 dark:text-slate-100">₪{subtotal.toLocaleString()}</span>
+                  <span className="font-semibold text-slate-900 dark:text-slate-100">{formatPrice(subtotal)}</span>
                 </div>
 
                 {appliedCoupon && (
                   <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-bold animate-fade-in">
                     <span>הנחת קופון ({appliedCoupon.code}):</span>
-                    <span>- ₪{discountAmount.toLocaleString()}</span>
+                    <span>- {formatPrice(discountAmount)}</span>
                   </div>
                 )}
 
                 {pointsRedeemedApplied > 0 && (
                   <div className="flex justify-between text-amber-600 dark:text-amber-400 font-bold animate-fade-in">
                     <span>מימוש נקודות VIP ({pointsRedeemedApplied} נק'):</span>
-                    <span>- ₪{pointsRedeemedApplied.toLocaleString()}</span>
+                    <span>- {formatPrice(pointsRedeemedApplied)}</span>
                   </div>
                 )}
 
@@ -632,7 +633,7 @@ export default function CartPage() {
 
                 <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-between text-base font-black text-slate-900 dark:text-slate-100">
                   <span>סה״כ לתשלום:</span>
-                  <span className="text-brand-600 dark:text-brand-400 text-xl">₪{finalTotal.toLocaleString()}</span>
+                  <span className="text-brand-600 dark:text-brand-400 text-xl">{formatPrice(finalTotal)}</span>
                 </div>
               </div>
 
@@ -692,7 +693,7 @@ export default function CartPage() {
         <div className="md:hidden fixed bottom-16 inset-x-0 z-30 p-3 bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border-t border-slate-200/90 dark:border-amber-500/20 shadow-2xl flex items-center justify-between gap-3 animate-slide-up">
           <div>
             <span className="text-[10px] text-slate-500 dark:text-slate-400 block leading-tight">סה״כ לתשלום:</span>
-            <span className="text-lg font-black text-slate-900 dark:text-amber-400">₪{finalTotal.toLocaleString()}</span>
+            <span className="text-lg font-black text-slate-900 dark:text-amber-400">{formatPrice(finalTotal)}</span>
           </div>
           <Button
             onClick={handleCheckout}

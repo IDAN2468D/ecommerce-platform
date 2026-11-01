@@ -15,6 +15,7 @@ import {
   Sparkles,
   ShieldCheck,
 } from "lucide-react";
+import { useCurrency } from "../context/CurrencyContext";
 
 interface CartItem {
   skuCode: string;
@@ -28,6 +29,7 @@ interface CartItem {
 }
 
 export const CartDrawer: React.FC = () => {
+  const { formatPrice } = useCurrency();
   const [isOpen, setIsOpen] = useState(false);
   const [items, setItems] = useState<CartItem[]>([]);
   const [couponCode, setCouponCode] = useState("");
@@ -151,7 +153,7 @@ export const CartDrawer: React.FC = () => {
                 <Truck className="w-3.5 h-3.5 text-brand-600" />
                 {remainingForFreeShipping > 0 ? (
                   <span>
-                    עוד <strong className="text-brand-600 dark:text-brand-400">₪{remainingForFreeShipping}</strong> למשלוח חינם!
+                    עוד <strong className="text-brand-600 dark:text-brand-400">{formatPrice(remainingForFreeShipping)}</strong> למשלוח חינם!
                   </span>
                 ) : (
                   <span className="text-emerald-600 dark:text-emerald-400 font-bold">
@@ -199,7 +201,7 @@ export const CartDrawer: React.FC = () => {
                         {item.productName || item.name}
                       </h4>
                       <p className="text-xs text-emerald-600 dark:text-emerald-400 font-bold mt-0.5">
-                        ₪{unit}
+                        {formatPrice(unit)}
                       </p>
                       <div className="flex items-center gap-2 mt-2">
                         <div className="flex items-center border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden bg-white dark:bg-slate-800">
@@ -239,18 +241,18 @@ export const CartDrawer: React.FC = () => {
             <div className="p-5 border-t border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/70 space-y-3">
               <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400">
                 <span>סכום ביניים:</span>
-                <span className="font-mono font-semibold text-slate-800 dark:text-slate-200">₪{subtotal}</span>
+                <span className="font-mono font-semibold text-slate-800 dark:text-slate-200">{formatPrice(subtotal)}</span>
               </div>
               <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400">
                 <span>דמי משלוח:</span>
                 <span className="font-medium text-emerald-600 dark:text-emerald-400">
-                  {remainingForFreeShipping === 0 ? "חינם (VIP Express)" : "₪29.00"}
+                  {remainingForFreeShipping === 0 ? "חינם (VIP Express)" : formatPrice(29)}
                 </span>
               </div>
               <div className="flex justify-between text-base font-bold text-slate-900 dark:text-slate-100 pt-2 border-t border-slate-200 dark:border-slate-800">
                 <span>סה״כ לתשלום:</span>
                 <span className="text-brand-600 dark:text-brand-400 font-mono text-lg">
-                  ₪{remainingForFreeShipping === 0 ? subtotal : subtotal + 29}
+                  {formatPrice(remainingForFreeShipping === 0 ? subtotal : subtotal + 29)}
                 </span>
               </div>
 

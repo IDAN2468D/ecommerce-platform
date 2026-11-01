@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { ProductCard } from "../components/ProductCard";
 import { Button } from "../components/ui/Button";
+import { useCurrency } from "../context/CurrencyContext";
 
 interface Product {
   skuCode: string;
@@ -38,6 +39,7 @@ interface Product {
 }
 
 export default function CatalogPage() {
+  const { formatPrice, symbol } = useCurrency();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>("הכל");
@@ -362,7 +364,7 @@ export default function CatalogPage() {
               onChange={(e) => setMaxPrice(e.target.value ? Number(e.target.value) : "")}
               className="w-14 p-1 text-center rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs"
             />
-            <span className="text-slate-400 font-bold">₪</span>
+            <span className="text-slate-400 font-bold">{symbol}</span>
           </div>
 
           {/* In-Stock Toggle */}
@@ -559,7 +561,7 @@ export default function CatalogPage() {
                       <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">{item.description}</p>
                       
                       <div className="text-xl font-extrabold text-slate-900 dark:text-slate-100">
-                        ₪{item.price.toLocaleString()}
+                        {formatPrice(item.price)}
                       </div>
                       
                       <div className="text-xs space-y-1 text-slate-600 dark:text-slate-300 pt-2 border-t border-slate-200 dark:border-slate-700">

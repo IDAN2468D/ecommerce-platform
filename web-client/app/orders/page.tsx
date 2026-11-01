@@ -23,6 +23,7 @@ import { SagaTracker } from "../../components/SagaTracker";
 import { Button } from "../../components/ui/Button";
 import { Badge } from "../../components/ui/Badge";
 import { Card } from "../../components/ui/Card";
+import { useCurrency } from "../../context/CurrencyContext";
 
 interface OrderItem {
   id: string;
@@ -64,6 +65,7 @@ interface WorkspaceLinks {
 }
 
 export default function OrdersPage() {
+  const { formatPrice } = useCurrency();
   const [orders, setOrders] = useState<Order[]>([]);
   const [shipments, setShipments] = useState<Record<string, ShipmentInfo>>({});
   const [workspaceLinks, setWorkspaceLinks] = useState<Record<string, WorkspaceLinks>>({});
@@ -304,7 +306,7 @@ export default function OrdersPage() {
                     <div className="text-right col-span-2 sm:col-span-1">
                       <span className="text-[11px] text-slate-400 block font-medium">סך ששולם:</span>
                       <span className="text-lg sm:text-xl font-black text-slate-900 dark:text-slate-100">
-                        ₪{order.totalAmount.toLocaleString()} {order.currency}
+                        {formatPrice(order.totalAmount)}
                       </span>
                     </div>
 
@@ -510,7 +512,7 @@ export default function OrdersPage() {
                         <span className="font-mono font-semibold text-slate-800 dark:text-slate-200">{item.skuCode}</span>
                         <div className="flex items-center gap-3">
                           <span className="text-slate-500 dark:text-slate-400">כמות: {item.quantity}</span>
-                          <span className="font-bold text-slate-900 dark:text-slate-100">₪{item.unitPrice.toLocaleString()}</span>
+                          <span className="font-bold text-slate-900 dark:text-slate-100">{formatPrice(item.unitPrice)}</span>
                         </div>
                       </div>
                     ))}

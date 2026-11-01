@@ -35,8 +35,7 @@ import {
   FileText,
   Lock,
 } from "lucide-react";
-import { HeaderNav } from "../../components/HeaderNav";
-import { MobileBottomNav } from "../../components/MobileBottomNav";
+import { useCurrency } from "../../context/CurrencyContext";
 
 interface UserProfile {
   userId?: string;
@@ -78,6 +77,7 @@ interface CurrencyRates {
 }
 
 export default function ProfilePage() {
+  const { currency, rate: contextRate, formatPrice, toggleCurrency } = useCurrency();
   const [user, setUser] = useState<UserProfile>({
     userId: "usr_demo",
     fullName: "עידן קזם",
@@ -180,20 +180,16 @@ export default function ProfilePage() {
     }
   };
 
-  const rate = currencyRates?.rateUSDToILS || 3.14456;
+  const rate = currencyRates?.rateUSDToILS || contextRate || 3.14456;
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans selection:bg-amber-500 selection:text-slate-950" dir="rtl">
-      {/* Universal Header */}
-      <HeaderNav />
-
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 pb-28 md:pb-12">
-        {/* Navigation Breadcrumb & Back */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-            <Link href="/" className="hover:text-brand-600 dark:hover:text-amber-400 transition">
-              ראשי
-            </Link>
+    <div className="w-full space-y-8" dir="rtl">
+      {/* Navigation Breadcrumb & Back */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+          <Link href="/" className="hover:text-brand-600 dark:hover:text-amber-400 transition">
+            ראשי
+          </Link>
             <span>/</span>
             <span className="text-slate-900 dark:text-slate-200 font-bold">פרופיל אישי וחיבורי MCP</span>
           </div>
@@ -820,7 +816,7 @@ export default function ProfilePage() {
                 <div className="text-xs text-slate-500 mt-1">
                   שווה ערך ל-
                   <strong className="text-slate-800 dark:text-slate-200 mr-1">
-                    ₪{wallet?.pointsBalance ? wallet.pointsBalance.toFixed(2) : "1,164.65"}
+                    {formatPrice(wallet?.pointsBalance ? wallet.pointsBalance : 1164.65)}
                   </strong>
                   הנחה בקופה
                 </div>
@@ -922,7 +918,7 @@ export default function ProfilePage() {
                         </span>
                         {tx.orderAmount && tx.orderAmount > 0 && (
                           <div className="text-[10px] text-slate-400">
-                            עסקה: ₪{tx.orderAmount.toLocaleString("he-IL")}
+                            עסקה: {formatPrice(tx.orderAmount)}
                           </div>
                         )}
                       </div>
@@ -1144,10 +1140,6 @@ export default function ProfilePage() {
             </div>
           </div>
         )}
-      </main>
-
-      {/* Universal Mobile Bottom Dock */}
-      <MobileBottomNav />
     </div>
   );
 }

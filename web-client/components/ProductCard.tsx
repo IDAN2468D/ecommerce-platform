@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { Button } from "./ui/Button";
 import { Badge } from "./ui/Badge";
+import { useCurrency } from "../context/CurrencyContext";
 
 export interface ProductCardProps {
   skuCode: string;
@@ -66,6 +67,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   isCompared = false,
   onToggleCompare,
 }) => {
+  const { formatPrice } = useCurrency();
   const [isAdded, setIsAdded] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [imgError, setImgError] = useState(false);
@@ -400,21 +402,21 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-xs text-slate-400 line-through font-medium">
-                  ₪{originalPrice.toLocaleString()}
+                  {formatPrice(originalPrice)}
                 </span>
                 <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-brand-50 dark:bg-brand-950/50 text-brand-700 dark:text-brand-300 border border-brand-200/60 dark:border-brand-800">
                   מחיר השקה
                 </span>
               </div>
               <div className="text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight leading-none mt-1">
-                ₪{price.toLocaleString()}
+                {formatPrice(price)}
               </div>
             </div>
 
             <div className="text-left">
               <span className="text-[11px] text-slate-500 dark:text-slate-400 block">עד 12 תשלומים</span>
               <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                ₪{monthlyPayment.toLocaleString()} / חודש
+                {formatPrice(monthlyPayment)} / חודש
               </span>
             </div>
           </div>
@@ -657,10 +659,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                   <span className="text-xs text-slate-500 dark:text-slate-400">מחיר לצרכן:</span>
                   <div className="flex items-baseline gap-2">
                     <span className="text-xs text-slate-400 line-through">
-                      ₪{originalPrice.toLocaleString()}
+                      {formatPrice(originalPrice)}
                     </span>
                     <span className="text-2xl font-black text-slate-900 dark:text-slate-100">
-                      ₪{price.toLocaleString()}
+                      {formatPrice(price)}
                     </span>
                   </div>
                 </div>
