@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { ShoppingBag, Package, Store, Radio, User, LogOut, Search, Coins } from "lucide-react";
+import { ShoppingBag, Package, Store, Radio, User, LogOut, Search, Coins, Sparkles } from "lucide-react";
 import { useNotificationStream } from "../lib/useNotificationStream";
 import { NotificationToast } from "./NotificationToast";
 import { NotificationBell } from "./NotificationBell";
@@ -110,6 +110,17 @@ export const HeaderNav: React.FC = () => {
             >
               <Coins className="w-3 h-3 text-amber-500 shrink-0" />
               <span>{currency === "ILS" ? "₪ ILS" : "$ USD"}</span>
+            </button>
+
+            {/* AI Assistant (Gemini RAG) Button */}
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new Event("open-rag-drawer"))}
+              className="flex items-center gap-1.5 px-2 sm:px-3 py-1 rounded-full bg-gradient-to-r from-amber-500/15 via-indigo-500/15 to-brand-500/15 border border-indigo-400/30 dark:border-indigo-500/40 text-[11px] sm:text-xs font-bold text-indigo-700 dark:text-indigo-300 hover:from-amber-500/25 hover:to-brand-500/25 transition shadow-xs group"
+              title="שאל את עוזר ה-AI (Google Gemini RAG)"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-500 group-hover:rotate-12 transition-transform" />
+              <span className="hidden sm:inline">עוזר AI</span>
             </button>
 
             {/* Quick Command Palette Trigger (Ctrl+K) - Desktop */}

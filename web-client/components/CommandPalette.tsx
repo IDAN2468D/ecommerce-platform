@@ -15,6 +15,7 @@ import {
   Command,
   ArrowRight,
   ExternalLink,
+  Sparkles,
 } from "lucide-react";
 import { useCurrency } from "../context/CurrencyContext";
 
@@ -114,6 +115,36 @@ export const CommandPalette: React.FC = () => {
 
         {/* Results List */}
         <div className="flex-1 overflow-y-auto p-3 space-y-4 divide-y divide-slate-100 dark:divide-slate-800">
+          {/* Ask AI RAG Assistant */}
+          {query.trim().length > 0 && (
+            <div className="pt-1">
+              <button
+                onClick={() => {
+                  setIsOpen(false);
+                  window.dispatchEvent(
+                    new CustomEvent("open-rag-drawer", { detail: { initialQuery: query.trim() } })
+                  );
+                }}
+                className="w-full flex items-center justify-between p-2.5 rounded-xl bg-gradient-to-r from-amber-500/10 via-indigo-500/10 to-brand-500/10 hover:from-amber-500/20 hover:to-indigo-500/20 border border-indigo-200 dark:border-indigo-800/80 transition text-right group"
+              >
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-amber-500 via-indigo-600 to-brand-600 flex items-center justify-center text-white shadow-xs">
+                    <Sparkles className="w-4 h-4 text-amber-200 animate-pulse" />
+                  </div>
+                  <div>
+                    <div className="font-bold text-xs text-indigo-900 dark:text-indigo-200 group-hover:text-brand-600 dark:group-hover:text-brand-400">
+                      שאל את עוזר ה-AI (Gemini RAG): &quot;{query}&quot;
+                    </div>
+                    <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">
+                      חיפוש וקטורי ב-MongoDB Atlas ותשובה מנומקת מ-Google Gemini
+                    </div>
+                  </div>
+                </div>
+                <ArrowRight className="w-4 h-4 text-indigo-500 group-hover:-translate-x-1 transition-transform" />
+              </button>
+            </div>
+          )}
+
           {/* Products match section */}
           {filteredProducts.length > 0 && (
             <div className="pt-2 first:pt-0">
@@ -195,6 +226,16 @@ export const CommandPalette: React.FC = () => {
               >
                 <Tag className="w-4 h-4 text-amber-500" />
                 <span>הפעל קופון WELCOME10</span>
+              </button>
+              <button
+                onClick={() => {
+                  setIsOpen(false);
+                  window.dispatchEvent(new Event("open-rag-drawer"));
+                }}
+                className="col-span-2 flex items-center gap-2.5 p-2 rounded-xl bg-gradient-to-r from-indigo-500/10 to-amber-500/10 hover:from-indigo-500/20 hover:to-amber-500/20 border border-indigo-200 dark:border-indigo-800/80 text-sm font-bold text-indigo-700 dark:text-indigo-300 text-right transition"
+              >
+                <Sparkles className="w-4 h-4 text-amber-500 animate-pulse" />
+                <span>עוזר קניות אישי AI (Google Gemini RAG)</span>
               </button>
             </div>
           </div>

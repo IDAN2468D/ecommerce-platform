@@ -6,6 +6,8 @@ import { HeaderNav } from "./HeaderNav";
 import { CartDrawer } from "./CartDrawer";
 import { CommandPalette } from "./CommandPalette";
 import { ArchitectureDrawer } from "./ArchitectureDrawer";
+import { RagAssistantDrawer } from "./RagAssistantDrawer";
+import { FloatingAiButton } from "./FloatingAiButton";
 import { MobileBottomNav } from "./MobileBottomNav";
 import { Loader2, Lock } from "lucide-react";
 
@@ -80,10 +82,14 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
       {/* Mobile Ergonomic Bottom Dock */}
       <MobileBottomNav />
 
+      {/* Omnipresent Floating AI Trigger */}
+      <FloatingAiButton />
+
       {/* Global Interactive Overlays */}
       <CartDrawer />
       <CommandPalette />
       <ArchitectureDrawer />
+      <RagAssistantDrawer />
     </div>
   );
 };

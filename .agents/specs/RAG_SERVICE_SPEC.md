@@ -214,3 +214,23 @@ public record CitationDto(
    - Automatic fallback response when downstream LLM quota or connection fails.
 3. **Stateless JWT Security**:
    - Validates HMAC-SHA256 tokens passed via `Authorization: Bearer <token>` or `X-Customer-Id` forwarded by `api-gateway`.
+
+---
+
+## 7. In-Store Web Integration (`web-client` at Port 3000)
+
+The RAG Assistant is completely embedded into the main e-commerce storefront rather than operating as an isolated GUI:
+
+1. **Proxy API Routes (`web-client/app/api/rag/`)**:
+   - `POST /api/rag/query`: Forwards queries to `${GATEWAY_URL}/api/v1/rag/query`.
+   - `GET /api/rag/stream`: Proxies SSE event streams (`text/event-stream`) to `${GATEWAY_URL}/api/v1/rag/stream`.
+2. **Interactive Sliding Drawer (`RagAssistantDrawer.tsx`)**:
+   - Liquid Glass 4.0 Pro sliding drawer with full RTL Hebrew alignment and dark/light mode support.
+   - Grounded citations display catalog cards with title, stock status, category, and dynamic currency price (`useCurrency`).
+   - Direct "הוסף לסל" (Add to Cart) action button for cited products with instant reactivity (`cart-updated` event).
+   - "צפה בפרטים" link navigating directly to `/?sku=${skuCode}`.
+3. **Omnipresent Access Points**:
+   - **Header Nav**: Dedicated "עוזר AI" action button with Google Gemini sparkle icon in the sticky header.
+   - **Command Palette (`Ctrl+K`)**: Instant option to "שאל את עוזר ה-AI (Gemini RAG)" with prefilled query.
+   - **Floating AI Trigger (`FloatingAiButton.tsx`)**: Ergonomic floating action button available on desktop and mobile.
+
