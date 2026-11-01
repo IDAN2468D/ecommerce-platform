@@ -110,7 +110,7 @@ export const CartDrawer: React.FC = () => {
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden bg-slate-950/60 backdrop-blur-sm transition-opacity">
-      <div className="absolute inset-y-0 end-0 max-w-full flex pl-10">
+      <div className="absolute inset-y-0 end-0 max-w-full flex pl-0 sm:pl-10">
         <div
           className="w-screen max-w-md bg-white dark:bg-slate-900 border-s border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col justify-between"
           onClick={(e) => e.stopPropagation()}

@@ -686,6 +686,26 @@ export default function CartPage() {
           </div>
         </div>
       ) : null}
+
+      {/* Mobile Sticky Bottom Checkout Floating Dock */}
+      {cart.length > 0 && !orderResult && (
+        <div className="md:hidden fixed bottom-16 inset-x-0 z-30 p-3 bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border-t border-slate-200/90 dark:border-amber-500/20 shadow-2xl flex items-center justify-between gap-3 animate-slide-up">
+          <div>
+            <span className="text-[10px] text-slate-500 dark:text-slate-400 block leading-tight">סה״כ לתשלום:</span>
+            <span className="text-lg font-black text-slate-900 dark:text-amber-400">₪{finalTotal.toLocaleString()}</span>
+          </div>
+          <Button
+            onClick={handleCheckout}
+            loading={loading}
+            variant="primary"
+            size="md"
+            className="flex-1 max-w-[210px] h-11 text-xs font-bold"
+            icon={<ShieldCheck className="w-4 h-4" />}
+          >
+            {loading ? "מתזמר SAGA..." : "הזמן עכשיו ב-SAGA"}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

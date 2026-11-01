@@ -251,7 +251,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             </div>
 
             {/* Side Floating Action Buttons (Wishlist, Compare, Quick View) */}
-            <div className="absolute left-3.5 top-14 flex flex-col gap-2 z-20 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
+            <div className="absolute left-2.5 sm:left-3.5 top-12 sm:top-14 flex flex-col gap-1.5 sm:gap-2 z-20 opacity-100 sm:opacity-0 sm:-translate-x-2 sm:group-hover:opacity-100 sm:group-hover:translate-x-0 transition-all duration-300">
               <button
                 type="button"
                 onClick={(e) => {
@@ -259,13 +259,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                   setIsWishlisted(!isWishlisted);
                 }}
                 title="הוסף למועדפים"
-                className={`w-9 h-9 rounded-full flex items-center justify-center backdrop-blur-md border transition-all shadow-md ${
+                className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center backdrop-blur-md border transition-all shadow-md active:scale-95 ${
                   isWishlisted
-                    ? "bg-rose-500 text-white border-rose-400 scale-110"
+                    ? "bg-rose-500 text-white border-rose-400 scale-105"
                     : "bg-white/90 dark:bg-slate-900/90 text-slate-700 dark:text-slate-200 border-white/60 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 hover:text-rose-500"
                 }`}
               >
-                <Heart className={`w-4 h-4 ${isWishlisted ? "fill-current" : ""}`} />
+                <Heart className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isWishlisted ? "fill-current" : ""}`} />
               </button>
 
               {onToggleCompare && (
@@ -276,13 +276,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                     onToggleCompare(skuCode);
                   }}
                   title={isCompared ? "הסר מהשוואה" : "הוסף להשוואת מוצרים"}
-                  className={`w-9 h-9 rounded-full flex items-center justify-center backdrop-blur-md border transition-all shadow-md ${
+                  className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center backdrop-blur-md border transition-all shadow-md active:scale-95 ${
                     isCompared
-                      ? "bg-brand-600 text-white border-brand-500 scale-110"
+                      ? "bg-brand-600 text-white border-brand-500 scale-105"
                       : "bg-white/90 dark:bg-slate-900/90 text-slate-700 dark:text-slate-200 border-white/60 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 hover:text-brand-500"
                   }`}
                 >
-                  <Scale className="w-4 h-4" />
+                  <Scale className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </button>
               )}
 
@@ -293,9 +293,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                   setQuickViewOpen(true);
                 }}
                 title="תצוגה מהירה, מפרט וביקורות"
-                className="w-9 h-9 rounded-full bg-white/90 dark:bg-slate-900/90 hover:bg-white dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 hover:text-brand-600 dark:hover:text-brand-400 backdrop-blur-md border border-white/60 dark:border-slate-700 flex items-center justify-center transition-all shadow-md"
+                className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/90 dark:bg-slate-900/90 hover:bg-white dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 hover:text-brand-600 dark:hover:text-brand-400 backdrop-blur-md border border-white/60 dark:border-slate-700 flex items-center justify-center transition-all shadow-md active:scale-95"
               >
-                <Eye className="w-4 h-4" />
+                <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </button>
             </div>
 
@@ -422,21 +422,23 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           {/* Quantity & Add to Cart Row */}
           <div className="flex items-center gap-2 pt-1">
             {!isOutOfStock && (
-              <div className="flex items-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl h-10 px-1 shadow-sm">
+              <div className="flex items-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl h-11 sm:h-10 px-1 shadow-sm shrink-0">
                 <button
                   type="button"
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-800 dark:hover:text-slate-200 transition"
+                  className="w-8 h-8 sm:w-7 sm:h-7 flex items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-800 dark:hover:text-slate-200 active:scale-90 transition"
+                  title="הפחת כמות"
                 >
                   <Minus className="w-3.5 h-3.5" />
                 </button>
-                <span className="w-6 text-center text-xs font-extrabold text-slate-900 dark:text-slate-100">
+                <span className="w-6 text-center text-xs font-black text-slate-900 dark:text-slate-100">
                   {quantity}
                 </span>
                 <button
                   type="button"
                   onClick={() => setQuantity(Math.min(available || 10, quantity + 1))}
-                  className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-800 dark:hover:text-slate-200 transition"
+                  className="w-8 h-8 sm:w-7 sm:h-7 flex items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-800 dark:hover:text-slate-200 active:scale-90 transition"
+                  title="הוסף כמות"
                 >
                   <Plus className="w-3.5 h-3.5" />
                 </button>
@@ -447,7 +449,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
               type="button"
               onClick={handleAdd}
               disabled={isOutOfStock}
-              className={`flex-1 h-10 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all duration-300 shadow-sm active:scale-[0.98] ${
+              className={`flex-1 h-11 sm:h-10 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all duration-300 shadow-sm active:scale-[0.97] ${
                 isAdded
                   ? "bg-emerald-500 text-white shadow-emerald-500/25 shadow-lg"
                   : isOutOfStock
@@ -477,11 +479,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       {quickViewOpen && (
         <div
           onClick={() => setQuickViewOpen(false)}
-          className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in"
+          className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-white dark:bg-slate-900 rounded-3xl max-w-3xl w-full overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-800 grid grid-cols-1 md:grid-cols-2 max-h-[90vh]"
+            className="bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-3xl max-w-3xl w-full overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-800 grid grid-cols-1 md:grid-cols-2 max-h-[85vh] sm:max-h-[90vh]"
           >
             {/* Left / Right Image Column */}
             <div className="relative h-64 md:h-auto bg-slate-900 flex items-center justify-center overflow-hidden">

@@ -6,6 +6,7 @@ import { HeaderNav } from "./HeaderNav";
 import { CartDrawer } from "./CartDrawer";
 import { CommandPalette } from "./CommandPalette";
 import { ArchitectureDrawer } from "./ArchitectureDrawer";
+import { MobileBottomNav } from "./MobileBottomNav";
 import { Loader2, Lock } from "lucide-react";
 
 export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -69,12 +70,15 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors">
       <HeaderNav />
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-3.5 sm:px-6 lg:px-8 py-4 sm:py-8 pb-24 md:pb-8">
         {children}
       </main>
-      <footer className="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-6 text-center text-xs text-slate-500 dark:text-slate-400 transition-colors">
+      <footer className="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-6 mb-16 md:mb-0 text-center text-xs text-slate-500 dark:text-slate-400 transition-colors">
         <p>© 2026 E-Commerce Distributed Platform • Powered by Spring Boot 3, Apache Kafka & Next.js</p>
       </footer>
+
+      {/* Mobile Ergonomic Bottom Dock */}
+      <MobileBottomNav />
 
       {/* Global Interactive Overlays */}
       <CartDrawer />

@@ -47,6 +47,7 @@ export default function CatalogPage() {
   const [minRating, setMinRating] = useState<number>(0);
   const [onlyInStock, setOnlyInStock] = useState<boolean>(false);
   const [sortBy, setSortBy] = useState<"featured" | "price-asc" | "price-desc" | "name" | "stock">("featured");
+  const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
 
   // Comparison tray state
   const [comparedSkus, setComparedSkus] = useState<string[]>([]);
@@ -213,165 +214,194 @@ export default function CatalogPage() {
   };
 
   return (
-    <div className="space-y-10">
-      {/* Hero Banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-8 sm:p-12 shadow-2xl border border-slate-800">
-        <div className="relative z-10 max-w-2xl space-y-5">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-500/20 text-brand-300 text-xs font-semibold border border-brand-400/30">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>פלטפורמת מיקרו-שירותים מבוזרת v2.0 (EDA + Kafka + Next.js)</span>
+    <div className="space-y-6 sm:space-y-10">
+      {/* Mobile-First Hero Banner */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-white p-5 sm:p-10 shadow-2xl border border-slate-800/80 dark:border-amber-500/20">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center relative z-10">
+          <div className="md:col-span-8 space-y-3 sm:space-y-4">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-brand-500/20 text-brand-300 dark:text-amber-300 text-[11px] font-semibold border border-brand-400/30">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>פלטפורמה מבוזרת • SAGA • Kafka • Google Workspace MCP</span>
+            </div>
+            <h1 className="text-2xl sm:text-4xl md:text-5xl font-black tracking-tight leading-tight">
+              קטלוג פרימיום בזמן אמת
+            </h1>
+            <p className="text-slate-300 text-xs sm:text-sm leading-relaxed max-w-xl">
+              תזמור SAGA ב-5 שלבים, שריון מלאי 10 דקות, שמירת חשבוניות אוטומטית ב-Google Drive ותיאום אירוע משלוח ב-Google Calendar.
+            </p>
+            <div className="flex flex-wrap items-center gap-2.5 pt-1">
+              <button
+                onClick={() => window.dispatchEvent(new Event("open-cart-drawer"))}
+                className="px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs sm:text-sm font-bold shadow-md hover:shadow-brand-600/30 transition flex items-center gap-2 active:scale-95"
+              >
+                <ShoppingCart className="w-4 h-4" />
+                <span>עגלת קניות</span>
+              </button>
+              <Button
+                onClick={fetchCatalog}
+                loading={loading}
+                variant="outline"
+                size="sm"
+                className="bg-white/10 hover:bg-white/20 text-white border-white/20 text-xs py-2 px-3"
+                icon={<RefreshCw className="w-3.5 h-3.5" />}
+              >
+                רענן
+              </Button>
+              <Button
+                onClick={() => setIsAddModalOpen(true)}
+                variant="secondary"
+                size="sm"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white border-none text-xs py-2 px-3"
+                icon={<PackagePlus className="w-3.5 h-3.5" />}
+              >
+                הוסף מוצר
+              </Button>
+            </div>
           </div>
-          <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight">
-            קטלוג מוצרי פרימיום בזמן אמת
-          </h1>
-          <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
-            תזמור הזמנות מהיר ב-5 שלבי SAGA מלאים, שריון מלאי 10 דקות, ביקורות מאומתות, 5% Cashback VIP, וקאש מבוזר ב-Redis לקריאות של פחות מ-5ms.
-          </p>
-          <div className="flex flex-wrap items-center gap-4 pt-2">
-            <button
-              onClick={() => window.dispatchEvent(new Event("open-cart-drawer"))}
-              className="px-5 py-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold shadow-md hover:shadow-brand-600/30 transition flex items-center gap-2"
-            >
-              <ShoppingCart className="w-5 h-5" />
-              <span>פתח עגלת קניות</span>
-            </button>
-            <Button
-              onClick={fetchCatalog}
-              loading={loading}
-              variant="outline"
-              size="lg"
-              className="bg-white/10 hover:bg-white/20 text-white border-white/20"
-              icon={<RefreshCw className="w-4 h-4" />}
-            >
-              רענן קטלוג מ-API
-            </Button>
-            <Button
-              onClick={() => setIsAddModalOpen(true)}
-              variant="secondary"
-              size="lg"
-              className="bg-indigo-600 hover:bg-indigo-700 text-white border-none"
-              icon={<PackagePlus className="w-5 h-5" />}
-            >
-              הוסף מוצר חדש ל-API
-            </Button>
+
+          {/* Mobile Illustration from MCP (google-gemma-31b) */}
+          <div className="md:col-span-4 flex justify-center md:justify-end">
+            <div className="relative w-36 h-36 sm:w-48 sm:h-48 rounded-2xl overflow-hidden bg-slate-900/60 border border-amber-500/20 backdrop-blur-md p-2 flex items-center justify-center shadow-inner">
+              <img
+                src="/mobile-hero-illustration.svg"
+                alt="Mobile Hero Illustration"
+                className="w-full h-full object-contain filter drop-shadow-md"
+              />
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Feature Highlights Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-subtle flex items-center gap-4 hover:border-brand-500/40 transition">
-          <div className="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
-            <Zap className="w-6 h-6" />
+      {/* Feature Highlights - Mobile Scrollable Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-5">
+        <div className="bg-white dark:bg-slate-900 p-3.5 sm:p-5 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-subtle flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold shrink-0">
+            <Zap className="w-5 h-5" />
           </div>
           <div>
-            <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">Virtual Threads & Redis</h4>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">קריאת קטלוג מקאש מבוזר ב-Sub-5ms</p>
+            <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100">Virtual Threads & Redis</h4>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">קריאת קטלוג בקאש Sub-5ms</p>
           </div>
         </div>
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-subtle flex items-center gap-4 hover:border-brand-500/40 transition">
-          <div className="w-12 h-12 rounded-xl bg-brand-50 dark:bg-brand-950/40 text-brand-600 dark:text-brand-400 flex items-center justify-center font-bold">
-            <ShieldCheck className="w-6 h-6" />
+        <div className="bg-white dark:bg-slate-900 p-3.5 sm:p-5 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-subtle flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-950/40 text-brand-600 dark:text-brand-400 flex items-center justify-center font-bold shrink-0">
+            <ShieldCheck className="w-5 h-5" />
           </div>
           <div>
-            <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">Flash Sale 10-Min Lock</h4>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">שריון מלאי מוגבל בזמן ב-Inventory Service</p>
+            <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100">Flash Sale 10-Min Lock</h4>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">שריון מלאי מוגבל בזמן בסרבר</p>
           </div>
         </div>
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-subtle flex items-center gap-4 hover:border-brand-500/40 transition">
-          <div className="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-lg">
+        <div className="bg-white dark:bg-slate-900 p-3.5 sm:p-5 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-subtle flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-base shrink-0">
             ⭐
           </div>
           <div>
-            <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">Verified Reviews & 5% VIP</h4>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">דירוגי רוכשים מאומתים וצבירת קאשבק</p>
+            <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100">5% VIP Cashback</h4>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">צבירת נקודות בארנק אוטומטית</p>
           </div>
         </div>
       </div>
 
       {/* Multi-Dimensional Filter & Search Bar */}
-      <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-subtle space-y-4">
-        <div className="flex flex-col lg:flex-row gap-4 justify-between items-stretch lg:items-center">
-          {/* Search Box */}
-          <div className="relative flex-1">
-            <Search className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2" />
+      <div className="bg-white dark:bg-slate-900 p-3.5 sm:p-5 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-subtle space-y-3">
+        {/* Search Box */}
+        <div className="relative">
+          <Search className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="חיפוש לפי שם מוצר, מקט או מפרט..."
+            className="w-full pl-4 pr-10 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 transition"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+
+        {/* Mobile Filter Toggle Button */}
+        <div className="lg:hidden">
+          <button
+            type="button"
+            onClick={() => setIsMobileFiltersOpen(!isMobileFiltersOpen)}
+            className="flex items-center justify-between w-full py-2 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold active:scale-98 transition"
+          >
+            <div className="flex items-center gap-2">
+              <SlidersHorizontal className="w-3.5 h-3.5 text-brand-600 dark:text-amber-400" />
+              <span>מסננים ומיון מתקדם</span>
+            </div>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-brand-500/10 text-brand-600 dark:text-amber-400 border border-brand-500/20">
+              {isMobileFiltersOpen ? "הסתר ▲" : "הצג מסננים ▼"}
+            </span>
+          </button>
+        </div>
+
+        {/* Filters Row (Always visible on desktop, toggleable on mobile) */}
+        <div className={`flex-wrap items-center gap-3 text-xs ${isMobileFiltersOpen ? "flex" : "hidden lg:flex"}`}>
+          {/* Price Range */}
+          <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-200/80 dark:border-slate-700">
+            <span className="text-slate-500 dark:text-slate-400 font-medium">מחיר:</span>
             <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="חיפוש לפי שם מוצר, מקט או מפרט טכני..."
-              className="w-full pl-4 pr-10 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 transition"
+              type="number"
+              placeholder="מ-"
+              value={minPrice}
+              onChange={(e) => setMinPrice(e.target.value ? Number(e.target.value) : "")}
+              className="w-14 p-1 text-center rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs"
             />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery("")}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            )}
+            <span className="text-slate-400">-</span>
+            <input
+              type="number"
+              placeholder="עד"
+              value={maxPrice}
+              onChange={(e) => setMaxPrice(e.target.value ? Number(e.target.value) : "")}
+              className="w-14 p-1 text-center rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs"
+            />
+            <span className="text-slate-400 font-bold">₪</span>
           </div>
 
-          {/* Quick Filters: Price Range & In-Stock */}
-          <div className="flex flex-wrap items-center gap-3 text-xs">
-            <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-200/80 dark:border-slate-700">
-              <span className="text-slate-500 dark:text-slate-400 font-medium">מחיר:</span>
-              <input
-                type="number"
-                placeholder="מ-"
-                value={minPrice}
-                onChange={(e) => setMinPrice(e.target.value ? Number(e.target.value) : "")}
-                className="w-16 p-1 text-center rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs"
-              />
-              <span className="text-slate-400">-</span>
-              <input
-                type="number"
-                placeholder="עד"
-                value={maxPrice}
-                onChange={(e) => setMaxPrice(e.target.value ? Number(e.target.value) : "")}
-                className="w-16 p-1 text-center rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs"
-              />
-              <span className="text-slate-400 font-bold">₪</span>
-            </div>
+          {/* In-Stock Toggle */}
+          <label className="flex items-center gap-2 cursor-pointer bg-slate-50 dark:bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-200/80 dark:border-slate-700 select-none">
+            <input
+              type="checkbox"
+              checked={onlyInStock}
+              onChange={(e) => setOnlyInStock(e.target.checked)}
+              className="rounded text-brand-600 focus:ring-brand-500 w-3.5 h-3.5"
+            />
+            <span className="font-semibold text-slate-700 dark:text-slate-300">במלאי בלבד</span>
+          </label>
 
-            {/* In-Stock Toggle */}
-            <label className="flex items-center gap-2 cursor-pointer bg-slate-50 dark:bg-slate-800 px-3 py-2 rounded-xl border border-slate-200/80 dark:border-slate-700 select-none">
-              <input
-                type="checkbox"
-                checked={onlyInStock}
-                onChange={(e) => setOnlyInStock(e.target.checked)}
-                className="rounded text-brand-600 focus:ring-brand-500 w-3.5 h-3.5"
-              />
-              <span className="font-semibold text-slate-700 dark:text-slate-300">במלאי בלבד</span>
-            </label>
-
-            {/* Sort Dropdown */}
-            <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-200/80 dark:border-slate-700">
-              <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" />
-              <select
-                value={sortBy}
-                onChange={(e: any) => setSortBy(e.target.value)}
-                className="bg-transparent text-slate-800 dark:text-slate-200 font-medium outline-none cursor-pointer"
-              >
-                <option value="featured">מומלץ</option>
-                <option value="price-asc">מחיר: מהנמוך לגבוה</option>
-                <option value="price-desc">מחיר: מהגבוה לנמוך</option>
-                <option value="name">שם מוצר (א-ת)</option>
-                <option value="stock">זמינות במלאי</option>
-              </select>
-            </div>
+          {/* Sort Dropdown */}
+          <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-200/80 dark:border-slate-700">
+            <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" />
+            <select
+              value={sortBy}
+              onChange={(e: any) => setSortBy(e.target.value)}
+              className="bg-transparent text-slate-800 dark:text-slate-200 font-medium outline-none cursor-pointer text-xs"
+            >
+              <option value="featured">מומלץ</option>
+              <option value="price-asc">מחיר: מהנמוך לגבוה</option>
+              <option value="price-desc">מחיר: מהגבוה לנמוך</option>
+              <option value="name">שם מוצר (א-ת)</option>
+              <option value="stock">זמינות במלאי</option>
+            </select>
           </div>
         </div>
 
-        {/* Categories Pills */}
-        <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+        {/* Horizontal Scrolling Categories Pills for Mobile Thumb Flicking */}
+        <div className="flex overflow-x-auto no-scrollbar gap-2 pt-2 border-t border-slate-100 dark:border-slate-800 scroll-smooth">
           {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all ${
+              className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 active:scale-95 ${
                 selectedCategory === cat
-                  ? "bg-slate-900 dark:bg-brand-600 text-white shadow-sm"
+                  ? "bg-slate-900 dark:bg-brand-600 text-white shadow-sm ring-2 ring-amber-400/40"
                   : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
               }`}
             >
@@ -395,7 +425,7 @@ export default function CatalogPage() {
 
         {/* Zero-CLS Skeleton Loader during load */}
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
               <div
                 key={i}
@@ -430,7 +460,7 @@ export default function CatalogPage() {
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {filteredProducts.map((product) => (
               <ProductCard
                 key={product.skuCode}

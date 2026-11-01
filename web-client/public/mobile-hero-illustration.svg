@@ -1,0 +1,55 @@
+<svg width="480" height="320" viewBox="0 0 480 320" xmlns="http://www.w3.org/2000/svg">
+  <title>Modern Futuristic E-commerce</title>
+  <desc>Minimalist illustration of a glassmorphic phone, luxury packages, and a delivery drone in golden amber tones.</desc>
+  
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFBF00" stop-opacity="0.4" />
+      <stop offset="100%" stop-color="#FFBF00" stop-opacity="0" />
+    </radialGradient>
+    <filter id="blur">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="4" />
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="480" height="320" fill="#FAFAFA" />
+  
+  <!-- Amber Glow -->
+  <circle cx="240" cy="160" r="140" fill="url(#glow)" />
+
+  <!-- Glassmorphic Phone -->
+  <rect x="180" y="60" width="120" height="200" rx="20" fill="rgba(255, 255, 255, 0.6)" stroke="rgba(255, 255, 255, 0.8)" stroke-width="2" />
+  <rect x="225" y="70" width="30" height="6" rx="3" fill="#E0E0E0" />
+  
+  <!-- Drone -->
+  <g transform="translate(360, 80)">
+    <circle cx="0" cy="0" r="10" fill="#333" />
+    <line x1="-25" y1="0" x2="25" y2="0" stroke="#333" stroke-width="2" />
+    <line x1="0" y1="-5" x2="0" y2="5" stroke="#333" stroke-width="4" />
+    <circle cx="-25" cy="0" r="4" fill="none" stroke="#FFBF00" stroke-width="1.5" />
+    <circle cx="25" cy="0" r="4" fill="none" stroke="#FFBF00" stroke-width="1.5" />
+  </g>
+
+  <!-- Luxury Packages -->
+  <g fill="#FFBF00">
+    <!-- Main Box -->
+    <rect x="140" y="180" width="50" height="50" rx="4" />
+    <rect x="162" y="180" width="6" height="50" fill="#D49B00" />
+    
+    <!-- Floating Small Box -->
+    <rect x="280" y="160" width="35" height="35" rx="4" opacity="0.9" />
+    <rect x="295" y="160" width="5" height="35" fill="#D49B00" opacity="0.9" />
+  </g>
+
+  <!-- Text Elements -->
+  <style>
+    .label { font-family: 'Segoe UI', sans-serif; font-weight: 600; text-anchor: middle; }
+    .small { font-size: 10px; fill: #888; letter-spacing: 2px; }
+    .brand { font-size: 14px; fill: #333; letter-spacing: 1px; }
+  </style>
+  
+  <text x="240" y="160" class="label brand">PREMIUM</text>
+  <text x="240" y="175" class="label small">SHOPPING</text>
+  <text x="360" y="110" class="label small">AIR DELIVERY</text>
+</svg>

@@ -300,10 +300,10 @@ export default function OrdersPage() {
                     </div>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-3">
-                    <div className="text-left sm:text-right">
-                      <span className="text-xs text-slate-400 block font-medium">סך ששולם:</span>
-                      <span className="text-xl font-black text-slate-900 dark:text-slate-100">
+                  <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full sm:w-auto">
+                    <div className="text-right col-span-2 sm:col-span-1">
+                      <span className="text-[11px] text-slate-400 block font-medium">סך ששולם:</span>
+                      <span className="text-lg sm:text-xl font-black text-slate-900 dark:text-slate-100">
                         ₪{order.totalAmount.toLocaleString()} {order.currency}
                       </span>
                     </div>

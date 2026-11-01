@@ -119,7 +119,7 @@ export default function LoginPage() {
                   placeholder="name@example.com"
                   dir="ltr"
                   required
-                  className="w-full pr-10 pl-4 py-3 rounded-xl bg-slate-800/80 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm text-white placeholder-slate-500 text-left transition"
+                  className="w-full pr-10 pl-4 py-3 rounded-xl bg-slate-800/80 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500 text-base sm:text-sm text-white placeholder-slate-500 text-left transition"
                   disabled={loading}
                 />
                 <Mail className="w-4 h-4 text-slate-400 absolute top-3.5 right-3" />
@@ -138,7 +138,7 @@ export default function LoginPage() {
                   placeholder="••••••••"
                   dir="ltr"
                   required
-                  className="w-full pr-10 pl-10 py-3 rounded-xl bg-slate-800/80 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm text-white placeholder-slate-500 text-left transition"
+                  className="w-full pr-10 pl-10 py-3 rounded-xl bg-slate-800/80 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500 text-base sm:text-sm text-white placeholder-slate-500 text-left transition"
                   disabled={loading}
                 />
                 <Lock className="w-4 h-4 text-slate-400 absolute top-3.5 right-3" />
