@@ -5,6 +5,10 @@ import { getGatewayUrl, safeParseJson } from "@/lib/api-config";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+    const normalizedBody = {
+      couponCode: body.couponCode || body.code || "",
+      orderAmount: Number(body.orderAmount ?? 1000),
+    };
     const token = generateServiceJwt("usr_demo");
     const gatewayUrl = getGatewayUrl();
 
@@ -14,11 +18,26 @@ export async function POST(request: NextRequest) {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify(normalizedBody),
       cache: "no-store",
     });
 
     const { data, status } = await safeParseJson(res);
+    if (data && typeof data === "object") {
+      const discountPercent =
+        data.discountType === "PERCENTAGE"
+          ? Number(data.discountValue || 0)
+          : normalizedBody.orderAmount > 0
+            ? Math.round((Number(data.discountAmount || 0) / normalizedBody.orderAmount) * 100)
+            : 10;
+      return NextResponse.json(
+        {
+          ...data,
+          discountPercent,
+        },
+        { status: data.valid === false ? 400 : status }
+      );
+    }
     return NextResponse.json(data, { status });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });

@@ -1,10 +1,9 @@
 package com.company.ragservice.service;
 
 import com.company.ragservice.config.GeminiProperties;
-import com.company.ragservice.dto.CitationDto;
-import com.company.ragservice.dto.RagQueryRequest;
-import com.company.ragservice.dto.RagQueryResponse;
+import com.company.ragservice.dto.*;
 import com.company.ragservice.entity.CatalogVectorDocument;
+import com.company.ragservice.repository.CatalogVectorRepository;
 import com.company.ragservice.repository.VectorSearchRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,9 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 @Service
@@ -24,26 +21,32 @@ public class RagOrchestrationService {
 
     private final EmbeddingService embeddingService;
     private final VectorSearchRepository vectorSearchRepository;
+    private final CatalogVectorRepository catalogVectorRepository;
     private final GeminiGenerationService geminiGenerationService;
+    private final AgenticToolsService agenticToolsService;
     private final GeminiProperties geminiProperties;
 
     public RagQueryResponse processQuery(RagQueryRequest request) {
         long startTime = System.currentTimeMillis();
         String query = request.query();
         int topK = (request.topK() != null && request.topK() > 0) ? request.topK() : 4;
+        String category = request.effectiveCategory();
+        Boolean onlyInStock = request.effectiveOnlyInStock();
+        String customerId = request.effectiveCustomerId();
 
-        log.info("Processing RAG query: '{}' [Category: {}, MaxPrice: {}, TopK: {}]",
-                query, request.categoryFilter(), request.maxPrice(), topK);
+        log.info("Processing Agentic & Hybrid RAG query: '{}' [Category: {}, MaxPrice: {}, MinRating: {}, OnlyInStock: {}, TopK: {}]",
+                query, category, request.maxPrice(), request.minRating(), onlyInStock, topK);
 
         // 1. Generate Query Embedding
         List<Float> queryVector = embeddingService.generateEmbedding(query);
 
-        // 2. Vector Search Retrieval from MongoDB Atlas
+        // 2. Hybrid Vector Search Retrieval (Pre-filtering + Reranking with averageRating)
         List<VectorSearchRepository.ScoredDocument> matches = vectorSearchRepository.searchSimilar(
                 queryVector,
-                request.categoryFilter(),
+                category,
                 request.maxPrice(),
-                request.inStockOnly(),
+                request.minRating(),
+                onlyInStock,
                 topK
         );
 
@@ -64,26 +67,32 @@ public class RagOrchestrationService {
                     .build();
             citations.add(citation);
 
-            contextBuilder.append(String.format("- מוצר: %s (מק״ט: %s), קטגוריה: %s, מחיר: ₪%.2f, זמינות: %s, תיאור: %s\n",
-                    doc.getTitle(), doc.getSkuCode(), doc.getCategory(), doc.getPrice(),
-                    doc.getInStock() != null && doc.getInStock() ? "במלאי" : "אזל",
+            contextBuilder.append(String.format("- מוצר: %s (מק״ט: %s), קטגוריה: %s, מחיר: ₪%.2f, דירוג: %.1f, זמינות: %s (%d יח׳), תיאור: %s\n",
+                    doc.getTitle(), doc.getSkuCode(), doc.getCategory(),
+                    doc.getPrice() != null ? doc.getPrice() : 0.0,
+                    doc.getAverageRating() != null ? doc.getAverageRating() : 4.8,
+                    Boolean.TRUE.equals(doc.getInStock()) ? "במלאי" : "אזל",
+                    doc.getAvailableQuantity() != null ? doc.getAvailableQuantity() : 0,
                     doc.getTextChunk()));
         }
 
-        // 4. Grounded Generation using Google Gemini gemini-3.5-flash-lite
-        String generatedAnswer = geminiGenerationService.generateGroundedAnswer(
+        // 4. Grounded Generation + Gemini Function Calling (Tools)
+        GeminiGenerationService.AgenticGenerationResult generationResult = geminiGenerationService.generateAgenticAnswer(
                 query,
                 contextBuilder.toString(),
-                citations
+                citations,
+                customerId,
+                request.cartTotal()
         );
 
         long latency = System.currentTimeMillis() - startTime;
-        double confidence = citations.isEmpty() ? 0.3 : Math.min(0.98, citations.get(0).relevanceScore() + 0.1);
+        double confidence = citations.isEmpty() ? 0.3 : Math.min(0.98, citations.get(0).relevanceScore() + 0.08);
 
         return RagQueryResponse.builder()
                 .query(query)
-                .answer(generatedAnswer)
+                .answer(generationResult.answer())
                 .citations(citations)
+                .executedActions(generationResult.executedActions())
                 .confidenceScore(confidence)
                 .model(geminiProperties.getModel())
                 .latencyMs(latency)
@@ -92,20 +101,115 @@ public class RagOrchestrationService {
     }
 
     /**
+     * Feature 5: Smart Product Comparison AI Verdict
+     */
+    public ProductComparisonResponse compareProducts(ProductComparisonRequest request) {
+        long startTime = System.currentTimeMillis();
+        List<String> skus = request.skus() != null ? request.skus() : List.of();
+        log.info("Generating AI Product Comparison Verdict for SKUs: {} | UseCase: '{}'", skus, request.userUseCase());
+
+        List<CatalogVectorDocument> resolvedProducts = new ArrayList<>();
+        for (String sku : skus) {
+            if (sku == null || sku.isBlank()) continue;
+            Optional<CatalogVectorDocument> docOpt = catalogVectorRepository.findBySkuCode(sku.trim())
+                    .or(() -> catalogVectorRepository.findBySkuCode(agenticToolsService.resolveCanonicalSku(sku)));
+            docOpt.ifPresent(resolvedProducts::add);
+        }
+
+        return geminiGenerationService.generateProductComparisonVerdict(
+                resolvedProducts,
+                skus,
+                request.userUseCase(),
+                startTime
+        );
+    }
+
+    /**
+     * Feature 6: Multimodal Search (Vision + Vector Search)
+     */
+    public MultimodalSearchResponse multimodalSearch(MultimodalSearchRequest request) {
+        long startTime = System.currentTimeMillis();
+        int topK = (request.topK() != null && request.topK() > 0) ? request.topK() : 4;
+
+        log.info("Processing Multimodal Search [hasImage={}, queryText='{}', topK={}]",
+                request.imageBase64() != null && !request.imageBase64().isBlank(),
+                request.queryText(),
+                topK);
+
+        // 1. Extract product description and technical features using Gemini Vision
+        GeminiGenerationService.VisionExtractionResult visionResult = geminiGenerationService.extractProductDescriptionFromImage(
+                request.imageBase64(),
+                request.mimeType(),
+                request.queryText()
+        );
+
+        String combinedSearchQuery = visionResult.extractedDescription();
+        if (request.queryText() != null && !request.queryText().isBlank()) {
+            combinedSearchQuery = request.queryText() + " " + combinedSearchQuery;
+        }
+
+        // 2. Embed extracted description into 768-dim vector
+        List<Float> queryVector = embeddingService.generateEmbedding(combinedSearchQuery);
+
+        // 3. Retrieve matching catalog products from VectorSearchRepository
+        List<VectorSearchRepository.ScoredDocument> matches = vectorSearchRepository.searchSimilar(
+                queryVector,
+                request.category(),
+                request.maxPrice(),
+                null,
+                request.onlyInStock() != null ? request.onlyInStock() : true,
+                topK
+        );
+
+        List<CitationDto> citations = matches.stream()
+                .map(scored -> {
+                    CatalogVectorDocument doc = scored.document();
+                    return CitationDto.builder()
+                            .skuCode(doc.getSkuCode())
+                            .title(doc.getTitle())
+                            .price(doc.getPrice())
+                            .relevanceScore(Math.round(scored.score() * 100.0) / 100.0)
+                            .category(doc.getCategory())
+                            .inStock(doc.getInStock())
+                            .snippet(doc.getTextChunk())
+                            .build();
+                })
+                .toList();
+
+        String answer = geminiGenerationService.generateGroundedAnswer(
+                combinedSearchQuery,
+                visionResult.extractedDescription(),
+                citations
+        );
+
+        long latency = System.currentTimeMillis() - startTime;
+
+        return MultimodalSearchResponse.builder()
+                .extractedDescription(visionResult.extractedDescription())
+                .detectedFeatures(visionResult.detectedFeatures())
+                .answer(answer)
+                .matches(citations)
+                .model(geminiProperties.getModel())
+                .latencyMs(latency)
+                .build();
+    }
+
+    /**
      * Streams the generated tokens via SSE for real-time customer UX.
-     * Runs in a Virtual Thread without blocking application server threads.
      */
     public void streamQuery(RagQueryRequest request, SseEmitter emitter) {
         CompletableFuture.runAsync(() -> {
             try {
                 RagQueryResponse fullResponse = processQuery(request);
 
-                // Emit Citations metadata event first
                 emitter.send(SseEmitter.event()
                         .name("citations")
-                        .data(Map.of("citations", fullResponse.citations(), "model", fullResponse.model())));
+                        .data(Map.of(
+                                "citations", fullResponse.citations(),
+                                "executedActions", fullResponse.executedActions() != null ? fullResponse.executedActions() : List.of(),
+                                "model", fullResponse.model()
+                        )));
 
-                // Stream tokens word by word with micro-pauses for natural reading pacing
                 String answer = fullResponse.answer();
                 String[] words = answer.split(" ");
                 for (int i = 0; i < words.length; i++) {
@@ -113,13 +217,16 @@ public class RagOrchestrationService {
                     emitter.send(SseEmitter.event()
                             .name("token")
                             .data(Map.of("text", piece, "done", false)));
-                    Thread.sleep(25);
+                    Thread.sleep(20);
                 }
 
-                // Final event
                 emitter.send(SseEmitter.event()
                         .name("complete")
-                        .data(Map.of("done", true, "latencyMs", fullResponse.latencyMs())));
+                        .data(Map.of(
+                                "done", true,
+                                "latencyMs", fullResponse.latencyMs(),
+                                "executedActions", fullResponse.executedActions() != null ? fullResponse.executedActions() : List.of()
+                        )));
                 emitter.complete();
             } catch (Exception ex) {
                 log.error("SSE stream error during RAG generation: {}", ex.getMessage());

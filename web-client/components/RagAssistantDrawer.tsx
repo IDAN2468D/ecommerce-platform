@@ -30,21 +30,29 @@ export interface Citation {
   snippet?: string;
 }
 
+export interface ExecutedAction {
+  toolName: string;
+  status: string;
+  summary: string;
+  payload?: Record<string, any>;
+}
+
 export interface ChatMessage {
   id: string;
   sender: "user" | "assistant";
   text: string;
   citations?: Citation[];
+  executedActions?: ExecutedAction[];
   timestamp: string;
   latencyMs?: number;
   model?: string;
 }
 
 const PRESET_PROMPTS = [
+  "תוסיף לי לסל את האוזניות של סוני עם ביטול רעשים",
+  "מה הקופון הכי משתלם לסל של 3500 ש״ח?",
   "איזה מחשב נייד הכי מתאים לעריכת וידאו וגרפיקה?",
-  "מחפש אוזניות ביטול רעשים מומלצות",
   "אילו אביזרים למכשירי Apple יש במלאי?",
-  "מה המוצרים שמעניקים 5% Cashback?",
 ];
 
 export const RagAssistantDrawer: React.FC = () => {
@@ -53,6 +61,9 @@ export const RagAssistantDrawer: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
+  const [onlyInStock, setOnlyInStock] = useState<boolean>(false);
+  const [minRating, setMinRating] = useState<number>(0);
+  const [maxPrice, setMaxPrice] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [addedSkus, setAddedSkus] = useState<Record<string, boolean>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -127,12 +138,22 @@ export const RagAssistantDrawer: React.FC = () => {
       const payload: any = {
         query: textToSend.trim(),
         conversationId: "conv_client_session",
+        customerId: "usr_demo",
         topK: 4,
         minSimilarity: 0.5,
       };
 
       if (selectedCategory !== "ALL") {
         payload.category = selectedCategory;
+      }
+      if (onlyInStock) {
+        payload.onlyInStock = true;
+      }
+      if (minRating > 0) {
+        payload.minRating = minRating;
+      }
+      if (maxPrice !== null && maxPrice > 0) {
+        payload.maxPrice = maxPrice;
       }
 
       const res = await fetch("/api/rag/query", {
@@ -146,12 +167,51 @@ export const RagAssistantDrawer: React.FC = () => {
       }
 
       const data = await res.json();
+      const executedActions: ExecutedAction[] = Array.isArray(data.executedActions)
+        ? data.executedActions
+        : [];
+
+      // Synchronize client-side cart & session state when Agentic tools executed
+      executedActions.forEach((act) => {
+        if (act.toolName === "addToCartTool" && act.status === "SUCCESS" && act.payload) {
+          try {
+            const skuCode = String(act.payload.skuCode || "");
+            const productName = String(act.payload.productName || skuCode);
+            const unitPrice = Number(act.payload.unitPrice || 0);
+            const quantity = Number(act.payload.quantity || 1);
+            if (skuCode) {
+              const currentCart = JSON.parse(localStorage.getItem("cart") || "[]");
+              const existingIdx = currentCart.findIndex((i: any) => i.skuCode === skuCode);
+              if (existingIdx > -1) {
+                currentCart[existingIdx].quantity = (currentCart[existingIdx].quantity || 1) + quantity;
+              } else {
+                currentCart.push({ skuCode, productName, unitPrice, quantity });
+              }
+              localStorage.setItem("cart", JSON.stringify(currentCart));
+              window.dispatchEvent(new Event("cart-updated"));
+            }
+          } catch (e) {
+            console.error("Failed to sync agentic addToCartTool with localStorage", e);
+          }
+        } else if (
+          act.toolName === "validateBestCouponTool" &&
+          act.status === "SUCCESS" &&
+          act.payload?.bestCouponCode
+        ) {
+          try {
+            sessionStorage.setItem("pending_coupon", String(act.payload.bestCouponCode));
+          } catch {
+            // ignore
+          }
+        }
+      });
 
       const assistantMessage: ChatMessage = {
         id: `asst_${Date.now()}`,
         sender: "assistant",
         text: data.answer || data.response || "לא התקבלה תשובה מפורטת מהמערכת.",
         citations: data.citations || [],
+        executedActions,
         timestamp: new Date().toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" }),
         latencyMs: data.latencyMs,
         model: data.model || "gemini-3.5-flash-lite",
@@ -266,29 +326,66 @@ export const RagAssistantDrawer: React.FC = () => {
             </div>
           </div>
 
-          {/* Category Filter Pills */}
-          <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-950/40 flex items-center gap-1.5 overflow-x-auto no-scrollbar text-xs">
-            <span className="text-[11px] text-slate-400 font-medium shrink-0 flex items-center gap-1 ml-1">
-              <SlidersHorizontal className="w-3 h-3 text-slate-400" /> סינון:
-            </span>
-            {[
-              { id: "ALL", label: "כל הקטלוג" },
-              { id: "מחשבים", label: "מחשבים" },
-              { id: "אוזניות", label: "אוזניות ושמע" },
-              { id: "אביזרים", label: "אביזרים" },
-            ].map((cat) => (
+          {/* Category & Hybrid Reranking Filter Pills */}
+          <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-950/40 space-y-1.5 text-xs">
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+              <span className="text-[11px] text-slate-400 font-medium shrink-0 flex items-center gap-1 ml-1">
+                <SlidersHorizontal className="w-3 h-3 text-slate-400" /> סינון:
+              </span>
+              {[
+                { id: "ALL", label: "כל הקטלוג" },
+                { id: "מחשבים", label: "מחשבים" },
+                { id: "אוזניות", label: "אוזניות ושמע" },
+                { id: "אביזרים", label: "אביזרים" },
+              ].map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => setSelectedCategory(cat.id)}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition shrink-0 ${
+                    selectedCategory === cat.id
+                      ? "bg-brand-600 text-white shadow-xs"
+                      : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-100"
+                  }`}
+                >
+                  {cat.label}
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-0.5">
               <button
-                key={cat.id}
-                onClick={() => setSelectedCategory(cat.id)}
-                className={`px-2.5 py-1 rounded-lg text-xs font-medium transition shrink-0 ${
-                  selectedCategory === cat.id
-                    ? "bg-brand-600 text-white shadow-xs"
-                    : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-100"
+                type="button"
+                onClick={() => setOnlyInStock((v) => !v)}
+                className={`px-2 py-0.5 rounded-md text-[11px] font-semibold transition shrink-0 ${
+                  onlyInStock
+                    ? "bg-emerald-600 text-white"
+                    : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
                 }`}
               >
-                {cat.label}
+                {onlyInStock ? "✓ רק במלאי" : "רק במלאי"}
               </button>
-            ))}
+              <button
+                type="button"
+                onClick={() => setMinRating((r) => (r === 4.5 ? 0 : 4.5))}
+                className={`px-2 py-0.5 rounded-md text-[11px] font-semibold transition shrink-0 ${
+                  minRating >= 4.5
+                    ? "bg-amber-500 text-slate-950"
+                    : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
+                }`}
+              >
+                ★ 4.5+
+              </button>
+              <button
+                type="button"
+                onClick={() => setMaxPrice((p) => (p === 6000 ? null : 6000))}
+                className={`px-2 py-0.5 rounded-md text-[11px] font-semibold transition shrink-0 ${
+                  maxPrice === 6000
+                    ? "bg-indigo-600 text-white"
+                    : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
+                }`}
+              >
+                {maxPrice === 6000 ? "✓ עד ₪6,000" : "עד ₪6,000"}
+              </button>
+            </div>
           </div>
 
           {/* Messages Container */}
@@ -320,6 +417,67 @@ export const RagAssistantDrawer: React.FC = () => {
                   >
                     {msg.text}
                   </div>
+
+                  {/* Agentic Executed Actions (Function Calling Chips) */}
+                  {msg.executedActions && msg.executedActions.length > 0 && (
+                    <div className="space-y-1.5 pt-1">
+                      <span className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1 px-1">
+                        <Zap className="w-3.5 h-3.5" /> פעולות אוטונומיות שבוצעו ע״י הסוכן:
+                      </span>
+                      <div className="flex flex-col gap-1.5">
+                        {msg.executedActions.map((act, idx) => (
+                          <div
+                            key={`${act.toolName}_${idx}`}
+                            className={`p-2.5 rounded-xl border text-xs flex items-center justify-between gap-2 ${
+                              act.status === "SUCCESS"
+                                ? "bg-emerald-50/90 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800/70 text-emerald-900 dark:text-emerald-200"
+                                : "bg-amber-50/90 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800/70 text-amber-900 dark:text-amber-200"
+                            }`}
+                          >
+                            <div className="flex items-center gap-2">
+                              <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                              <div>
+                                <div className="font-bold text-[11px] font-mono opacity-80">
+                                  {act.toolName}
+                                </div>
+                                <div className="font-semibold">{act.summary}</div>
+                              </div>
+                            </div>
+                            {act.toolName === "addToCartTool" && act.status === "SUCCESS" && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setIsOpen(false);
+                                  router.push("/cart");
+                                }}
+                                className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] shrink-0 transition"
+                              >
+                                עבור לסל
+                              </button>
+                            )}
+                            {act.toolName === "validateBestCouponTool" &&
+                              act.status === "SUCCESS" &&
+                              act.payload?.bestCouponCode && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    sessionStorage.setItem(
+                                      "pending_coupon",
+                                      String(act.payload?.bestCouponCode)
+                                    );
+                                    setIsOpen(false);
+                                    router.push("/cart");
+                                  }}
+                                  className="px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[11px] shrink-0 transition"
+                                >
+                                  החל {String(act.payload.bestCouponCode)}
+                                </button>
+                              )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Grounded Citation Product Cards */}
                   {msg.citations && msg.citations.length > 0 && (

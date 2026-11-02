@@ -7,6 +7,7 @@ export interface SseNotification {
   type: string;
   title: string;
   message: string;
+  couponCode?: string;
   timestamp: number;
   read: boolean;
 }
@@ -38,6 +39,7 @@ export function useNotificationStream(customerId: string = "usr_demo") {
               type,
               title: data.title || "עדכון מערכת",
               message: data.message || JSON.stringify(data),
+              couponCode: data.couponCode || undefined,
               timestamp: data.timestamp || Date.now(),
               read: false,
             };
@@ -67,6 +69,18 @@ export function useNotificationStream(customerId: string = "usr_demo") {
 
         eventSource.addEventListener("ORDER_CANCELLED", (e: MessageEvent) => {
           handleIncoming("ORDER_CANCELLED", e.data);
+        });
+
+        eventSource.addEventListener("ABANDONED_CART_COUPON", (e: MessageEvent) => {
+          handleIncoming("ABANDONED_CART_COUPON", e.data);
+        });
+
+        eventSource.addEventListener("SHIPMENT_SCHEDULED", (e: MessageEvent) => {
+          handleIncoming("SHIPMENT_SCHEDULED", e.data);
+        });
+
+        eventSource.addEventListener("ORDER_DISPATCHED", (e: MessageEvent) => {
+          handleIncoming("ORDER_DISPATCHED", e.data);
         });
 
         eventSource.onerror = () => {

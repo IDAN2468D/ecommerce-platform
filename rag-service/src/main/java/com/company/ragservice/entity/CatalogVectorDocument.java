@@ -36,7 +36,12 @@ public class CatalogVectorDocument {
     @Indexed
     private Boolean inStock;
 
+    @Builder.Default
+    private Integer availableQuantity = 25;
+
+    @Indexed
     private Double averageRating;
+
     private Map<String, Object> metadata;
     private Instant indexedAt;
 }

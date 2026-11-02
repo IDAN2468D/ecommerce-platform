@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { X, Star, Check, ShoppingCart, ShieldCheck, CheckCircle2, MessageSquare, UserCheck } from "lucide-react";
+import { X, Star, Check, ShoppingCart, ShieldCheck, CheckCircle2, MessageSquare, UserCheck, Sparkles, ThumbsUp, AlertCircle } from "lucide-react";
 import { Button } from "../ui/Button";
 import { Badge } from "../ui/Badge";
 import { useCurrency } from "../../context/CurrencyContext";
@@ -25,6 +25,17 @@ interface ReviewItem {
   verifiedPurchase: boolean;
 }
 
+interface AiReviewSummary {
+  skuCode: string;
+  aiSummary: string;
+  prosList: string[];
+  consList: string[];
+  verifiedReviewsCount?: number;
+  verifiedReviewsAnalyzed?: number;
+  averageVerifiedRating?: number;
+  averageRating?: number;
+}
+
 export interface ProductQuickViewModalProps {
   product: QuickViewProduct | null;
   isOpen: boolean;
@@ -41,6 +52,7 @@ export const ProductQuickViewModal: React.FC<ProductQuickViewModalProps> = ({
   const { formatPrice } = useCurrency();
   const [activeTab, setActiveTab] = useState<"details" | "reviews">("details");
   const [reviews, setReviews] = useState<ReviewItem[]>([]);
+  const [aiSummary, setAiSummary] = useState<AiReviewSummary | null>(null);
   const [reviewsLoading, setReviewsLoading] = useState(false);
   const [totalReviews, setTotalReviews] = useState(18);
   const [newRating, setNewRating] = useState(5);
@@ -48,9 +60,21 @@ export const ProductQuickViewModal: React.FC<ProductQuickViewModalProps> = ({
   const [submittingReview, setSubmittingReview] = useState(false);
   const [isAdded, setIsAdded] = useState(false);
 
+  const loadAiSummary = (skuCode: string) => {
+    fetch(`/api/reviews/${encodeURIComponent(skuCode)}/summary`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data && data.aiSummary) {
+          setAiSummary(data);
+        }
+      })
+      .catch(() => {});
+  };
+
   useEffect(() => {
     if (isOpen && product) {
       setReviewsLoading(true);
+      setAiSummary(null);
       fetch(`/api/reviews/${product.skuCode}`)
         .then((res) => (res.ok ? res.json() : null))
         .then((data) => {
@@ -59,6 +83,8 @@ export const ProductQuickViewModal: React.FC<ProductQuickViewModalProps> = ({
         })
         .catch(() => {})
         .finally(() => setReviewsLoading(false));
+
+      loadAiSummary(product.skuCode);
     }
   }, [isOpen, product]);
 
@@ -90,6 +116,7 @@ export const ProductQuickViewModal: React.FC<ProductQuickViewModalProps> = ({
         setReviews((prev) => [item, ...prev]);
         setNewComment("");
         setTotalReviews((prev) => prev + 1);
+        setTimeout(() => loadAiSummary(product.skuCode), 400);
       }
     } finally {
       setSubmittingReview(false);
@@ -135,6 +162,56 @@ export const ProductQuickViewModal: React.FC<ProductQuickViewModalProps> = ({
               </div>
             ) : (
               <div className="space-y-4 max-h-72 overflow-y-auto pr-1 text-xs">
+                {/* Feature 3: AI Verified Review Summarizer Block */}
+                {aiSummary && (
+                  <div className="p-3.5 rounded-2xl bg-gradient-to-br from-indigo-50/90 via-white to-amber-50/60 dark:from-indigo-950/40 dark:via-slate-900 dark:to-amber-950/20 border border-indigo-200/80 dark:border-indigo-800/60 space-y-2.5 shadow-xs">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5 font-black text-indigo-700 dark:text-indigo-300">
+                        <Sparkles className="w-4 h-4 text-amber-500 animate-pulse" />
+                        <span>סיכום בינה מלאכותית (קונים מאומתים)</span>
+                      </div>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 dark:bg-indigo-900/70 text-indigo-700 dark:text-indigo-300">
+                        {aiSummary.verifiedReviewsCount ?? aiSummary.verifiedReviewsAnalyzed ?? 1} מאומתים • ★ {Number(aiSummary.averageVerifiedRating ?? aiSummary.averageRating ?? 4.8).toFixed(1)}
+                      </span>
+                    </div>
+                    <p className="text-slate-700 dark:text-slate-200 leading-relaxed font-medium">
+                      {aiSummary.aiSummary}
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                      {aiSummary.prosList && aiSummary.prosList.length > 0 && (
+                        <div className="p-2 rounded-xl bg-emerald-50/80 dark:bg-emerald-950/30 border border-emerald-200/60 dark:border-emerald-800/50 space-y-1">
+                          <div className="font-bold text-emerald-700 dark:text-emerald-300 flex items-center gap-1 text-[11px]">
+                            <ThumbsUp className="w-3 h-3" /> יתרונות בולטים:
+                          </div>
+                          <ul className="space-y-0.5 text-[11px] text-emerald-900 dark:text-emerald-200">
+                            {aiSummary.prosList.map((pro, idx) => (
+                              <li key={idx} className="flex items-start gap-1">
+                                <span className="text-emerald-500 font-bold">✓</span>
+                                <span>{pro}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      {aiSummary.consList && aiSummary.consList.length > 0 && (
+                        <div className="p-2 rounded-xl bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-800/50 space-y-1">
+                          <div className="font-bold text-amber-700 dark:text-amber-300 flex items-center gap-1 text-[11px]">
+                            <AlertCircle className="w-3 h-3" /> נקודות לתשומת לב:
+                          </div>
+                          <ul className="space-y-0.5 text-[11px] text-amber-900 dark:text-amber-200">
+                            {aiSummary.consList.map((con, idx) => (
+                              <li key={idx} className="flex items-start gap-1">
+                                <span className="text-amber-500 font-bold">•</span>
+                                <span>{con}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 <form onSubmit={handleReviewSubmit} className="bg-slate-50 dark:bg-slate-950/80 p-3 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-2">
                   <div className="flex justify-between items-center font-bold text-slate-800 dark:text-slate-200">
                     <span>הוסף חוות דעת:</span>

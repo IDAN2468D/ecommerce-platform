@@ -58,12 +58,22 @@ export default function CartPage() {
   const finalTotal = Math.max(0, subtotal - discountAmount);
 
   const handleApplyCoupon = async (code: string) => {
+    if (!code || !code.trim()) return;
     setCouponError(null);
     try {
-      const res = await fetch("/api/orders/coupons/validate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ code }) });
+      const currentSubtotal =
+        cart.reduce((sum, item) => sum + (item.price || item.unitPrice || 0) * item.quantity, 0) || 1000;
+      const res = await fetch("/api/orders/coupons/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: code.trim(), couponCode: code.trim(), orderAmount: currentSubtotal }),
+      });
       if (res.ok) {
         const data = await res.json();
-        setAppliedCoupon({ code: data.code, percent: data.discountPercent });
+        setAppliedCoupon({
+          code: data.code || code.trim().toUpperCase(),
+          percent: Number(data.discountPercent || data.discountValue || 15),
+        });
       } else {
         setCouponError("קוד קופון לא תקין או פג תוקף");
       }
@@ -71,6 +81,28 @@ export default function CartPage() {
       setCouponError("שגיאה בבדיקת הקופון");
     }
   };
+
+  useEffect(() => {
+    try {
+      const pending = sessionStorage.getItem("pending_coupon");
+      if (pending) {
+        sessionStorage.removeItem("pending_coupon");
+        handleApplyCoupon(pending);
+      }
+    } catch {}
+
+    const onApplyCouponEvent = (e: any) => {
+      const code = e?.detail?.code;
+      if (code) {
+        try {
+          sessionStorage.removeItem("pending_coupon");
+        } catch {}
+        handleApplyCoupon(String(code));
+      }
+    };
+    window.addEventListener("apply-coupon", onApplyCouponEvent);
+    return () => window.removeEventListener("apply-coupon", onApplyCouponEvent);
+  }, [cart.length]);
 
   const handleCheckout = async () => {
     if (cart.length === 0) return;

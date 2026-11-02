@@ -15,7 +15,7 @@ import java.util.Map;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-@KafkaListener(topics = {"order-events", "inventory-events", "payment-events", "user-events", "shipping-events"}, groupId = "notification-service-group")
+@KafkaListener(topics = {"order-events", "inventory-events", "payment-events", "user-events", "shipping-events", "notification-events", "cart-events"}, groupId = "notification-service-group")
 public class NotificationKafkaConsumer {
 
     private final NotificationService notificationService;
@@ -186,6 +186,27 @@ public class NotificationKafkaConsumer {
                 "message", "המשלוח בוטל בהצלחה במסגרת ביטול ההזמנה.",
                 "timestamp", System.currentTimeMillis()
         ));
+    }
+
+    @KafkaHandler
+    public void handleNotificationSent(NotificationSentEvent event) {
+        log.info("Notification service received NotificationSentEvent for customerId={}, ref={}", event.customerId(), event.referenceId());
+        String targetUser = event.customerId() != null ? event.customerId() : "usr_demo";
+        String couponCode = event.referenceId() != null ? event.referenceId() : "WELCOME10";
+        sseNotificationService.dispatchNotification(targetUser, "ABANDONED_CART_COUPON", Map.of(
+                "notificationId", event.notificationId() != null ? event.notificationId() : "",
+                "couponCode", couponCode,
+                "discountPercent", 15,
+                "expiresInMinutes", 30,
+                "title", event.subject() != null ? event.subject() : "🎁 קופון אישי להשלמת הרכישה!",
+                "message", event.message() != null ? event.message() : ("השתמש בקוד הקופון " + couponCode + " לקבלת 15% הנחה בסל הקניות!"),
+                "timestamp", System.currentTimeMillis()
+        ));
+    }
+
+    @KafkaHandler
+    public void handleCartAbandoned(CartAbandonedEvent event) {
+        log.info("Notification service observed CartAbandonedEvent for customerId={}, total={}", event.customerId(), event.estimatedTotal());
     }
 
     @KafkaHandler(isDefault = true)

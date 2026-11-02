@@ -31,4 +31,7 @@ public class SavedCartEntity {
 
     @Builder.Default
     private Instant updatedAt = Instant.now();
+
+    @Builder.Default
+    private Boolean abandonedNotificationSent = false;
 }

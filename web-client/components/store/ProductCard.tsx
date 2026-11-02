@@ -49,12 +49,27 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   const cashbackReward = Math.round(price * 0.05);
 
   const handleAdd = (e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     if (isOutOfStock) return;
-    onAddToCart({ skuCode, name, price, image, quantity });
+    onAddToCart({
+      skuCode,
+      name,
+      productName: name,
+      price,
+      unitPrice: price,
+      image,
+      imageUrl: image,
+      quantity,
+    });
     setIsAdded(true);
     window.dispatchEvent(new Event("open-cart-drawer"));
-    setTimeout(() => { setIsAdded(false); setQuantity(1); }, 1800);
+    setTimeout(() => {
+      setIsAdded(false);
+      setQuantity(1);
+    }, 1800);
   };
 
   const handleCopySku = (e: React.MouseEvent) => {
@@ -70,9 +85,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     <div className={`group relative flex flex-col justify-between rounded-[2rem] bg-white dark:bg-[#0c0d14]/90 backdrop-blur-2xl border border-slate-200/90 dark:border-amber-500/15 hover:border-amber-500/50 shadow-xl hover:shadow-2xl hover:shadow-amber-500/10 transition-all duration-500 hover:-translate-y-2 overflow-hidden ${
       isFeatured ? "electric-border-card" : ""
     }`}>
-      <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-amber-500 via-amber-300 to-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-30" />
+      <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-amber-500 via-amber-300 to-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-30 pointer-events-none" />
 
-      <div>
+      <div className="relative z-10">
         {/* Visual Box */}
         <div
           onClick={() => onOpenQuickView?.({ skuCode, name, price, description, image, category, stock })}
@@ -183,7 +198,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       </div>
 
       {/* Footer Pricing & CTA */}
-      <div className="p-6 pt-4 bg-slate-50/70 dark:bg-slate-950/60 border-t border-slate-200/80 dark:border-slate-800/80 space-y-4">
+      <div className="relative z-20 p-6 pt-4 bg-slate-50/70 dark:bg-slate-950/60 border-t border-slate-200/80 dark:border-slate-800/80 space-y-4">
         <div className="flex items-end justify-between">
           <div>
             <div className="flex items-center gap-2 mb-1">
@@ -204,19 +219,19 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 relative z-30">
           {!isOutOfStock && (
             <div className="flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 rounded-2xl h-12 px-1.5 shrink-0">
-              <button type="button" onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-8 h-8 flex items-center justify-center rounded-xl text-slate-400 hover:text-white"><Minus className="w-4 h-4" /></button>
+              <button type="button" onClick={(e) => { e.stopPropagation(); setQuantity(Math.max(1, quantity - 1)); }} className="w-8 h-8 flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer"><Minus className="w-4 h-4" /></button>
               <span className="w-8 text-center text-sm font-black text-slate-800 dark:text-slate-100 font-mono">{quantity}</span>
-              <button type="button" onClick={() => setQuantity(Math.min(available || 10, quantity + 1))} className="w-8 h-8 flex items-center justify-center rounded-xl text-slate-400 hover:text-white"><Plus className="w-4 h-4" /></button>
+              <button type="button" onClick={(e) => { e.stopPropagation(); setQuantity(Math.min(available || 10, quantity + 1)); }} className="w-8 h-8 flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer"><Plus className="w-4 h-4" /></button>
             </div>
           )}
           <button
             type="button"
             onClick={handleAdd}
             disabled={isOutOfStock}
-            className={`flex-1 h-12 rounded-2xl font-black text-sm sm:text-base flex items-center justify-center gap-2.5 transition-all shadow-lg active:scale-95 ${
+            className={`flex-1 h-12 rounded-2xl font-black text-sm sm:text-base flex items-center justify-center gap-2.5 transition-all shadow-lg active:scale-95 cursor-pointer ${
               isAdded
                 ? "bg-emerald-500 text-slate-950"
                 : isOutOfStock

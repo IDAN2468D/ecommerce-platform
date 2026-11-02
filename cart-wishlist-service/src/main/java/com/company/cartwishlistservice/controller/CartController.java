@@ -10,11 +10,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/v1/cart")
 @RequiredArgsConstructor
 @Slf4j
-@Tag(name = "Shopping Cart", description = "Sub-2ms Redis Hash Shopping Cart Management")
+@Tag(name = "Shopping Cart", description = "Sub-2ms Redis Hash Shopping Cart Management & Abandoned Cart Recovery")
 public class CartController {
 
     private final CartService cartService;
@@ -56,5 +58,12 @@ public class CartController {
             @RequestHeader(value = "X-Customer-Id", required = false, defaultValue = "usr_demo") String customerId,
             @RequestBody MergeCartRequest request) {
         return ResponseEntity.ok(cartService.mergeGuestCart(customerId, request));
+    }
+
+    @PostMapping("/abandoned/trigger")
+    @Operation(summary = "Trigger abandoned cart recovery event and dynamic 30-min coupon generation")
+    public ResponseEntity<Map<String, Object>> triggerAbandonedCart(
+            @RequestHeader(value = "X-Customer-Id", required = false, defaultValue = "usr_demo") String customerId) {
+        return ResponseEntity.ok(cartService.triggerAbandonedCartForCustomer(customerId));
     }
 }

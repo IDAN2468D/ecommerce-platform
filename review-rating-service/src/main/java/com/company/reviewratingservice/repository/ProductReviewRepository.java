@@ -10,6 +10,7 @@ import java.util.UUID;
 @Repository
 public interface ProductReviewRepository extends MongoRepository<ProductReviewEntity, UUID> {
     List<ProductReviewEntity> findBySkuCodeOrderByCreatedAtDesc(String skuCode);
+    List<ProductReviewEntity> findBySkuCodeAndVerifiedPurchaseTrueOrderByCreatedAtDesc(String skuCode);
     boolean existsByCustomerIdAndSkuCode(String customerId, String skuCode);
     long countBySkuCode(String skuCode);
 }

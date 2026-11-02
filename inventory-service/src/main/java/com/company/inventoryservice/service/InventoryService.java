@@ -26,7 +26,9 @@ import org.springframework.data.mongodb.core.query.Query;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -70,12 +72,22 @@ public class InventoryService {
         }
 
         // 2. Second Pass: Deduct available stock, increment reserved stock, record reservation
+        Map<String, Integer> updatedStockBySku = new HashMap<>();
+        String primarySku = null;
+        Integer primaryAvailable = null;
+
         for (StockCheckItem item : items) {
             InventoryEntity inv = inventoryRepository.findBySkuCodeForUpdate(item.skuCode()).orElseThrow();
             inv.setAvailableQuantity(inv.getAvailableQuantity() - item.quantity());
             inv.setReservedQuantity(inv.getReservedQuantity() + item.quantity());
             inv.setUpdatedAt(Instant.now());
             inventoryRepository.save(inv);
+
+            updatedStockBySku.put(inv.getSkuCode(), inv.getAvailableQuantity());
+            if (primarySku == null) {
+                primarySku = inv.getSkuCode();
+                primaryAvailable = inv.getAvailableQuantity();
+            }
 
             InventoryReservationEntity reservation = InventoryReservationEntity.builder()
                     .id(UUID.randomUUID())
@@ -93,7 +105,10 @@ public class InventoryService {
         StockReservedEvent reservedEvent = new StockReservedEvent(
                 null,
                 reservationId,
-                Instant.now()
+                Instant.now(),
+                primarySku,
+                primaryAvailable,
+                updatedStockBySku
         );
         com.company.inventoryservice.domain.entity.OutboxEventEntity outboxEvent =
                 outboxService.saveEvent("INVENTORY", reservationId, "StockReservedEvent", TOPIC_INVENTORY_EVENTS, reservedEvent);
@@ -119,6 +134,10 @@ public class InventoryService {
     public void releaseStock(InventoryReleaseRequest request) {
         log.info("Processing stock release for reservation: {}", request.reservationId());
 
+        Map<String, Integer> updatedStockBySku = new HashMap<>();
+        String[] primarySkuHolder = new String[1];
+        Integer[] primaryAvailableHolder = new Integer[1];
+
         if (request.reservationId() != null) {
             List<InventoryReservationEntity> reservations = reservationRepository.findByReservationId(request.reservationId());
             for (InventoryReservationEntity res : reservations) {
@@ -127,6 +146,11 @@ public class InventoryService {
                         inv.setAvailableQuantity(inv.getAvailableQuantity() + res.getQuantity());
                         inv.setReservedQuantity(Math.max(0, inv.getReservedQuantity() - res.getQuantity()));
                         inventoryRepository.save(inv);
+                        updatedStockBySku.put(inv.getSkuCode(), inv.getAvailableQuantity());
+                        if (primarySkuHolder[0] == null) {
+                            primarySkuHolder[0] = inv.getSkuCode();
+                            primaryAvailableHolder[0] = inv.getAvailableQuantity();
+                        }
                     });
                     res.setStatus("RELEASED");
                     reservationRepository.save(res);
@@ -138,6 +162,11 @@ public class InventoryService {
                     inv.setAvailableQuantity(inv.getAvailableQuantity() + item.quantity());
                     inv.setReservedQuantity(Math.max(0, inv.getReservedQuantity() - item.quantity()));
                     inventoryRepository.save(inv);
+                    updatedStockBySku.put(inv.getSkuCode(), inv.getAvailableQuantity());
+                    if (primarySkuHolder[0] == null) {
+                        primarySkuHolder[0] = inv.getSkuCode();
+                        primaryAvailableHolder[0] = inv.getAvailableQuantity();
+                    }
                 });
             }
         }
@@ -146,7 +175,10 @@ public class InventoryService {
         StockReleasedEvent releasedEvent = new StockReleasedEvent(
                 request.reservationId(),
                 "Compensating action / Order cancelled",
-                Instant.now()
+                Instant.now(),
+                primarySkuHolder[0],
+                primaryAvailableHolder[0],
+                updatedStockBySku
         );
         com.company.inventoryservice.domain.entity.OutboxEventEntity outboxEvent =
                 outboxService.saveEvent("INVENTORY", request.reservationId() != null ? request.reservationId() : "global", "StockReleasedEvent", TOPIC_INVENTORY_EVENTS, releasedEvent);

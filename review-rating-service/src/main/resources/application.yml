@@ -32,6 +32,10 @@ spring:
       properties:
         spring.json.trusted.packages: "com.company.common.events,com.company.*,*"
 
+rag:
+  service:
+    url: ${RAG_SERVICE_URL:http://localhost:8092}
+
 management:
   endpoints:
     web:

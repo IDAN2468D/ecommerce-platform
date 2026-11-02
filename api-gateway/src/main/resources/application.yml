@@ -82,9 +82,9 @@ spring:
           predicates:
             - Path=/api/v1/workspace/**
 
-        # 11. AI RAG Service Route (Consolidated in recommendation-loyalty-service)
+        # 11. AI RAG Service Route (Single Source of Truth in rag-service)
         - id: rag-service-route
-          uri: ${RAG_SERVICE_URL:http://localhost:8089}
+          uri: ${RAG_SERVICE_URL:http://localhost:8092}
           predicates:
             - Path=/api/v1/rag/**
 

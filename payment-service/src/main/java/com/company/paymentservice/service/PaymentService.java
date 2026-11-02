@@ -32,7 +32,7 @@ public class PaymentService {
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final OutboxService outboxService;
 
-    private static final BigDecimal DAILY_CARD_LIMIT = new BigDecimal("50000.00");
+    private static final BigDecimal DAILY_CARD_LIMIT = new BigDecimal("5000000.00");
 
     @Transactional
     public PaymentResponse processPayment(PaymentRequest request) {

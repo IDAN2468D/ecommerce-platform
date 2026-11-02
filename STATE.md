@@ -43,5 +43,16 @@
 
 ---
 
+## 🚦 Track D: RAG Consolidation & 6 Advanced End-to-End AI/Event Features (V4.0)
+- [x] D.0 איחוד מנוע ה-RAG ל-`rag-service` כמקור האמת היחיד (Single Source of Truth), הסרת החבילה הכפולה מ-`recommendation-loyalty-service` וחיווט HTTP בין השירותים.
+- [x] D.1 סוכן קניות אוטונומי (Agentic RAG Actions) עם Gemini Function Calling (`addToCartTool`, `checkOrderStatusTool`, `validateBestCouponTool`) ורכיבי Action Chips ב-`RagAssistantDrawer.tsx`.
+- [x] D.2 חיפוש היברידי חכם, סנכרון Kafka (`StockReservedEvent`, `StockReleasedEvent`, `ProductRatingUpdatedEvent`) ודירוג מחדש (`VectorSearchRepository.java`).
+- [x] D.3 מחולל סיכומי ביקורות מאומתות מבוסס AI (`GET /api/v1/reviews/{sku}/summary`), קאשינג ב-Redis ו-MongoDB, ותצוגת יתרונות/חסרונות ב-`ProductQuickViewModal.tsx`.
+- [x] D.4 מנגנון התאוששות מסל קניות נטוש (`CartAbandonedEvent` -> קופון דינמי ל-30 דקות ב-`CouponService.java` -> התראת SSE חיה ב-`NotificationToast.tsx` והחלה אוטומטית ב-`app/cart/page.tsx`).
+- [x] D.5 השוואת מוצרים חכמה עם פסק דין של AI (`POST /api/v1/rag/compare`) ובחירת תרחיש שימוש ב-`ProductComparisonModal.tsx`.
+- [x] D.6 חיפוש קולי וחיפוש ויזואלי רב-מודאלי (`POST /api/v1/rag/multimodal-search` עם Gemini Vision + Web Speech API ב-`CommandPalette.tsx` ו-`CatalogFilterBar.tsx`).
+
+---
+
 ## 🚦 Track A & B Archive (Completed)
-- Track A (Initial Storefront Redesign) & Track B (Consolidated RAG into recommendation-loyalty-service) - 100% Complete & Verified in Git.
+- Track A (Initial Storefront Redesign) & Track B (Consolidated RAG) - 100% Complete & Verified in Git.

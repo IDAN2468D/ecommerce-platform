@@ -37,25 +37,47 @@ export default function CatalogPage() {
   const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
 
   useEffect(() => {
-    fetch("/api/products")
-      .then((res) => (res.ok ? res.json() : []))
-      .then((data) => {
-        const mapped = data.map((item: any) => ({
-          skuCode: item.skuCode,
-          name: item.productName,
-          price: Number(item.unitPrice),
-          description: item.description || "מוצר איכותי מקורי עם אחריות יבואן רשמי",
-          image: item.imageUrl || "📦",
-          category: item.category || "כללי",
-          stock: {
-            availableQuantity: item.availableQuantity,
-            reservedQuantity: item.reservedQuantity,
-          },
-        }));
-        setProducts(mapped);
-      })
-      .catch((e) => console.error("Failed to fetch products:", e))
-      .finally(() => setLoading(false));
+    let mounted = true;
+    const loadProducts = async (attempt = 1) => {
+      try {
+        const res = await fetch("/api/products", { cache: "no-store" });
+        if (!res.ok) throw new Error(`Status ${res.status}`);
+        const data = await res.json();
+        if (!Array.isArray(data) || data.length === 0) {
+          if (attempt < 3 && mounted) {
+            setTimeout(() => loadProducts(attempt + 1), 1500);
+            return;
+          }
+        }
+        if (mounted && Array.isArray(data)) {
+          const mapped = data.map((item: any) => ({
+            skuCode: item.skuCode,
+            name: item.productName,
+            price: Number(item.unitPrice),
+            description: item.description || "מוצר איכותי מקורי עם אחריות יבואן רשמי",
+            image: item.imageUrl || "📦",
+            category: item.category || "כללי",
+            stock: {
+              availableQuantity: item.availableQuantity,
+              reservedQuantity: item.reservedQuantity,
+            },
+          }));
+          setProducts(mapped);
+          setLoading(false);
+        }
+      } catch (e) {
+        console.error("Failed to fetch products:", e);
+        if (attempt < 3 && mounted) {
+          setTimeout(() => loadProducts(attempt + 1), 1500);
+        } else if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
+    loadProducts();
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const categories = useMemo(() => {

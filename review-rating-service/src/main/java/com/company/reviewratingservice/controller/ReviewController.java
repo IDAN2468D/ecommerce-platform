@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/reviews")
 @RequiredArgsConstructor
 @Slf4j
-@Tag(name = "Reviews & Ratings", description = "Verified Purchase Customer Reviews and Ratings")
+@Tag(name = "Reviews & Ratings", description = "Verified Purchase Customer Reviews, Ratings, and AI Summarizer")
 public class ReviewController {
 
     private final ReviewService reviewService;
@@ -24,6 +24,13 @@ public class ReviewController {
     public ResponseEntity<ProductReviewsPageResponse> getProductReviews(@PathVariable String skuCode) {
         log.info("REST: Querying reviews for product: {}", skuCode);
         return ResponseEntity.ok(reviewService.getProductReviews(skuCode));
+    }
+
+    @GetMapping("/{sku}/summary")
+    @Operation(summary = "Get AI Verified Buyer Review Summary (aiSummary, prosList, consList) cached in Redis & MongoDB")
+    public ResponseEntity<AiReviewSummaryResponse> getAiReviewSummary(@PathVariable("sku") String sku) {
+        log.info("REST: Querying AI verified review summary for SKU: {}", sku);
+        return ResponseEntity.ok(reviewService.getAiReviewSummary(sku));
     }
 
     @PostMapping

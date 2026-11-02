@@ -1,32 +1,88 @@
 package com.company.orderservice.service;
 
+import com.company.common.events.CartAbandonedEvent;
+import com.company.common.events.NotificationSentEvent;
 import com.company.orderservice.domain.entity.CouponEntity;
 import com.company.orderservice.domain.enums.CouponType;
 import com.company.orderservice.dto.request.ValidateCouponRequest;
 import com.company.orderservice.dto.response.CouponValidationResponse;
 import com.company.orderservice.repository.CouponRepository;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class CouponService {
 
     private final CouponRepository couponRepository;
+    private KafkaTemplate<String, Object> kafkaTemplate;
+
+    public CouponService(CouponRepository couponRepository) {
+        this.couponRepository = couponRepository;
+    }
+
+    @Autowired(required = false)
+    public void setKafkaTemplate(KafkaTemplate<String, Object> kafkaTemplate) {
+        this.kafkaTemplate = kafkaTemplate;
+    }
 
     public record CouponApplicationResult(
         String couponCode,
         BigDecimal discountAmount,
         BigDecimal finalAmount
     ) {}
+
+    @KafkaListener(topics = "cart-events", groupId = "order-service-abandoned-cart-group")
+    public void handleCartAbandoned(CartAbandonedEvent event) {
+        if (event == null || event.customerId() == null) {
+            return;
+        }
+        String suffix = UUID.randomUUID().toString().replace("-", "").substring(0, 4).toUpperCase();
+        String dynamicCode = "SAVE15-" + suffix;
+
+        CouponEntity coupon = CouponEntity.builder()
+                .id(UUID.randomUUID())
+                .code(dynamicCode)
+                .discountType(CouponType.PERCENTAGE)
+                .discountValue(BigDecimal.valueOf(15))
+                .minOrderAmount(BigDecimal.ZERO)
+                .maxDiscountCap(BigDecimal.valueOf(1000))
+                .maxUses(1)
+                .currentUses(0)
+                .validFrom(Instant.now())
+                .validUntil(Instant.now().plus(Duration.ofMinutes(30)))
+                .isActive(true)
+                .createdAt(Instant.now())
+                .build();
+
+        couponRepository.save(coupon);
+        log.info("Created dynamic 30-min abandoned cart recovery coupon {} for customer {}", dynamicCode, event.customerId());
+
+        if (kafkaTemplate != null) {
+            NotificationSentEvent notificationEvent = new NotificationSentEvent(
+                    UUID.randomUUID().toString(),
+                    event.customerId(),
+                    "SSE",
+                    "🎁 קופון אישי 15% הנחה לסל שלך!",
+                    "שמנו לב שהשארת פריטים בסל! קבל 15% הנחה ל-30 הדקות הקרובות עם הקופון: " + dynamicCode,
+                    dynamicCode,
+                    "SENT",
+                    Instant.now()
+            );
+            kafkaTemplate.send("notification-events", event.customerId(), notificationEvent);
+        }
+    }
 
     @Transactional(readOnly = true)
     public CouponValidationResponse validateCoupon(ValidateCouponRequest request) {

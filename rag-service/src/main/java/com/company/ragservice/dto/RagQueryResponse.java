@@ -9,6 +9,7 @@ public record RagQueryResponse(
         String query,
         String answer,
         List<CitationDto> citations,
+        List<ExecutedActionDto> executedActions,
         Double confidenceScore,
         String model,
         Long latencyMs,
