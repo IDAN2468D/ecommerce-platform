@@ -58,9 +58,14 @@ public class CouponService {
 
     @KafkaListener(topics = "cart-events", groupId = CONSUMER_GROUP)
     public void handleCartAbandoned(
-            CartAbandonedEvent event,
+            Object rawEvent,
             @Header(name = EventIdempotencyKeyResolver.HEADER_EVENT_ID, required = false) String eventIdHeader) {
-        if (event == null || event.customerId() == null) {
+        if (!(rawEvent instanceof CartAbandonedEvent event)) {
+            log.debug("CouponService: ignoring non-abandoned event on cart-events: {}",
+                    rawEvent != null ? rawEvent.getClass().getSimpleName() : "null");
+            return;
+        }
+        if (event.customerId() == null) {
             return;
         }
         if (!inboxTracker.tryAcquire(event, eventIdHeader, null)) {

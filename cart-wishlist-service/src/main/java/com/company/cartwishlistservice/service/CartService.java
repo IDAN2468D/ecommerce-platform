@@ -1,6 +1,7 @@
 package com.company.cartwishlistservice.service;
 
 import com.company.common.events.CartAbandonedEvent;
+import com.company.common.events.CartUpdatedEvent;
 import com.company.cartwishlistservice.domain.entity.SavedCartEntity;
 import com.company.cartwishlistservice.domain.model.CartItem;
 import com.company.cartwishlistservice.dto.CartDtos.*;
@@ -81,7 +82,9 @@ public class CartService {
 
         syncToMongoAsync(customerId);
 
-        return getCart(customerId);
+        CartResponse response = getCart(customerId);
+        publishCartUpdatedEventAsync(customerId, "ITEM_UPSERTED", response);
+        return response;
     }
 
     public CartResponse removeItem(String customerId, String skuCode) {
@@ -91,7 +94,9 @@ public class CartService {
 
         syncToMongoAsync(customerId);
 
-        return getCart(customerId);
+        CartResponse response = getCart(customerId);
+        publishCartUpdatedEventAsync(customerId, "ITEM_REMOVED", response);
+        return response;
     }
 
     public void clearCart(String customerId) {
@@ -99,6 +104,7 @@ public class CartService {
         String key = getCartKey(customerId);
         redisTemplate.delete(key);
         savedCartRepository.deleteByCustomerId(customerId);
+        publishCartUpdatedEventAsync(customerId, "CART_CLEARED", buildResponse(customerId, Collections.emptyList()));
     }
 
     public CartResponse mergeGuestCart(String customerId, MergeCartRequest request) {
@@ -124,7 +130,9 @@ public class CartService {
             redisTemplate.expire(key, CART_TTL);
             syncToMongoAsync(customerId);
         }
-        return getCart(customerId);
+        CartResponse response = getCart(customerId);
+        publishCartUpdatedEventAsync(customerId, "CART_MERGED", response);
+        return response;
     }
 
     /**
@@ -232,6 +240,59 @@ public class CartService {
                 TOPIC_CART_EVENTS, cart.getCustomerId(), total);
         kafkaTemplate.send(TOPIC_CART_EVENTS, cart.getCustomerId(), event);
         return event;
+    }
+
+    private void publishCartUpdatedEventAsync(String customerId, String updateType, CartResponse cart) {
+        try {
+            List<CartUpdatedEvent.CartItemPayload> payloads = (cart != null && cart.items() != null)
+                    ? cart.items().stream()
+                            .map(item -> new CartUpdatedEvent.CartItemPayload(
+                                    item.skuCode(),
+                                    item.productName(),
+                                    item.quantity(),
+                                    item.unitPrice(),
+                                    item.lineTotal(),
+                                    item.imageUrl()
+                            ))
+                            .toList()
+                    : Collections.emptyList();
+
+            int totalItems = cart != null ? cart.totalItems() : 0;
+            BigDecimal subtotal = cart != null ? cart.subtotalAmount() : BigDecimal.ZERO;
+            String currency = (cart != null && cart.currency() != null) ? cart.currency() : "ILS";
+
+            CartUpdatedEvent event = new CartUpdatedEvent(
+                    customerId,
+                    updateType,
+                    payloads,
+                    totalItems,
+                    subtotal,
+                    currency,
+                    Instant.now()
+            );
+
+            if (meterRegistry != null) {
+                meterRegistry.counter("ecommerce_cart_updated_total", "type", updateType).increment();
+            }
+
+            log.info("Publishing CartUpdatedEvent [{}] to Kafka topic '{}' for customerId={}, items={}, total=₪{}",
+                    updateType, TOPIC_CART_EVENTS, customerId, totalItems, subtotal);
+
+            // Asynchronous non-blocking dispatch with callback handling
+            kafkaTemplate.send(TOPIC_CART_EVENTS, customerId, event)
+                    .whenComplete((result, ex) -> {
+                        if (ex != null) {
+                            log.warn("Asynchronous Kafka publish failed for CartUpdatedEvent (customerId={}): {}",
+                                    customerId, ex.getMessage());
+                        } else {
+                            log.debug("CartUpdatedEvent [{}] successfully published to Kafka topic '{}' for customerId={}",
+                                    updateType, TOPIC_CART_EVENTS, customerId);
+                        }
+                    });
+        } catch (Exception ex) {
+            log.warn("Could not dispatch CartUpdatedEvent to Kafka topic '{}' for customer {}: {}",
+                    TOPIC_CART_EVENTS, customerId, ex.getMessage());
+        }
     }
 
     private void syncToMongoAsync(String customerId) {

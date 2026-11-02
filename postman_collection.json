@@ -499,6 +499,96 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "6. Cart & Wishlist Service",
+      "description": "ניהול עגלת קניות ב-Redis Hash ושידור אירועי Kafka מידיים לנושא cart-events",
+      "item": [
+        {
+          "name": "Get Shopping Cart",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Customer-Id",
+                "value": "usr_demo"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/cart",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "cart"]
+            },
+            "description": "שליפת עגלת הקניות הנוכחית של הלקוח מ-Redis (ביצועים מתחת ל-2ms)"
+          },
+          "response": []
+        },
+        {
+          "name": "Add or Update Item in Cart (Triggers Kafka Event)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Customer-Id",
+                "value": "usr_demo"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"skuCode\": \"SONY-WH1000XM5\",\n  \"productName\": \"Sony WH-1000XM5 Wireless Headphones\",\n  \"quantity\": 1,\n  \"unitPrice\": 1450.00,\n  \"imageUrl\": \"/images/sony-headphones.jpg\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/cart/items",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "cart", "items"]
+            },
+            "description": "הוספה או עדכון פריט בעגלה - משדר מיד CartUpdatedEvent לנושא cart-events ב-Kafka"
+          },
+          "response": []
+        },
+        {
+          "name": "Remove Item from Cart (Triggers Kafka Event)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "X-Customer-Id",
+                "value": "usr_demo"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/cart/items/SONY-WH1000XM5",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "cart", "items", "SONY-WH1000XM5"]
+            },
+            "description": "הסרת פריט מהעגלה - משדר מיד CartUpdatedEvent (סוג ITEM_REMOVED) לנושא cart-events ב-Kafka"
+          },
+          "response": []
+        },
+        {
+          "name": "Trigger Abandoned Cart (Triggers CartAbandonedEvent)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Customer-Id",
+                "value": "usr_demo"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/cart/abandoned/trigger",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "cart", "abandoned", "trigger"]
+            },
+            "description": "הפעלת התאוששות עגלה נטושה - מייצר CartAbandonedEvent וקופון דינמי"
+          },
+          "response": []
+        }
+      ]
     }
   ]
 }

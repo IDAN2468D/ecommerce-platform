@@ -282,6 +282,14 @@ public class NotificationKafkaConsumer {
         log.info("Notification service observed CartAbandonedEvent for customerId={}, total={}", event.customerId(), event.estimatedTotal());
     }
 
+    @KafkaHandler
+    public void handleCartUpdated(
+            CartUpdatedEvent event,
+            @Header(name = EventIdempotencyKeyResolver.HEADER_EVENT_ID, required = false) String eventIdHeader) {
+        log.debug("Notification service observed CartUpdatedEvent for customerId={}, type={}, totalItems={}",
+                event.customerId(), event.updateType(), event.totalItems());
+    }
+
     @KafkaHandler(isDefault = true)
     public void handleDefault(Object event) {
         log.debug("Notification consumed event: {}", event);
