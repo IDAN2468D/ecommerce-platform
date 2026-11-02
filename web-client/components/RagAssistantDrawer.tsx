@@ -51,8 +51,8 @@ export interface ChatMessage {
 const PRESET_PROMPTS = [
   "תוסיף לי לסל את האוזניות של סוני עם ביטול רעשים",
   "מה הקופון הכי משתלם לסל של 3500 ש״ח?",
+  "מה סטטוס המשלוח וההזמנה האחרונה שלי?",
   "איזה מחשב נייד הכי מתאים לעריכת וידאו וגרפיקה?",
-  "אילו אביזרים למכשירי Apple יש במלאי?",
 ];
 
 export const RagAssistantDrawer: React.FC = () => {
@@ -135,10 +135,29 @@ export const RagAssistantDrawer: React.FC = () => {
     setIsLoading(true);
 
     try {
+      let resolvedCustomerId = "usr_demo";
+      let resolvedCartTotal: number | undefined = undefined;
+      try {
+        const storedUser = JSON.parse(localStorage.getItem("user") || "null");
+        if (storedUser?.email || storedUser?.id) {
+          resolvedCustomerId = String(storedUser.email || storedUser.id);
+        }
+        const storedCart = JSON.parse(localStorage.getItem("cart") || "[]");
+        if (Array.isArray(storedCart) && storedCart.length > 0) {
+          resolvedCartTotal = storedCart.reduce(
+            (sum: number, item: any) => sum + Number(item.unitPrice || item.price || 0) * Number(item.quantity || 1),
+            0
+          );
+        }
+      } catch {
+        // ignore storage errors
+      }
+
       const payload: any = {
         query: textToSend.trim(),
         conversationId: "conv_client_session",
-        customerId: "usr_demo",
+        customerId: resolvedCustomerId,
+        cartTotal: resolvedCartTotal,
         topK: 4,
         minSimilarity: 0.5,
       };
@@ -457,22 +476,34 @@ export const RagAssistantDrawer: React.FC = () => {
                             )}
                             {act.toolName === "validateBestCouponTool" &&
                               act.status === "SUCCESS" &&
-                              act.payload?.bestCouponCode && (
+                              (act.payload?.bestCouponCode || act.payload?.couponCode) && (
                                 <button
                                   type="button"
                                   onClick={() => {
                                     sessionStorage.setItem(
                                       "pending_coupon",
-                                      String(act.payload?.bestCouponCode)
+                                      String(act.payload?.bestCouponCode || act.payload?.couponCode)
                                     );
                                     setIsOpen(false);
                                     router.push("/cart");
                                   }}
                                   className="px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[11px] shrink-0 transition"
                                 >
-                                  החל {String(act.payload.bestCouponCode)}
+                                  החל {String(act.payload.bestCouponCode || act.payload.couponCode)}
                                 </button>
                               )}
+                            {act.toolName === "checkOrderStatusTool" && act.status === "SUCCESS" && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setIsOpen(false);
+                                  router.push("/orders");
+                                }}
+                                className="px-2.5 py-1 rounded-lg bg-sky-600 hover:bg-sky-700 text-white font-bold text-[11px] shrink-0 transition"
+                              >
+                                מעקב משלוח
+                              </button>
+                            )}
                           </div>
                         ))}
                       </div>

@@ -4,10 +4,13 @@ import com.company.common.events.*;
 import com.company.notificationservice.dto.NotificationDtos.NotificationRequest;
 import com.company.notificationservice.service.NotificationService;
 import com.company.notificationservice.service.SseNotificationService;
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaHandler;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -18,11 +21,24 @@ import java.util.Map;
 @KafkaListener(topics = {"order-events", "inventory-events", "payment-events", "user-events", "shipping-events", "notification-events", "cart-events"}, groupId = "notification-service-group")
 public class NotificationKafkaConsumer {
 
+    private static final String CONSUMER_GROUP = "notification-service-group";
+
     private final NotificationService notificationService;
     private final SseNotificationService sseNotificationService;
 
+    @Autowired(required = false)
+    private MeterRegistry meterRegistry;
+
+    private final InboxIdempotencyTracker inboxTracker = new InboxIdempotencyTracker(CONSUMER_GROUP);
+
     @KafkaHandler
-    public void handleOrderCreated(OrderCreatedEvent event) {
+    public void handleOrderCreated(
+            OrderCreatedEvent event,
+            @Header(name = EventIdempotencyKeyResolver.HEADER_EVENT_ID, required = false) String eventIdHeader) {
+        if (!tryAcquireIdempotentLock(event, eventIdHeader)) {
+            log.info("Inbox Idempotency: Skipping duplicate OrderCreatedEvent in Notification consumer for orderId={}", event.orderId());
+            return;
+        }
         log.info("Notification service received OrderCreatedEvent for orderId={}", event.orderId());
         notificationService.sendNotification(new NotificationRequest(
                 event.customerId(),
@@ -42,7 +58,13 @@ public class NotificationKafkaConsumer {
     }
 
     @KafkaHandler
-    public void handleStockReserved(StockReservedEvent event) {
+    public void handleStockReserved(
+            StockReservedEvent event,
+            @Header(name = EventIdempotencyKeyResolver.HEADER_EVENT_ID, required = false) String eventIdHeader) {
+        if (!tryAcquireIdempotentLock(event, eventIdHeader)) {
+            log.info("Inbox Idempotency: Skipping duplicate StockReservedEvent in Notification consumer for reservationId={}", event.reservationId());
+            return;
+        }
         log.info("Notification service received StockReservedEvent for reservationId={}", event.reservationId());
         notificationService.sendNotification(new NotificationRequest(
                 "usr_demo",
@@ -61,7 +83,13 @@ public class NotificationKafkaConsumer {
     }
 
     @KafkaHandler
-    public void handlePaymentCaptured(PaymentCapturedEvent event) {
+    public void handlePaymentCaptured(
+            PaymentCapturedEvent event,
+            @Header(name = EventIdempotencyKeyResolver.HEADER_EVENT_ID, required = false) String eventIdHeader) {
+        if (!tryAcquireIdempotentLock(event, eventIdHeader)) {
+            log.info("Inbox Idempotency: Skipping duplicate PaymentCapturedEvent in Notification consumer for txId={}", event.transactionId());
+            return;
+        }
         log.info("Notification service received PaymentCapturedEvent for transactionId={}", event.transactionId());
         notificationService.sendNotification(new NotificationRequest(
                 "usr_demo",
@@ -82,7 +110,12 @@ public class NotificationKafkaConsumer {
     }
 
     @KafkaHandler
-    public void handlePaymentRefunded(PaymentRefundedEvent event) {
+    public void handlePaymentRefunded(
+            PaymentRefundedEvent event,
+            @Header(name = EventIdempotencyKeyResolver.HEADER_EVENT_ID, required = false) String eventIdHeader) {
+        if (!tryAcquireIdempotentLock(event, eventIdHeader)) {
+            return;
+        }
         log.info("Notification service received PaymentRefundedEvent for transactionId={}", event.transactionId());
         sseNotificationService.dispatchNotification("usr_demo", "PAYMENT_REFUNDED", Map.of(
                 "transactionId", event.transactionId().toString(),
@@ -93,7 +126,12 @@ public class NotificationKafkaConsumer {
     }
 
     @KafkaHandler
-    public void handleOrderCancelled(OrderCancelledEvent event) {
+    public void handleOrderCancelled(
+            OrderCancelledEvent event,
+            @Header(name = EventIdempotencyKeyResolver.HEADER_EVENT_ID, required = false) String eventIdHeader) {
+        if (!tryAcquireIdempotentLock(event, eventIdHeader)) {
+            return;
+        }
         log.info("Notification service received OrderCancelledEvent for orderId={}", event.orderId());
         notificationService.sendNotification(new NotificationRequest(
                 event.customerId(),
@@ -113,7 +151,12 @@ public class NotificationKafkaConsumer {
     }
 
     @KafkaHandler
-    public void handleUserRegistered(UserRegisteredEvent event) {
+    public void handleUserRegistered(
+            UserRegisteredEvent event,
+            @Header(name = EventIdempotencyKeyResolver.HEADER_EVENT_ID, required = false) String eventIdHeader) {
+        if (!tryAcquireIdempotentLock(event, eventIdHeader)) {
+            return;
+        }
         log.info("Notification service received UserRegisteredEvent for email={}", event.email());
         notificationService.sendNotification(new NotificationRequest(
                 event.email(),
@@ -134,7 +177,12 @@ public class NotificationKafkaConsumer {
     }
 
     @KafkaHandler
-    public void handleUserLoggedIn(UserLoggedInEvent event) {
+    public void handleUserLoggedIn(
+            UserLoggedInEvent event,
+            @Header(name = EventIdempotencyKeyResolver.HEADER_EVENT_ID, required = false) String eventIdHeader) {
+        if (!tryAcquireIdempotentLock(event, eventIdHeader)) {
+            return;
+        }
         log.info("Notification service received UserLoggedInEvent for email={}", event.email());
         sseNotificationService.dispatchNotification(event.email(), "USER_LOGGED_IN", Map.of(
                 "userId", event.userId().toString(),
@@ -147,7 +195,12 @@ public class NotificationKafkaConsumer {
     }
 
     @KafkaHandler
-    public void handleShipmentScheduled(ShipmentScheduledEvent event) {
+    public void handleShipmentScheduled(
+            ShipmentScheduledEvent event,
+            @Header(name = EventIdempotencyKeyResolver.HEADER_EVENT_ID, required = false) String eventIdHeader) {
+        if (!tryAcquireIdempotentLock(event, eventIdHeader)) {
+            return;
+        }
         log.info("Notification service received ShipmentScheduledEvent for trackingNumber={}", event.trackingNumber());
         String targetUser = event.customerId() != null ? event.customerId() : "usr_demo";
         sseNotificationService.dispatchNotification(targetUser, "SHIPMENT_SCHEDULED", Map.of(
@@ -162,7 +215,12 @@ public class NotificationKafkaConsumer {
     }
 
     @KafkaHandler
-    public void handleOrderDispatched(OrderDispatchedEvent event) {
+    public void handleOrderDispatched(
+            OrderDispatchedEvent event,
+            @Header(name = EventIdempotencyKeyResolver.HEADER_EVENT_ID, required = false) String eventIdHeader) {
+        if (!tryAcquireIdempotentLock(event, eventIdHeader)) {
+            return;
+        }
         log.info("Notification service received OrderDispatchedEvent for orderId={}, status={}", event.orderId(), event.status());
         String targetUser = event.customerId() != null ? event.customerId() : "usr_demo";
         sseNotificationService.dispatchNotification(targetUser, "ORDER_DISPATCHED", Map.of(
@@ -176,7 +234,12 @@ public class NotificationKafkaConsumer {
     }
 
     @KafkaHandler
-    public void handleShipmentCancelled(ShipmentCancelledEvent event) {
+    public void handleShipmentCancelled(
+            ShipmentCancelledEvent event,
+            @Header(name = EventIdempotencyKeyResolver.HEADER_EVENT_ID, required = false) String eventIdHeader) {
+        if (!tryAcquireIdempotentLock(event, eventIdHeader)) {
+            return;
+        }
         log.info("Notification service received ShipmentCancelledEvent for orderId={}", event.orderId());
         String targetUser = event.customerId() != null ? event.customerId() : "usr_demo";
         sseNotificationService.dispatchNotification(targetUser, "SHIPMENT_CANCELLED", Map.of(
@@ -189,7 +252,12 @@ public class NotificationKafkaConsumer {
     }
 
     @KafkaHandler
-    public void handleNotificationSent(NotificationSentEvent event) {
+    public void handleNotificationSent(
+            NotificationSentEvent event,
+            @Header(name = EventIdempotencyKeyResolver.HEADER_EVENT_ID, required = false) String eventIdHeader) {
+        if (!tryAcquireIdempotentLock(event, eventIdHeader)) {
+            return;
+        }
         log.info("Notification service received NotificationSentEvent for customerId={}, ref={}", event.customerId(), event.referenceId());
         String targetUser = event.customerId() != null ? event.customerId() : "usr_demo";
         String couponCode = event.referenceId() != null ? event.referenceId() : "WELCOME10";
@@ -205,12 +273,27 @@ public class NotificationKafkaConsumer {
     }
 
     @KafkaHandler
-    public void handleCartAbandoned(CartAbandonedEvent event) {
+    public void handleCartAbandoned(
+            CartAbandonedEvent event,
+            @Header(name = EventIdempotencyKeyResolver.HEADER_EVENT_ID, required = false) String eventIdHeader) {
+        if (!tryAcquireIdempotentLock(event, eventIdHeader)) {
+            return;
+        }
         log.info("Notification service observed CartAbandonedEvent for customerId={}, total={}", event.customerId(), event.estimatedTotal());
     }
 
     @KafkaHandler(isDefault = true)
     public void handleDefault(Object event) {
         log.debug("Notification consumed event: {}", event);
+    }
+
+    public boolean tryAcquireIdempotentLock(Object event, String eventIdHeader) {
+        boolean acquired = inboxTracker.tryAcquire(event, eventIdHeader, null);
+        if (meterRegistry != null) {
+            meterRegistry.counter("ecommerce_kafka_idempotent_events_total",
+                    "consumer_group", CONSUMER_GROUP,
+                    "outcome", acquired ? "PROCESSED" : "DUPLICATE_SKIPPED").increment();
+        }
+        return acquired;
     }
 }

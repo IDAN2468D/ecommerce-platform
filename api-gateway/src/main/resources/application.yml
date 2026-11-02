@@ -4,6 +4,11 @@ server:
 spring:
   application:
     name: api-gateway
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 1s
   cloud:
     gateway:
       routes:
@@ -88,6 +93,18 @@ spring:
           predicates:
             - Path=/api/v1/rag/**
 
+jwt:
+  secret: ${JWT_SECRET:order-service-default-secret-key-32-bytes!!}
+
+gateway:
+  security:
+    enforce-jwt: ${GATEWAY_ENFORCE_JWT:true}
+  rate-limit:
+    enabled: ${GATEWAY_RATE_LIMIT_ENABLED:true}
+    rag-requests-per-minute: ${GATEWAY_RAG_RPM:40}
+    order-requests-per-minute: ${GATEWAY_ORDER_RPM:60}
+    default-requests-per-minute: ${GATEWAY_DEFAULT_RPM:180}
+
 management:
   endpoints:
     web:
@@ -98,6 +115,12 @@ management:
       show-details: always
       probes:
         enabled: true
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: ${ZIPKIN_ENDPOINT:http://localhost:9411/api/v2/spans}
 
 logging:
   pattern:

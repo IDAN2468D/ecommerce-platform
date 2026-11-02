@@ -29,6 +29,9 @@ public class CartService {
     private final SavedCartRepository savedCartRepository;
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private io.micrometer.core.instrument.MeterRegistry meterRegistry;
+
     @Value("${cart.abandoned.threshold-seconds:120}")
     private long abandonedThresholdSeconds;
 
@@ -220,6 +223,10 @@ public class CartService {
 
         cart.setAbandonedNotificationSent(true);
         savedCartRepository.save(cart);
+
+        if (meterRegistry != null) {
+            meterRegistry.counter("ecommerce_cart_abandoned_total").increment();
+        }
 
         log.info("Publishing CartAbandonedEvent to Kafka topic '{}' for userId={}, total=₪{}",
                 TOPIC_CART_EVENTS, cart.getCustomerId(), total);

@@ -5,17 +5,18 @@ import com.company.ragservice.dto.*;
 import com.company.ragservice.entity.CatalogVectorDocument;
 import com.company.ragservice.repository.CatalogVectorRepository;
 import com.company.ragservice.repository.VectorSearchRepository;
-import lombok.RequiredArgsConstructor;
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class RagOrchestrationService {
 
@@ -25,6 +26,36 @@ public class RagOrchestrationService {
     private final GeminiGenerationService geminiGenerationService;
     private final AgenticToolsService agenticToolsService;
     private final GeminiProperties geminiProperties;
+    private SemanticCacheService semanticCacheService;
+    private MeterRegistry meterRegistry;
+
+    public RagOrchestrationService(
+            EmbeddingService embeddingService,
+            VectorSearchRepository vectorSearchRepository,
+            CatalogVectorRepository catalogVectorRepository,
+            GeminiGenerationService geminiGenerationService,
+            AgenticToolsService agenticToolsService,
+            GeminiProperties geminiProperties) {
+        this.embeddingService = embeddingService;
+        this.vectorSearchRepository = vectorSearchRepository;
+        this.catalogVectorRepository = catalogVectorRepository;
+        this.geminiGenerationService = geminiGenerationService;
+        this.agenticToolsService = agenticToolsService;
+        this.geminiProperties = geminiProperties;
+        this.semanticCacheService = new SemanticCacheService(null, null);
+    }
+
+    @Autowired(required = false)
+    public void setSemanticCacheService(SemanticCacheService semanticCacheService) {
+        if (semanticCacheService != null) {
+            this.semanticCacheService = semanticCacheService;
+        }
+    }
+
+    @Autowired(required = false)
+    public void setMeterRegistry(MeterRegistry meterRegistry) {
+        this.meterRegistry = meterRegistry;
+    }
 
     public RagQueryResponse processQuery(RagQueryRequest request) {
         long startTime = System.currentTimeMillis();
@@ -40,7 +71,23 @@ public class RagOrchestrationService {
         // 1. Generate Query Embedding
         List<Float> queryVector = embeddingService.generateEmbedding(query);
 
-        // 2. Hybrid Vector Search Retrieval (Pre-filtering + Reranking with averageRating)
+        // 2. Check Redis Semantic Cache (Cosine Similarity >= threshold) before hitting Vector DB & Gemini LLM
+        if (semanticCacheService != null) {
+            Optional<RagQueryResponse> cachedOpt = semanticCacheService.findSemanticallySimilar(
+                    query,
+                    queryVector,
+                    category,
+                    request.maxPrice(),
+                    request.minRating(),
+                    onlyInStock
+            );
+            if (cachedOpt.isPresent()) {
+                recordLatencyMetric("rag_query", "HIT", System.currentTimeMillis() - startTime);
+                return cachedOpt.get();
+            }
+        }
+
+        // 3. Hybrid Vector Search Retrieval (Pre-filtering + Reranking with averageRating)
         List<VectorSearchRepository.ScoredDocument> matches = vectorSearchRepository.searchSimilar(
                 queryVector,
                 category,
@@ -50,7 +97,7 @@ public class RagOrchestrationService {
                 topK
         );
 
-        // 3. Assemble Citations and Context Chunks
+        // 4. Assemble Citations and Context Chunks
         List<CitationDto> citations = new ArrayList<>();
         StringBuilder contextBuilder = new StringBuilder();
 
@@ -76,7 +123,7 @@ public class RagOrchestrationService {
                     doc.getTextChunk()));
         }
 
-        // 4. Grounded Generation + Gemini Function Calling (Tools)
+        // 5. Grounded Generation + Gemini Function Calling (Tools)
         GeminiGenerationService.AgenticGenerationResult generationResult = geminiGenerationService.generateAgenticAnswer(
                 query,
                 contextBuilder.toString(),
@@ -88,7 +135,7 @@ public class RagOrchestrationService {
         long latency = System.currentTimeMillis() - startTime;
         double confidence = citations.isEmpty() ? 0.3 : Math.min(0.98, citations.get(0).relevanceScore() + 0.08);
 
-        return RagQueryResponse.builder()
+        RagQueryResponse response = RagQueryResponse.builder()
                 .query(query)
                 .answer(generationResult.answer())
                 .citations(citations)
@@ -98,6 +145,12 @@ public class RagOrchestrationService {
                 .latencyMs(latency)
                 .retrievedDocumentsCount(citations.size())
                 .build();
+
+        if (semanticCacheService != null) {
+            semanticCacheService.put(query, queryVector, category, request.maxPrice(), request.minRating(), onlyInStock, response);
+        }
+        recordLatencyMetric("rag_query", "MISS", latency);
+        return response;
     }
 
     /**
@@ -116,12 +169,14 @@ public class RagOrchestrationService {
             docOpt.ifPresent(resolvedProducts::add);
         }
 
-        return geminiGenerationService.generateProductComparisonVerdict(
+        ProductComparisonResponse response = geminiGenerationService.generateProductComparisonVerdict(
                 resolvedProducts,
                 skus,
                 request.userUseCase(),
                 startTime
         );
+        recordLatencyMetric("product_comparison", "MISS", System.currentTimeMillis() - startTime);
+        return response;
     }
 
     /**
@@ -183,6 +238,7 @@ public class RagOrchestrationService {
         );
 
         long latency = System.currentTimeMillis() - startTime;
+        recordLatencyMetric("multimodal_search", "MISS", latency);
 
         return MultimodalSearchResponse.builder()
                 .extractedDescription(visionResult.extractedDescription())
@@ -236,5 +292,13 @@ public class RagOrchestrationService {
                 emitter.completeWithError(ex);
             }
         });
+    }
+
+    private void recordLatencyMetric(String operation, String cacheStatus, long latencyMs) {
+        if (meterRegistry != null) {
+            meterRegistry.timer("ecommerce_gemini_generation_latency_seconds",
+                    "operation", operation,
+                    "cache_status", cacheStatus).record(latencyMs, TimeUnit.MILLISECONDS);
+        }
     }
 }

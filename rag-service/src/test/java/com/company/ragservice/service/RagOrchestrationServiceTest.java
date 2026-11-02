@@ -182,4 +182,59 @@ class RagOrchestrationServiceTest {
         assertEquals(1, res.matches().size());
         assertEquals("SONY-WH-1000XM5", res.matches().get(0).skuCode());
     }
+
+    @Test
+    void processQuery_semanticCacheHitReturnsCachedAnswerUnder10msWithoutSecondGeminiCall() {
+        CatalogVectorDocument doc = CatalogVectorDocument.builder()
+                .skuCode("MACBOOK-PRO-M3")
+                .title("מחשב נייד Apple MacBook Pro 16 M3 Max")
+                .category("מחשבים")
+                .price(14490.00)
+                .inStock(true)
+                .availableQuantity(5)
+                .averageRating(4.9)
+                .textChunk("מחשב נייד לעריכת וידאו")
+                .build();
+
+        // First query and semantically similar second query (Cosine similarity = 0.998 >= 0.92)
+        when(embeddingService.generateEmbedding("איזה מחשב נייד מומלץ לעריכת וידאו?"))
+                .thenReturn(List.of(0.80f, 0.50f, 0.30f));
+        when(embeddingService.generateEmbedding("מה המחשב הנייד הכי טוב לעריכת וידאו?"))
+                .thenReturn(List.of(0.79f, 0.51f, 0.30f));
+
+        when(vectorSearchRepository.searchSimilar(anyList(), isNull(), isNull(), isNull(), isNull(), eq(4)))
+                .thenReturn(List.of(new VectorSearchRepository.ScoredDocument(doc, 0.96)));
+        when(geminiGenerationService.generateAgenticAnswer(anyString(), anyString(), anyList(), anyString(), any()))
+                .thenReturn(new GeminiGenerationService.AgenticGenerationResult(
+                        "מומלץ לבחור ב-Apple MacBook Pro 16 M3 Max לעריכת וידאו מקצועית.",
+                        List.of()
+                ));
+        when(geminiProperties.getModel()).thenReturn("gemini-3.5-flash-lite");
+
+        RagQueryRequest firstReq = RagQueryRequest.builder()
+                .query("איזה מחשב נייד מומלץ לעריכת וידאו?")
+                .conversationId("conv_1")
+                .customerId("usr_demo")
+                .topK(4)
+                .build();
+
+        RagQueryResponse firstRes = ragOrchestrationService.processQuery(firstReq);
+        assertNotNull(firstRes);
+
+        RagQueryRequest secondReq = RagQueryRequest.builder()
+                .query("מה המחשב הנייד הכי טוב לעריכת וידאו?")
+                .conversationId("conv_2")
+                .customerId("usr_demo")
+                .topK(4)
+                .build();
+
+        RagQueryResponse cachedRes = ragOrchestrationService.processQuery(secondReq);
+
+        assertNotNull(cachedRes);
+        assertEquals(firstRes.answer(), cachedRes.answer());
+        assertTrue(cachedRes.model().contains("semantic-cache"));
+        assertTrue(cachedRes.latencyMs() < 50L);
+        // Gemini LLM should only have been invoked ONCE across both semantically equivalent questions
+        verify(geminiGenerationService, times(1)).generateAgenticAnswer(anyString(), anyString(), anyList(), anyString(), any());
+    }
 }

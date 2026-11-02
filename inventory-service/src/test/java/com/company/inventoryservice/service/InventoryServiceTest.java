@@ -142,4 +142,36 @@ class InventoryServiceTest {
         assertThat(products.get(0).category()).isEqualTo("סמארטפונים");
         assertThat(products.get(0).imageUrl()).isEqualTo("https://images.unsplash.com/photo-iphone");
     }
+
+    @Test
+    @DisplayName("Consumer Idempotency (Inbox Pattern): Duplicate OrderCreatedEvent is ignored on second delivery")
+    void inventoryKafkaConsumer_IgnoresDuplicateOrderCreatedEvent() {
+        InventoryService mockInventoryService = mock(InventoryService.class);
+        when(mockInventoryService.reserveStock(any()))
+                .thenReturn(new ReservationResponse(true, "res_inbox_1", null));
+
+        com.company.inventoryservice.kafka.InventoryKafkaConsumer consumer =
+                new com.company.inventoryservice.kafka.InventoryKafkaConsumer(mockInventoryService, kafkaTemplate);
+
+        String eventId = UUID.randomUUID().toString();
+        UUID orderId = UUID.randomUUID();
+        com.company.common.events.OrderCreatedEvent event = new com.company.common.events.OrderCreatedEvent(
+                orderId,
+                "usr_123",
+                new BigDecimal("4899.00"),
+                "ILS",
+                "pm_card_test",
+                "idem_key_1",
+                List.of(new com.company.common.events.OrderCreatedEvent.OrderItemPayload("IPHONE-16", 1, new BigDecimal("4899.00"))),
+                java.time.Instant.now()
+        );
+
+        // First delivery -> processed
+        consumer.handleOrderCreated(event, eventId);
+        // Second duplicate delivery (At-Least-Once retry) -> skipped by InboxIdempotencyTracker!
+        consumer.handleOrderCreated(event, eventId);
+
+        verify(mockInventoryService, times(1)).reserveStock(any());
+        verify(kafkaTemplate, times(1)).send(anyString(), anyString(), any());
+    }
 }

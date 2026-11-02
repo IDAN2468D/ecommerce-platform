@@ -545,6 +545,7 @@ public class InvoiceService {
             case CONFIRMED -> "אושרה ושולמה בהצלחה";
             case CANCELLED -> "בוטלה וזוכתה (פיצוי SAGA)";
             case PENDING -> "ממתינה לאישור סופי";
+            case PENDING_PAYMENT -> "ממתינה לעיבוד תשלום אסינכרוני";
             case FAILED -> "נכשלה";
         };
     }

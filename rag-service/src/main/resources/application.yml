@@ -19,8 +19,16 @@ spring:
     mongodb:
       uri: ${MONGODB_URI:mongodb://localhost:27017/ecommerce_db?maxPoolSize=50&minPoolSize=10&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
       auto-index-creation: true
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 1s
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:29092}
+    template:
+      observation-enabled: true
+    listener:
+      observation-enabled: true
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
@@ -41,6 +49,9 @@ clients:
     base-url: ${SHIPPING_SERVICE_URL:http://localhost:8086}
 
 rag:
+  cache:
+    enabled: ${RAG_CACHE_ENABLED:true}
+    similarity-threshold: ${RAG_CACHE_SIMILARITY_THRESHOLD:0.92}
   vector:
     collection-name: catalog_embeddings
     index-name: vector_index
@@ -64,17 +75,33 @@ resilience4j:
         waitDurationInOpenState: 10s
         slowCallRateThreshold: 50
         slowCallDurationThreshold: 5000ms
+  retry:
+    instances:
+      geminiLlm:
+        maxAttempts: 2
+        waitDuration: 300ms
+  bulkhead:
+    instances:
+      geminiLlm:
+        maxConcurrentCalls: 20
+        maxWaitDuration: 500ms
 
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,prometheus,metrics
+        include: health,info,prometheus,metrics,circuitbreakers,bulkheads
   endpoint:
     health:
       show-details: always
       probes:
         enabled: true
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: ${ZIPKIN_ENDPOINT:http://localhost:9411/api/v2/spans}
 
 logging:
   pattern:

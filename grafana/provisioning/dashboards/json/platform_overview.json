@@ -198,12 +198,133 @@
       ],
       "title": "Active JVM Live Threads (Platform & Virtual)",
       "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 23 },
+      "id": 9,
+      "title": "Business KPIs, AI RAG Semantic Cache & Resilience Telemetry",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "Prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "lineWidth": 2
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 24 },
+      "id": 10,
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "Prometheus" },
+          "expr": "sum by (coupon_code) (ecommerce_coupons_redeemed_total)",
+          "legendFormat": "Redeemed: {{coupon_code}}",
+          "refId": "A"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "Prometheus" },
+          "expr": "sum(ecommerce_cart_abandoned_total)",
+          "legendFormat": "Abandoned Carts (CartAbandonedEvent)",
+          "refId": "B"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "Prometheus" },
+          "expr": "sum by (status) (ecommerce_orders_created_total)",
+          "legendFormat": "Orders ({{status}})",
+          "refId": "C"
+        }
+      ],
+      "title": "Coupons Redeemed, Abandoned Carts & Order Outcomes",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "Prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "lineWidth": 2
+          },
+          "unit": "s"
+        }
+      },
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 24 },
+      "id": 11,
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "Prometheus" },
+          "expr": "rate(ecommerce_gemini_generation_latency_seconds_sum[1m]) / rate(ecommerce_gemini_generation_latency_seconds_count[1m])",
+          "legendFormat": "Gemini Avg Latency ({{operation}} - {{cache_status}})",
+          "refId": "A"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "Prometheus" },
+          "expr": "sum by (result) (ecommerce_rag_semantic_cache_requests_total)",
+          "legendFormat": "Semantic Cache ({{result}})",
+          "refId": "B"
+        }
+      ],
+      "title": "Gemini AI Generation Latency & Redis Semantic Cache",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "Prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "lineWidth": 2
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 24 },
+      "id": 12,
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "Prometheus" },
+          "expr": "sum by (consumer_group, outcome) (ecommerce_kafka_idempotent_events_total)",
+          "legendFormat": "Inbox {{consumer_group}} ({{outcome}})",
+          "refId": "A"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "Prometheus" },
+          "expr": "sum by (bucket, outcome) (ecommerce_gateway_ratelimit_requests_total)",
+          "legendFormat": "Gateway RateLimit {{bucket}} ({{outcome}})",
+          "refId": "B"
+        }
+      ],
+      "title": "Gateway Rate Limiting & Kafka Consumer Inbox Idempotency",
+      "type": "timeseries"
     }
   ],
   "refresh": "5s",
   "schemaVersion": 38,
   "style": "dark",
-  "tags": ["microservices", "ecommerce", "kafka", "spring-boot"],
+  "tags": ["microservices", "ecommerce", "kafka", "spring-boot", "gemini", "resilience4j"],
   "time": {
     "from": "now-15m",
     "to": "now"
@@ -214,5 +335,5 @@
   "timezone": "browser",
   "title": "E-Commerce Microservices Platform Overview",
   "uid": "ecommerce-overview",
-  "version": 1
+  "version": 2
 }

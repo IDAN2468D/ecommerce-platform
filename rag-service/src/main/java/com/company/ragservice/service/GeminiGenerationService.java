@@ -8,7 +8,9 @@ import com.company.ragservice.dto.ProductComparisonResponse.ProductTradeOffDto;
 import com.company.ragservice.entity.CatalogVectorDocument;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.resilience4j.bulkhead.annotation.Bulkhead;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -40,7 +42,10 @@ public class GeminiGenerationService {
 
     /**
      * Generates a grounded response with Gemini Function Calling (Tools) support.
+     * Protected by Resilience4j Bulkhead, Retry, and CircuitBreaker with deterministic fallback.
      */
+    @Bulkhead(name = "geminiLlm", fallbackMethod = "fallbackGenerateAgenticAnswer")
+    @Retry(name = "geminiLlm")
     @CircuitBreaker(name = "geminiLlm", fallbackMethod = "fallbackGenerateAgenticAnswer")
     public AgenticGenerationResult generateAgenticAnswer(
             String userQuery,

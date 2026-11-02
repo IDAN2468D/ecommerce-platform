@@ -57,3 +57,8 @@ scrape_configs:
     metrics_path: '/actuator/prometheus'
     static_configs:
       - targets: ['workspace-integration-service:8091']
+
+  - job_name: 'rag-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['rag-service:8092']

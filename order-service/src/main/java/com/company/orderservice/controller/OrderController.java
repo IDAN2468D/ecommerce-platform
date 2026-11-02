@@ -38,7 +38,10 @@ public class OrderController {
     private final com.company.orderservice.service.InvoiceService invoiceService;
     private final com.company.orderservice.service.OutboxService outboxService;
 
-    private String extractCustomerId(Jwt jwt, Principal principal) {
+    private String extractCustomerId(String gatewayUserId, Jwt jwt, Principal principal) {
+        if (gatewayUserId != null && !gatewayUserId.isBlank()) {
+            return gatewayUserId.trim();
+        }
         if (jwt != null && jwt.getSubject() != null) {
             return jwt.getSubject();
         }
@@ -60,11 +63,12 @@ public class OrderController {
     public ResponseEntity<OrderResponse> createOrder(
             @Parameter(description = "Unique UUID idempotency key to prevent double charging", required = true)
             @RequestHeader("Idempotency-Key") String idempotencyKey,
+            @RequestHeader(value = "X-User-Id", required = false) String gatewayUserId,
             @AuthenticationPrincipal Jwt jwt,
             Principal principal,
             @Valid @RequestBody CreateOrderRequest request) {
 
-        String customerId = extractCustomerId(jwt, principal);
+        String customerId = extractCustomerId(gatewayUserId, jwt, principal);
         log.info("Received order creation request from customer: {}", customerId);
 
         OrderResponse response = orderService.createOrder(customerId, idempotencyKey, request);
@@ -80,10 +84,11 @@ public class OrderController {
     })
     public ResponseEntity<OrderResponse> getOrderById(
             @PathVariable UUID orderId,
+            @RequestHeader(value = "X-User-Id", required = false) String gatewayUserId,
             @AuthenticationPrincipal Jwt jwt,
             Principal principal) {
 
-        String customerId = extractCustomerId(jwt, principal);
+        String customerId = extractCustomerId(gatewayUserId, jwt, principal);
         OrderResponse response = orderService.getOrderById(orderId, customerId);
         return ResponseEntity.ok(response);
     }
@@ -97,10 +102,11 @@ public class OrderController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt,desc") String sort,
+            @RequestHeader(value = "X-User-Id", required = false) String gatewayUserId,
             @AuthenticationPrincipal Jwt jwt,
             Principal principal) {
 
-        String customerId = extractCustomerId(jwt, principal);
+        String customerId = extractCustomerId(gatewayUserId, jwt, principal);
         String[] sortParts = sort.split(",");
         String sortProp = sortParts[0];
         Sort.Direction direction = sortParts.length > 1 && sortParts[1].equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
@@ -120,10 +126,11 @@ public class OrderController {
     })
     public ResponseEntity<OrderResponse> cancelOrder(
             @PathVariable UUID orderId,
+            @RequestHeader(value = "X-User-Id", required = false) String gatewayUserId,
             @AuthenticationPrincipal Jwt jwt,
             Principal principal) {
 
-        String customerId = extractCustomerId(jwt, principal);
+        String customerId = extractCustomerId(gatewayUserId, jwt, principal);
         OrderResponse response = orderService.cancelOrder(orderId, customerId);
         return ResponseEntity.ok(response);
     }

@@ -247,6 +247,7 @@ public class AgenticToolsService {
 
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("couponCode", bestCode);
+        payload.put("bestCouponCode", bestCode);
         payload.put("cartTotal", effectiveTotal);
         payload.put("discountAmount", bestDiscount);
         payload.put("finalAmount", bestFinal);

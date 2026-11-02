@@ -2,6 +2,7 @@ package com.company.orderservice.service;
 
 import com.company.orderservice.client.InventoryClient;
 import com.company.orderservice.client.PaymentClient;
+import com.company.orderservice.client.ResilientOrderIntegrationClient;
 import com.company.orderservice.domain.entity.OrderEntity;
 import com.company.orderservice.domain.entity.OrderItemEntity;
 import com.company.orderservice.domain.enums.OrderStatus;
@@ -16,8 +17,9 @@ import com.company.orderservice.mapper.OrderMapper;
 import com.company.orderservice.repository.OrderRepository;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
-import lombok.RequiredArgsConstructor;
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
@@ -32,7 +34,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class OrderService {
 
@@ -43,8 +44,40 @@ public class OrderService {
     private final CouponService couponService;
     private final com.company.orderservice.kafka.OrderEventPublisher orderEventPublisher;
     private final OutboxService outboxService;
+    private ResilientOrderIntegrationClient resilientClient;
+    private MeterRegistry meterRegistry;
 
     private static final Duration IDEMPOTENCY_WINDOW = Duration.ofHours(24);
+
+    public OrderService(
+            OrderRepository orderRepository,
+            OrderMapper orderMapper,
+            InventoryClient inventoryClient,
+            PaymentClient paymentClient,
+            CouponService couponService,
+            com.company.orderservice.kafka.OrderEventPublisher orderEventPublisher,
+            OutboxService outboxService) {
+        this.orderRepository = orderRepository;
+        this.orderMapper = orderMapper;
+        this.inventoryClient = inventoryClient;
+        this.paymentClient = paymentClient;
+        this.couponService = couponService;
+        this.orderEventPublisher = orderEventPublisher;
+        this.outboxService = outboxService;
+        this.resilientClient = new ResilientOrderIntegrationClient(inventoryClient, paymentClient);
+    }
+
+    @Autowired(required = false)
+    public void setResilientClient(ResilientOrderIntegrationClient resilientClient) {
+        if (resilientClient != null) {
+            this.resilientClient = resilientClient;
+        }
+    }
+
+    @Autowired(required = false)
+    public void setMeterRegistry(MeterRegistry meterRegistry) {
+        this.meterRegistry = meterRegistry;
+    }
 
     @Transactional
     public OrderResponse createOrder(String customerId, String idempotencyKey, CreateOrderRequest request) {
@@ -73,21 +106,23 @@ public class OrderService {
                 .map(item -> new InventoryClient.StockCheckItem(item.skuCode(), item.quantity()))
                 .toList();
 
-        // 3. Reserve Inventory with Resiliency
+        // 3. Reserve Inventory with Resiliency (via Spring AOP proxy bean)
         log.info("Reserving stock for {} items", stockItems.size());
-        InventoryClient.InventoryReservationResponse reservation = reserveInventoryWithResilience(stockItems);
+        InventoryClient.InventoryReservationResponse reservation = resilientClient.reserveInventory(stockItems);
         if (!reservation.available()) {
             String failureReason = reservation.failureReason() != null ? reservation.failureReason() : "Requested items are out of stock";
             log.warn("Inventory reservation failed: {}", failureReason);
+            recordOrderMetric("FAILED_INVENTORY");
             throw new InsufficientInventoryException(failureReason);
         }
 
-        // 4. Process Payment with Compensating Transaction on Failure
+        // 4. Process Payment with CircuitBreaker Fallback (PENDING_PAYMENT) or Compensating Transaction on Business Decline
         UUID orderId = UUID.randomUUID();
         PaymentClient.PaymentResponse paymentResponse;
+        OrderStatus initialOrderStatus = OrderStatus.CONFIRMED;
         try {
             log.info("Processing payment of {} {} for customer: {}, orderId: {}", totalAmount, request.currency(), customerId, orderId);
-            paymentResponse = processPaymentWithResilience(new PaymentClient.PaymentRequest(
+            paymentResponse = resilientClient.processPayment(new PaymentClient.PaymentRequest(
                     orderId,
                     customerId,
                     totalAmount,
@@ -99,9 +134,14 @@ public class OrderService {
             if (!paymentResponse.success()) {
                 throw new PaymentFailedException(paymentResponse.failureReason() != null ? paymentResponse.failureReason() : "Payment was declined");
             }
+            if ("PENDING_PAYMENT".equalsIgnoreCase(paymentResponse.status())) {
+                initialOrderStatus = OrderStatus.PENDING_PAYMENT;
+                log.warn("Order {} placed in PENDING_PAYMENT state via CircuitBreaker fallback for async settlement", orderId);
+            }
         } catch (Exception ex) {
             log.error("Payment failed: {}. Executing compensating transaction to release reserved stock.", ex.getMessage());
             compensateInventoryRelease(reservation.reservationId(), stockItems);
+            recordOrderMetric("FAILED_PAYMENT");
             if (ex instanceof PaymentFailedException pfe) {
                 throw pfe;
             }
@@ -113,7 +153,7 @@ public class OrderService {
                 .id(orderId)
                 .customerId(customerId)
                 .idempotencyKey(idempotencyKey)
-                .status(OrderStatus.CONFIRMED)
+                .status(initialOrderStatus)
                 .totalAmount(totalAmount)
                 .couponCode(couponResult.couponCode())
                 .discountAmount(couponResult.discountAmount())
@@ -131,7 +171,8 @@ public class OrderService {
         }
 
         OrderEntity savedOrder = orderRepository.save(orderEntity);
-        log.info("Order created successfully with id: {}", savedOrder.getId());
+        recordOrderMetric(savedOrder.getStatus().name());
+        log.info("Order created successfully with id: {} (status={})", savedOrder.getId(), savedOrder.getStatus());
 
         com.company.common.events.OrderCreatedEvent createdEvent = new com.company.common.events.OrderCreatedEvent(
                 savedOrder.getId(),
@@ -193,7 +234,9 @@ public class OrderService {
             throw new AccessDeniedException("You do not have permission to cancel this order");
         }
 
-        if (order.getStatus() != OrderStatus.CONFIRMED && order.getStatus() != OrderStatus.PENDING) {
+        if (order.getStatus() != OrderStatus.CONFIRMED
+                && order.getStatus() != OrderStatus.PENDING
+                && order.getStatus() != OrderStatus.PENDING_PAYMENT) {
             throw new OrderCannotBeCancelledException(
                     "Order cannot be cancelled because it is in status: " + order.getStatus());
         }
@@ -205,8 +248,9 @@ public class OrderService {
 
         compensateInventoryRelease(null, stockItems);
 
-        if (order.getPaymentTransactionId() != null) {
-            refundPaymentWithResilience(new PaymentClient.RefundRequest(
+        if (order.getPaymentTransactionId() != null
+                && !order.getPaymentTransactionId().startsWith("PENDING-ASYNC-")) {
+            resilientClient.refundPayment(new PaymentClient.RefundRequest(
                     order.getPaymentTransactionId(),
                     order.getTotalAmount(),
                     "Order cancelled by customer"
@@ -215,6 +259,7 @@ public class OrderService {
 
         order.setStatus(OrderStatus.CANCELLED);
         OrderEntity updated = orderRepository.save(order);
+        recordOrderMetric("CANCELLED");
         log.info("Order {} successfully cancelled", orderId);
 
         try {
@@ -234,12 +279,12 @@ public class OrderService {
     @Retry(name = "inventoryService")
     public InventoryClient.InventoryReservationResponse reserveInventoryWithResilience(
             List<InventoryClient.StockCheckItem> items) {
-        return inventoryClient.reserveStock(items);
+        return resilientClient.reserveInventory(items);
     }
 
     private void compensateInventoryRelease(String reservationId, List<InventoryClient.StockCheckItem> items) {
         try {
-            inventoryClient.releaseStock(new InventoryClient.InventoryReleaseRequest(reservationId, items));
+            resilientClient.releaseInventory(new InventoryClient.InventoryReleaseRequest(reservationId, items));
         } catch (Exception ex) {
             log.error("Failed to release stock during compensation: {}", ex.getMessage());
         }
@@ -248,11 +293,17 @@ public class OrderService {
     @CircuitBreaker(name = "paymentService")
     @Retry(name = "paymentService")
     public PaymentClient.PaymentResponse processPaymentWithResilience(PaymentClient.PaymentRequest request) {
-        return paymentClient.processPayment(request);
+        return resilientClient.processPayment(request);
     }
 
     @CircuitBreaker(name = "paymentService")
     public PaymentClient.RefundResponse refundPaymentWithResilience(PaymentClient.RefundRequest request) {
-        return paymentClient.refundPayment(request);
+        return resilientClient.refundPayment(request);
+    }
+
+    private void recordOrderMetric(String status) {
+        if (meterRegistry != null) {
+            meterRegistry.counter("ecommerce_orders_created_total", "status", status).increment();
+        }
     }
 }

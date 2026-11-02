@@ -18,9 +18,17 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import org.testcontainers.DockerClientFactory;
+import org.testcontainers.containers.KafkaContainer;
+import org.testcontainers.containers.MongoDBContainer;
+import org.testcontainers.utility.DockerImageName;
 
 import java.math.BigDecimal;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -46,6 +54,42 @@ class OrderIntegrationTest {
     private OrderRepository orderRepository;
 
     private static WireMockServer wireMockServer;
+    private static MongoDBContainer mongoDBContainer;
+    private static KafkaContainer kafkaContainer;
+
+    @DynamicPropertySource
+    static void registerDynamicContainers(DynamicPropertyRegistry registry) {
+        boolean forceTestcontainers = Boolean.parseBoolean(
+                System.getProperty("testcontainers.enabled",
+                        System.getenv().getOrDefault("TESTCONTAINERS_ENABLED", "false")));
+        if ((forceTestcontainers || !isPortOpen("localhost", 27017)) && isDockerAvailable()) {
+            mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:7.0"));
+            mongoDBContainer.start();
+            registry.add("spring.data.mongodb.uri",
+                    () -> mongoDBContainer.getReplicaSetUrl("orders_test_db") + "&uuidRepresentation=standard");
+
+            kafkaContainer = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.6.0"));
+            kafkaContainer.start();
+            registry.add("spring.kafka.bootstrap-servers", kafkaContainer::getBootstrapServers);
+        }
+    }
+
+    private static boolean isPortOpen(String host, int port) {
+        try (Socket socket = new Socket()) {
+            socket.connect(new InetSocketAddress(host, port), 300);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private static boolean isDockerAvailable() {
+        try {
+            return DockerClientFactory.instance().isDockerAvailable();
+        } catch (Throwable t) {
+            return false;
+        }
+    }
 
     @BeforeAll
     static void startWireMock() {
@@ -58,6 +102,12 @@ class OrderIntegrationTest {
     static void stopWireMock() {
         if (wireMockServer != null && wireMockServer.isRunning()) {
             wireMockServer.stop();
+        }
+        if (kafkaContainer != null && kafkaContainer.isRunning()) {
+            kafkaContainer.stop();
+        }
+        if (mongoDBContainer != null && mongoDBContainer.isRunning()) {
+            mongoDBContainer.stop();
         }
     }
 

@@ -69,7 +69,16 @@ public class OutboxService {
                 } catch (Exception parseEx) {
                     payloadToSend = event.getPayload();
                 }
-                kafkaTemplate.send(event.getTopic(), event.getAggregateId(), payloadToSend).get();
+                org.apache.kafka.clients.producer.ProducerRecord<String, Object> record =
+                        new org.apache.kafka.clients.producer.ProducerRecord<>(event.getTopic(), event.getAggregateId(), payloadToSend);
+                if (event.getId() != null) {
+                    record.headers().add("X-Event-Id", event.getId().toString().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                }
+                String traceId = org.slf4j.MDC.get("traceId");
+                if (traceId != null && !traceId.isBlank()) {
+                    record.headers().add("X-Trace-Id", traceId.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                }
+                kafkaTemplate.send(record).get();
                 event.setStatus("PUBLISHED");
                 event.setPublishedAt(Instant.now());
                 outboxRepository.save(event);

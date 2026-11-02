@@ -358,6 +358,9 @@ services:
       - "8080:8080"
     environment:
       JAVA_OPTS: "-XX:+UseG1GC -Xms64m -Xmx384m"
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      ZIPKIN_ENDPOINT: http://zipkin:9411/api/v2/spans
       ORDER_SERVICE_URL: http://order-service:8081
       INVENTORY_SERVICE_URL: http://inventory-service:8082
       PAYMENT_SERVICE_URL: http://payment-service:8083

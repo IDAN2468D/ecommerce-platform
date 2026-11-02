@@ -1,14 +1,13 @@
 package com.company.ragservice.consumer;
 
-import com.company.common.events.ProductRatingUpdatedEvent;
-import com.company.common.events.StockReleasedEvent;
-import com.company.common.events.StockReservedEvent;
+import com.company.common.events.*;
 import com.company.ragservice.entity.CatalogVectorDocument;
 import com.company.ragservice.repository.CatalogVectorRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaHandler;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -24,11 +23,18 @@ import java.util.Optional;
 )
 public class CatalogSyncKafkaConsumer {
 
+    private static final String CONSUMER_GROUP = "rag-service-group";
     private final CatalogVectorRepository catalogVectorRepository;
+    private final InboxIdempotencyTracker inboxTracker = new InboxIdempotencyTracker(CONSUMER_GROUP);
 
     @KafkaHandler
-    public void handleProductRatingUpdated(ProductRatingUpdatedEvent event) {
+    public void handleProductRatingUpdated(
+            ProductRatingUpdatedEvent event,
+            @Header(name = EventIdempotencyKeyResolver.HEADER_EVENT_ID, required = false) String eventIdHeader) {
         if (event == null || event.skuCode() == null) return;
+        if (!inboxTracker.tryAcquire(event, eventIdHeader, null)) {
+            return;
+        }
 
         log.info("RAG Vector Consumer: Received ProductRatingUpdatedEvent for SKU: {}, new rating: {}",
                 event.skuCode(), event.averageRating());
@@ -44,8 +50,13 @@ public class CatalogSyncKafkaConsumer {
     }
 
     @KafkaHandler
-    public void handleStockReserved(StockReservedEvent event) {
+    public void handleStockReserved(
+            StockReservedEvent event,
+            @Header(name = EventIdempotencyKeyResolver.HEADER_EVENT_ID, required = false) String eventIdHeader) {
         if (event == null) return;
+        if (!inboxTracker.tryAcquire(event, eventIdHeader, null)) {
+            return;
+        }
         log.info("RAG Vector Consumer: Received StockReservedEvent for reservationId: {}", event.reservationId());
 
         if (event.updatedStockBySku() != null && !event.updatedStockBySku().isEmpty()) {
@@ -58,8 +69,13 @@ public class CatalogSyncKafkaConsumer {
     }
 
     @KafkaHandler
-    public void handleStockReleased(StockReleasedEvent event) {
+    public void handleStockReleased(
+            StockReleasedEvent event,
+            @Header(name = EventIdempotencyKeyResolver.HEADER_EVENT_ID, required = false) String eventIdHeader) {
         if (event == null) return;
+        if (!inboxTracker.tryAcquire(event, eventIdHeader, null)) {
+            return;
+        }
         log.info("RAG Vector Consumer: Received StockReleasedEvent for reservationId: {}", event.reservationId());
 
         if (event.updatedStockBySku() != null && !event.updatedStockBySku().isEmpty()) {

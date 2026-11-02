@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateServiceJwt } from "@/lib/auth";
-import { getGatewayUrl, safeParseJson } from "@/lib/api-config";
+import { getGatewayUrl, safeParseJson, buildTraceHeaders } from "@/lib/api-config";
 import crypto from "crypto";
 
 export const dynamic = "force-dynamic";
@@ -116,12 +116,14 @@ export async function POST(request: NextRequest) {
       })),
     };
 
+    const traceHeaders = buildTraceHeaders(request.headers);
     let res = await fetch(`${gatewayUrl}/api/v1/orders`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Idempotency-Key": idempotencyKey,
         Authorization: `Bearer ${token}`,
+        ...traceHeaders,
       },
       body: JSON.stringify(normalizedPayload),
     });

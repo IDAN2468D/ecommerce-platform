@@ -319,4 +319,37 @@ class OrderServiceTest {
 
         verifyNoInteractions(paymentClient);
     }
+
+    @Test
+    @DisplayName("Resilience4j Fallback: Payment service degradation transitions order to PENDING_PAYMENT for async processing")
+    void createOrder_PaymentFallbackPendingPayment_SavesOrderAsPendingPayment() {
+        CreateOrderRequest request = sampleRequest();
+
+        when(orderRepository.findByIdempotencyKey(idempotencyKey)).thenReturn(Optional.empty());
+        when(inventoryClient.reserveStock(any()))
+                .thenReturn(new InventoryClient.InventoryReservationResponse(true, "res_async_1", null));
+
+        com.company.orderservice.client.ResilientOrderIntegrationClient resilientClient =
+                new com.company.orderservice.client.ResilientOrderIntegrationClient(inventoryClient, paymentClient);
+
+        // Simulate Resilience4j CircuitBreaker fallback response (PENDING_PAYMENT)
+        PaymentClient.PaymentResponse fallbackResponse = resilientClient.fallbackProcessPayment(
+                new PaymentClient.PaymentRequest(UUID.randomUUID(), customerId, new BigDecimal("5199.00"), "ILS", "pm_card_test_token", idempotencyKey),
+                new RuntimeException("Payment gateway timeout"));
+
+        when(paymentClient.processPayment(any())).thenReturn(fallbackResponse);
+        when(orderRepository.save(any(OrderEntity.class))).thenAnswer(inv -> {
+            OrderEntity entity = inv.getArgument(0);
+            entity.setCreatedAt(Instant.now());
+            entity.setUpdatedAt(Instant.now());
+            return entity;
+        });
+
+        OrderResponse response = orderService.createOrder(customerId, idempotencyKey, request);
+
+        assertThat(response.status()).isEqualTo(OrderStatus.PENDING_PAYMENT);
+        assertThat(response.paymentTransactionId()).startsWith("PENDING-ASYNC-");
+        verify(inventoryClient, never()).releaseStock(any());
+        verify(orderRepository, times(1)).save(argThat(o -> o.getStatus() == OrderStatus.PENDING_PAYMENT));
+    }
 }

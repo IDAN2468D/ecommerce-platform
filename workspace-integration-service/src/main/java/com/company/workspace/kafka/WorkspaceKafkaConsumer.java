@@ -1,13 +1,12 @@
 package com.company.workspace.kafka;
 
-import com.company.common.events.PaymentCapturedEvent;
-import com.company.common.events.ShipmentCancelledEvent;
-import com.company.common.events.ShipmentScheduledEvent;
+import com.company.common.events.*;
 import com.company.workspace.service.WorkspaceSyncService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaHandler;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -16,10 +15,18 @@ import org.springframework.stereotype.Component;
 @KafkaListener(topics = {"payment-events", "shipping-events"}, groupId = "workspace-integration-service-group")
 public class WorkspaceKafkaConsumer {
 
+    private static final String CONSUMER_GROUP = "workspace-integration-service-group";
     private final WorkspaceSyncService syncService;
+    private final InboxIdempotencyTracker inboxTracker = new InboxIdempotencyTracker(CONSUMER_GROUP);
 
     @KafkaHandler
-    public void handlePaymentCaptured(PaymentCapturedEvent event) {
+    public void handlePaymentCaptured(
+            PaymentCapturedEvent event,
+            @Header(name = EventIdempotencyKeyResolver.HEADER_EVENT_ID, required = false) String eventIdHeader) {
+        if (!inboxTracker.tryAcquire(event, eventIdHeader, null)) {
+            log.info("Inbox Idempotency: Skipping duplicate PaymentCapturedEvent in Workspace consumer for orderId={}", event.orderId());
+            return;
+        }
         log.info("Workspace service consumed PaymentCapturedEvent: orderId={}, txId={}", event.orderId(), event.transactionId());
         if (event.orderId() != null) {
             syncService.archiveInvoice(event.orderId(), event.customerId());
@@ -29,7 +36,13 @@ public class WorkspaceKafkaConsumer {
     }
 
     @KafkaHandler
-    public void handleShipmentScheduled(ShipmentScheduledEvent event) {
+    public void handleShipmentScheduled(
+            ShipmentScheduledEvent event,
+            @Header(name = EventIdempotencyKeyResolver.HEADER_EVENT_ID, required = false) String eventIdHeader) {
+        if (!inboxTracker.tryAcquire(event, eventIdHeader, null)) {
+            log.info("Inbox Idempotency: Skipping duplicate ShipmentScheduledEvent in Workspace consumer for orderId={}", event.orderId());
+            return;
+        }
         log.info("Workspace service consumed ShipmentScheduledEvent: orderId={}, tracking={}", event.orderId(), event.trackingNumber());
         if (event.orderId() != null) {
             syncService.scheduleDelivery(event);
@@ -37,7 +50,13 @@ public class WorkspaceKafkaConsumer {
     }
 
     @KafkaHandler
-    public void handleShipmentCancelled(ShipmentCancelledEvent event) {
+    public void handleShipmentCancelled(
+            ShipmentCancelledEvent event,
+            @Header(name = EventIdempotencyKeyResolver.HEADER_EVENT_ID, required = false) String eventIdHeader) {
+        if (!inboxTracker.tryAcquire(event, eventIdHeader, null)) {
+            log.info("Inbox Idempotency: Skipping duplicate ShipmentCancelledEvent in Workspace consumer for orderId={}", event.orderId());
+            return;
+        }
         log.info("Workspace service consumed ShipmentCancelledEvent: orderId={}. Initiating SAGA Calendar compensation.", event.orderId());
         if (event.orderId() != null) {
             syncService.cancelDelivery(event);
