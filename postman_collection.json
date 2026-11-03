@@ -89,6 +89,48 @@
       "value": "",
       "type": "string",
       "description": "מזהה טרנזקציית תשלום (מתעדכן אוטומטית ע\"י סקריפט בדיקה ביצירת הזמנה)"
+    },
+    {
+      "key": "swarmUrl",
+      "value": "http://localhost:8093",
+      "type": "string",
+      "description": "כתובת ישירה ל-Multi-Agent Swarm Service"
+    },
+    {
+      "key": "ragServiceUrl",
+      "value": "http://localhost:8092",
+      "type": "string",
+      "description": "כתובת ישירה ל-RAG AI Service"
+    },
+    {
+      "key": "shippingServiceUrl",
+      "value": "http://localhost:8086",
+      "type": "string",
+      "description": "כתובת ישירה ל-Shipping & Delivery Service"
+    },
+    {
+      "key": "loyaltyServiceUrl",
+      "value": "http://localhost:8089",
+      "type": "string",
+      "description": "כתובת ישירה ל-Loyalty & Recommendation Service"
+    },
+    {
+      "key": "reviewServiceUrl",
+      "value": "http://localhost:8087",
+      "type": "string",
+      "description": "כתובת ישירה ל-Review & Rating Service"
+    },
+    {
+      "key": "workspaceServiceUrl",
+      "value": "http://localhost:8091",
+      "type": "string",
+      "description": "כתובת ישירה ל-Google Workspace Service"
+    },
+    {
+      "key": "customerId",
+      "value": "usr_demo",
+      "type": "string",
+      "description": "מזהה לקוח לדוגמה"
     }
   ],
   "item": [
@@ -103,8 +145,13 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/actuator/health",
-              "host": ["{{baseUrl}}"],
-              "path": ["actuator", "health"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "actuator",
+                "health"
+              ]
             },
             "description": "בדיקת סטטוס תקינות של ה-API Gateway"
           },
@@ -117,8 +164,13 @@
             "header": [],
             "url": {
               "raw": "{{orderServiceUrl}}/actuator/health",
-              "host": ["{{orderServiceUrl}}"],
-              "path": ["actuator", "health"]
+              "host": [
+                "{{orderServiceUrl}}"
+              ],
+              "path": [
+                "actuator",
+                "health"
+              ]
             },
             "description": "בדיקת סטטוס תקינות של Order Service"
           },
@@ -131,8 +183,13 @@
             "header": [],
             "url": {
               "raw": "{{inventoryServiceUrl}}/actuator/health",
-              "host": ["{{inventoryServiceUrl}}"],
-              "path": ["actuator", "health"]
+              "host": [
+                "{{inventoryServiceUrl}}"
+              ],
+              "path": [
+                "actuator",
+                "health"
+              ]
             },
             "description": "בדיקת סטטוס תקינות של Inventory Service"
           },
@@ -145,8 +202,13 @@
             "header": [],
             "url": {
               "raw": "{{paymentServiceUrl}}/actuator/health",
-              "host": ["{{paymentServiceUrl}}"],
-              "path": ["actuator", "health"]
+              "host": [
+                "{{paymentServiceUrl}}"
+              ],
+              "path": [
+                "actuator",
+                "health"
+              ]
             },
             "description": "בדיקת סטטוס תקינות של Payment Service"
           },
@@ -159,8 +221,13 @@
             "header": [],
             "url": {
               "raw": "{{notificationServiceUrl}}/actuator/health",
-              "host": ["{{notificationServiceUrl}}"],
-              "path": ["actuator", "health"]
+              "host": [
+                "{{notificationServiceUrl}}"
+              ],
+              "path": [
+                "actuator",
+                "health"
+              ]
             },
             "description": "בדיקת סטטוס תקינות של Notification Service"
           },
@@ -222,8 +289,14 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/orders",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "orders"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "orders"
+              ]
             },
             "description": "יצירת הזמנה חדשה דרך ה-Gateway. מפעיל שריון מלאי, סליקת תשלום ואישור הזמנה."
           },
@@ -241,8 +314,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/v1/orders/{{orderId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "orders", "{{orderId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "orders",
+                "{{orderId}}"
+              ]
             },
             "description": "שליפת פרטי הזמנה ומצבה לפי מזהה הזמנה שנשמר במשתנה orderId"
           },
@@ -260,8 +340,14 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/v1/orders?page=0&size=10&sort=createdAt,desc",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "orders"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "orders"
+              ],
               "query": [
                 {
                   "key": "page",
@@ -293,8 +379,16 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/v1/orders/{{orderId}}/cancel",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "orders", "{{orderId}}", "cancel"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "orders",
+                "{{orderId}}",
+                "cancel"
+              ]
             },
             "description": "ביטול הזמנה מאושרת. מפעיל טרנזקציות פיצוי של SAGA: שחרור המלאי וביצוע זיכוי תשלום (Refund)."
           },
@@ -313,8 +407,15 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/v1/inventory/IPHONE-16-PRO-256",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "inventory", "IPHONE-16-PRO-256"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "inventory",
+                "IPHONE-16-PRO-256"
+              ]
             },
             "description": "בדיקת מלאי זמין, כמות משוריינת ומחיר לפי מק\"ט (SKU)"
           },
@@ -336,8 +437,14 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/inventory",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "inventory"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "inventory"
+              ]
             },
             "description": "הוספת מוצר חדש או חידוש מלאי למחסן"
           },
@@ -359,8 +466,15 @@
             },
             "url": {
               "raw": "{{inventoryServiceUrl}}/internal/v1/inventory/reserve",
-              "host": ["{{inventoryServiceUrl}}"],
-              "path": ["internal", "v1", "inventory", "reserve"]
+              "host": [
+                "{{inventoryServiceUrl}}"
+              ],
+              "path": [
+                "internal",
+                "v1",
+                "inventory",
+                "reserve"
+              ]
             },
             "description": "נקודת קצה פנימית של שריון מלאי (Pessimistic Lock)"
           },
@@ -382,8 +496,15 @@
             },
             "url": {
               "raw": "{{inventoryServiceUrl}}/internal/v1/inventory/release",
-              "host": ["{{inventoryServiceUrl}}"],
-              "path": ["internal", "v1", "inventory", "release"]
+              "host": [
+                "{{inventoryServiceUrl}}"
+              ],
+              "path": [
+                "internal",
+                "v1",
+                "inventory",
+                "release"
+              ]
             },
             "description": "נקודת קצה פנימית לשחרור שריון מלאי (פיצוי SAGA)"
           },
@@ -402,8 +523,16 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/v1/payments/transactions/{{paymentTransactionId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "payments", "transactions", "{{paymentTransactionId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "payments",
+                "transactions",
+                "{{paymentTransactionId}}"
+              ]
             },
             "description": "שליפת פרטי עסקת תשלום לפי מזהה טרנזקציה שנשמר במשתנה"
           },
@@ -425,8 +554,15 @@
             },
             "url": {
               "raw": "{{paymentServiceUrl}}/internal/v1/payments/charge",
-              "host": ["{{paymentServiceUrl}}"],
-              "path": ["internal", "v1", "payments", "charge"]
+              "host": [
+                "{{paymentServiceUrl}}"
+              ],
+              "path": [
+                "internal",
+                "v1",
+                "payments",
+                "charge"
+              ]
             },
             "description": "חיוב אשראי ישיר דרך שירות התשלומים הפנימי עם מפתח אידמפוטנטיות"
           },
@@ -448,8 +584,15 @@
             },
             "url": {
               "raw": "{{paymentServiceUrl}}/internal/v1/payments/refund",
-              "host": ["{{paymentServiceUrl}}"],
-              "path": ["internal", "v1", "payments", "refund"]
+              "host": [
+                "{{paymentServiceUrl}}"
+              ],
+              "path": [
+                "internal",
+                "v1",
+                "payments",
+                "refund"
+              ]
             },
             "description": "ביצוע החזר כספי (Refund) לטרנזקציה קיימת"
           },
@@ -477,8 +620,15 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/notifications/send",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "notifications", "send"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "notifications",
+                "send"
+              ]
             },
             "description": "שליחת הודעת התראה ללקוח דרך ערוץ נבחר (EMAIL, SMS, PUSH)"
           },
@@ -491,8 +641,16 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/v1/notifications/history/usr_alice",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "notifications", "history", "usr_alice"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "notifications",
+                "history",
+                "usr_alice"
+              ]
             },
             "description": "שליפת היסטוריית כל ההתראות שנשלחו עבור לקוח ספציפי"
           },
@@ -516,8 +674,14 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/v1/cart",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "cart"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "cart"
+              ]
             },
             "description": "שליפת עגלת הקניות הנוכחית של הלקוח מ-Redis (ביצועים מתחת ל-2ms)"
           },
@@ -543,8 +707,15 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/cart/items",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "cart", "items"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "cart",
+                "items"
+              ]
             },
             "description": "הוספה או עדכון פריט בעגלה - משדר מיד CartUpdatedEvent לנושא cart-events ב-Kafka"
           },
@@ -562,8 +733,16 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/v1/cart/items/SONY-WH1000XM5",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "cart", "items", "SONY-WH1000XM5"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "cart",
+                "items",
+                "SONY-WH1000XM5"
+              ]
             },
             "description": "הסרת פריט מהעגלה - משדר מיד CartUpdatedEvent (סוג ITEM_REMOVED) לנושא cart-events ב-Kafka"
           },
@@ -581,12 +760,419 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/v1/cart/abandoned/trigger",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "cart", "abandoned", "trigger"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "cart",
+                "abandoned",
+                "trigger"
+              ]
             },
             "description": "הפעלת התאוששות עגלה נטושה - מייצר CartAbandonedEvent וקופון דינמי"
           },
           "response": []
+        }
+      ]
+    },
+    {
+      "name": "7. Multi-Agent Swarm (Google Gemini 2.5 Flash)",
+      "description": "5 סוכנים אוטונומיים הפועלים בתיאום מלא: Supervisor, Catalog, Pricing & VIP, Logistics & Google Workspace, Kafka Ops",
+      "item": [
+        {
+          "name": "Swarm Service Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{swarmUrl}}/health",
+              "host": [
+                "{{swarmUrl}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "description": "בדיקת חיות של שירות ה-Swarm וסטטוס 5 הסוכנים האוטונומיים"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Swarm status is UP', function () { var jsonData = pm.response.json(); pm.expect(jsonData.status).to.eql('UP'); pm.expect(jsonData.activeAgents.length).to.eql(5); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Swarm Query - Package Tracking (Logistics Agent)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Customer-Id",
+                "value": "{{customerId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"איפה החבילה שלי?\",\n  \"customerId\": \"{{customerId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{swarmUrl}}/api/v1/agents/swarm/query",
+              "host": [
+                "{{swarmUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "agents",
+                "swarm",
+                "query"
+              ]
+            },
+            "description": "שאילתה אוטונומית לאיתור משלוח - מפעיל ישירות את סוכן הלוגיסטיקה ללא הצגת מוצרים מהקטלוג"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('OrderLogisticsWorkspaceAgent was involved', function () { var jsonData = pm.response.json(); pm.expect(jsonData.agentsInvolved).to.include('OrderLogisticsWorkspaceAgent'); pm.expect(jsonData.citations.length).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Swarm Query - Catalog Recommendation & VIP Discount",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Customer-Id",
+                "value": "{{customerId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"תמליץ לי על אוזניות סוני עם ביטול רעשים ותבדוק הנחת VIP\",\n  \"customerId\": \"{{customerId}}\",\n  \"topK\": 4\n}"
+            },
+            "url": {
+              "raw": "{{swarmUrl}}/api/v1/agents/swarm/query",
+              "host": [
+                "{{swarmUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "agents",
+                "swarm",
+                "query"
+              ]
+            },
+            "description": "שאילתה משולבת - מפעיל את סוכן הקטלוג וסוכן התמחור והנחות מועדון ה-VIP"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Citations found and Catalog Agent active', function () { var jsonData = pm.response.json(); pm.expect(jsonData.agentsInvolved).to.include('CatalogDiscoveryAgent'); pm.expect(jsonData.citations.length).to.be.above(0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Swarm Event Stream (SSE Streaming)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "text/event-stream"
+              }
+            ],
+            "url": {
+              "raw": "{{swarmUrl}}/api/v1/agents/swarm/stream?query=%D7%90%D7%99%D7%A4%D7%94+%D7%94%D7%97%D7%91%D7%99%D7%9C%D7%94+%D7%A9%D7%9C%D7%99",
+              "host": [
+                "{{swarmUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "agents",
+                "swarm",
+                "stream"
+              ],
+              "query": [
+                {
+                  "key": "query",
+                  "value": "איפה החבילה שלי"
+                }
+              ]
+            },
+            "description": "הזרמת מענה חי של צוות הסוכנים בפרוטוקול Server-Sent Events (SSE)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. RAG & Multimodal AI Discovery Service",
+      "description": "חיפוש היברידי וקטורי מבוסס MongoDB Atlas Vector Search ומודל הטמעה",
+      "item": [
+        {
+          "name": "RAG Hybrid Vector Query",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"אוזניות ביטול רעשים לטיסות\",\n  \"topK\": 4,\n  \"onlyInStock\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/rag/query",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "rag",
+                "query"
+              ]
+            },
+            "description": "שאילתת RAG היברידית עם סינון מלאי ומחיר"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Returns citations array', function () { var jsonData = pm.response.json(); pm.expect(jsonData.citations).to.be.an('array'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Product Comparison Matrix",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"skuCodes\": [\"SONY-WH1000XM5\", \"AIRPODS-MAX\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/rag/compare",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "rag",
+                "compare"
+              ]
+            },
+            "description": "השוואת מפרטים ויתרונות בין שני מוצרים באמצעות בינה מלאכותית"
+          }
+        }
+      ]
+    },
+    {
+      "name": "9. Loyalty & Personal Recommendations Service",
+      "description": "ניהול מועדון לקוחות VIP, צבירת קאשבק והמלצות מותאמות אישית",
+      "item": [
+        {
+          "name": "Get Loyalty Wallet Balance",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Customer-Id",
+                "value": "{{customerId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/loyalty/wallet",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "loyalty",
+                "wallet"
+              ]
+            },
+            "description": "שליפת יתרת נקודות, דרגת חברות (BRONZE/SILVER/GOLD/PLATINUM) והטבות פעילות"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Wallet has tier', function () { var jsonData = pm.response.json(); pm.expect(jsonData).to.have.property('tier'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Product Recommendations for SKU",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/recommendations/SONY-WH1000XM5",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "recommendations",
+                "SONY-WH1000XM5"
+              ]
+            },
+            "description": "קבלת מוצרים משלימים ואלטרנטיבות מומלצות"
+          }
+        }
+      ]
+    },
+    {
+      "name": "10. Shipping & Delivery Service",
+      "description": "מעקב משלוחי DHL בזמן אמת, תחנות מיון ועדכון מועדי אספקה",
+      "item": [
+        {
+          "name": "Get Shipping Order Tracking",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/shipping/order/{{orderId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "shipping",
+                "order",
+                "{{orderId}}"
+              ]
+            },
+            "description": "שליפת פרטי משלוח וציון שלבי מסירה עבור הזמנה"
+          }
+        }
+      ]
+    },
+    {
+      "name": "11. Review & Rating Service",
+      "description": "ביקורות רוכשים מאומתות וסיכומי יתרונות/חסרונות ב-AI",
+      "item": [
+        {
+          "name": "Get Product Reviews",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reviews/SONY-WH1000XM5",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reviews",
+                "SONY-WH1000XM5"
+              ]
+            },
+            "description": "קבלת ביקורות קונים מאומתות עבור מק״ט"
+          }
+        },
+        {
+          "name": "Get AI Reviews Summary (Pros & Cons)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reviews/SONY-WH1000XM5/summary",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reviews",
+                "SONY-WH1000XM5",
+                "summary"
+              ]
+            },
+            "description": "סיכום מבוסס AI של יתרונות וחסרונות עיקריים לפי ביקורות"
+          }
+        }
+      ]
+    },
+    {
+      "name": "12. Google Workspace Integration Service",
+      "description": "סנכרון חשבוניות ל-Google Drive, תיעוד הזמנות ב-Google Sheets ואירועי מסירה ב-Google Calendar",
+      "item": [
+        {
+          "name": "Get Order Workspace Links",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/workspace/links/{{orderId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "workspace",
+                "links",
+                "{{orderId}}"
+              ]
+            },
+            "description": "קבלת קישורים לחשבונית ב-Drive ולאירוע משלוח ב-Calendar"
+          }
         }
       ]
     }
