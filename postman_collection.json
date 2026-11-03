@@ -993,7 +993,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"skuCodes\": [\"SONY-WH1000XM5\", \"AIRPODS-MAX\"]\n}"
+              "raw": "{\n  \"skus\": [\n    \"SONY-WH-1000XM5\",\n    \"AIRPODS-MAX\"\n  ],\n  \"userUseCase\": \"אוזניות סינון רעשים לעבודה ולטיסות\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/rag/compare",
