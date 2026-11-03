@@ -1112,7 +1112,7 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/reviews/SONY-WH1000XM5",
+              "raw": "{{baseUrl}}/api/v1/reviews/product/SONY-WH1000XM5",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -1120,10 +1120,11 @@
                 "api",
                 "v1",
                 "reviews",
+                "product",
                 "SONY-WH1000XM5"
               ]
             },
-            "description": "קבלת ביקורות קונים מאומתות עבור מק״ט"
+            "description": "קבלת ביקורות קונים מאומתות עבור מק״ט (הנתיב המדויק: /api/v1/reviews/product/{skuCode})"
           }
         },
         {

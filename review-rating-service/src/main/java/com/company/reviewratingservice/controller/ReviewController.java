@@ -19,7 +19,7 @@ public class ReviewController {
 
     private final ReviewService reviewService;
 
-    @GetMapping("/product/{skuCode}")
+    @GetMapping({"/product/{skuCode}", "/{skuCode}"})
     @Operation(summary = "Get product reviews and star rating distribution with Redis caching")
     public ResponseEntity<ProductReviewsPageResponse> getProductReviews(@PathVariable String skuCode) {
         log.info("REST: Querying reviews for product: {}", skuCode);
