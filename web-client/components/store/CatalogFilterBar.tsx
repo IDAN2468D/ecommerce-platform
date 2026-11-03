@@ -140,13 +140,13 @@ export const CatalogFilterBar: React.FC<CatalogFilterBarProps> = ({
             <select
               value={sortBy}
               onChange={(e) => onSortChange(e.target.value)}
-              className="bg-transparent text-slate-800 dark:text-slate-200 font-bold outline-none cursor-pointer text-xs"
+              className="bg-transparent text-slate-800 dark:text-slate-100 font-bold outline-none cursor-pointer text-xs dark:[color-scheme:dark] [color-scheme:light]"
             >
-              <option value="featured">מומלץ לחברי VIP</option>
-              <option value="price-asc">מחיר: מהנמוך לגבוה</option>
-              <option value="price-desc">מחיר: מהגבוה לנמוך</option>
-              <option value="name">שם מוצר (א-ת)</option>
-              <option value="stock">זמינות מלאי במרלו״ג</option>
+              <option value="featured" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-medium">מומלץ לחברי VIP</option>
+              <option value="price-asc" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-medium">מחיר: מהנמוך לגבוה</option>
+              <option value="price-desc" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-medium">מחיר: מהגבוה לנמוך</option>
+              <option value="name" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-medium">שם מוצר (א-ת)</option>
+              <option value="stock" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-medium">זמינות מלאי במרלו״ג</option>
             </select>
           </div>
         </div>

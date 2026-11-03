@@ -42,6 +42,25 @@ body {
   color: #f8fafc;
 }
 
+/* Dark/Light Mode Safe Native Form Controls (Select & Option) */
+select {
+  color-scheme: light;
+}
+
+.dark select {
+  color-scheme: dark;
+}
+
+option {
+  background-color: #ffffff;
+  color: #0f172a;
+}
+
+.dark option {
+  background-color: #0f172a;
+  color: #f8fafc;
+}
+
 /* Adaptive Liquid Glass Surface */
 .liquid-glass-surface {
   background: var(--bg-elevated);

@@ -113,12 +113,12 @@ export const CheckoutSummaryCard: React.FC<CheckoutSummaryCardProps> = ({
         <select
           value={paymentToken}
           onChange={(e) => onPaymentTokenChange(e.target.value)}
-          className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-xs outline-none"
+          className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-xs outline-none dark:[color-scheme:dark] [color-scheme:light] cursor-pointer"
         >
-          <option value="pm_card_visa_ok">💳 Visa Platinum (•••• 4242) - כרטיס ראשי</option>
-          <option value="pm_card_mastercard_ok">💳 Mastercard World Elite (•••• 8899)</option>
-          <option value="pm_apple_pay_ok">🍎 Apple Pay / Google Pay - תשלום מהיר</option>
-          <option value="pm_bit_paybox_ok">📱 תשלום מהיר ב-Bit / PayBox</option>
+          <option value="pm_card_visa_ok" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-medium">💳 Visa Platinum (•••• 4242) - כרטיס ראשי</option>
+          <option value="pm_card_mastercard_ok" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-medium">💳 Mastercard World Elite (•••• 8899)</option>
+          <option value="pm_apple_pay_ok" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-medium">🍎 Apple Pay / Google Pay - תשלום מהיר</option>
+          <option value="pm_bit_paybox_ok" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-medium">📱 תשלום מהיר ב-Bit / PayBox</option>
         </select>
       </div>
 
