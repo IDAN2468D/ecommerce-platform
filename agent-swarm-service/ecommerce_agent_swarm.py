@@ -665,21 +665,35 @@ class SupervisorRouterAgent:
         q_lower = query.lower()
         intents = []
 
-        is_search = any(w in q_lower for w in ["חפש", "אוזניות", "מחשב", "מוצר", "דגם", "מפרט", "סוני", "אפל", "מחיר", "המלצה", "דירוג", "ביקורת", "מצא", "show", "find", "search", "headphones", "laptop"])
-        is_cart_pricing = any(w in q_lower for w in ["סל", "עגלה", "הוסף", "תוסיף", "תקנה", "קנה", "קופון", "הנחה", "נקודות", "loyalty", "cashback", "vip", "cart", "coupon", "discount"])
-        is_order_logistics = any(w in q_lower for w in ["הזמנה", "משלוח", "סטטוס", "dhl", "מעקב", "חשבונית", "דרייב", "יומן", "drive", "calendar", "order", "shipping", "track", "invoice"])
-        is_ops = any(w in q_lower for w in ["מלאי נמוך", "התראה", "תפעול", "נטוש", "ops", "kafka", "telemetry", "stream"])
+        is_order_logistics = any(w in q_lower for w in [
+            "הזמנה", "הזמנות", "משלוח", "משלוחים", "חבילה", "חבילות", "החבילה", "שליח", "שליחים", 
+            "סטטוס", "איפה", "מתי יגיע", "מתי מגיע", "מעקב", "dhl", "חשבונית", "קבלה",
+            "דרייב", "יומן", "drive", "calendar", "order", "shipping", "track", "tracking", "package", "parcel", "invoice", "delivery"
+        ])
 
+        is_search = any(w in q_lower for w in [
+            "חפש", "אוזניות", "מחשב", "מוצר", "דגם", "מפרט", "סוני", "אפל", "מחיר", "המלצה", "דירוג", "ביקורת", "מצא", 
+            "לפטופ", "אייפון", "שעון", "עכבר", "קנה", "לקנות", "show", "find", "search", "headphones", "laptop", "iphone", "macbook"
+        ])
+
+        is_cart_pricing = any(w in q_lower for w in [
+            "סל", "עגלה", "הוסף", "תוסיף", "תקנה", "קופון", "הנחה", "נקודות", "loyalty", "cashback", "vip", "cart", "coupon", "discount"
+        ])
+
+        is_ops = any(w in q_lower for w in [
+            "מלאי נמוך", "התראה", "תפעול", "נטוש", "ops", "kafka", "telemetry", "stream"
+        ])
+
+        if is_order_logistics:
+            intents.append("ORDER_LOGISTICS_WORKSPACE")
         if is_search:
             intents.append("CATALOG_DISCOVERY")
         if is_cart_pricing:
             intents.append("CART_PRICING_LOYALTY")
-        if is_order_logistics:
-            intents.append("ORDER_LOGISTICS_WORKSPACE")
         if is_ops:
             intents.append("KAFKA_AUTONOMOUS_OPS")
 
-        # Default fallback to Catalog & Pricing if ambiguous
+        # Default fallback to Catalog & Pricing only if completely ambiguous
         if not intents:
             intents = ["CATALOG_DISCOVERY", "CART_PRICING_LOYALTY"]
 
@@ -703,8 +717,8 @@ class SupervisorRouterAgent:
         tasks = []
         task_names = []
 
-        # Always run catalog discovery if search or cart is needed
-        if "CATALOG_DISCOVERY" in intents or "CART_PRICING_LOYALTY" in intents:
+        # Only run catalog discovery if search was explicitly detected or no specific intent
+        if "CATALOG_DISCOVERY" in intents:
             tasks.append(self.catalog_agent.run(request.query, request.category, request.topK or 4))
             task_names.append("catalog")
             agents_involved.append(self.catalog_agent.name)
@@ -795,10 +809,14 @@ class SupervisorRouterAgent:
                 prompt = (
                     f"אתה ה-Supervisor של צוות סוכנים אוטונומי בחנות Store 2026.\n"
                     f"שאלת הלקוח: {query}\n"
+                    f"כוונות שזוהו: {intents}\n"
                     f"ממצאי סוכן הקטלוג: {catalog_res}\n"
                     f"פעולות סוכן הסל והמחירים: {cart_res}\n"
                     f"ממצאי סוכן הלוגיסטיקה והמשלוחים: {logistics_res}\n"
-                    f"ענה ללקוח בעברית רהוטה, ברורה ומזמינה (RTL) בהתבסס על הממצאים של הסוכנים. שמור על מבנה מסודר עם סעיפים וציין מחירים וקופונים שנמצאו."
+                    f"הנחיות חשובות:\n"
+                    f"1. ענה ללקוח בעברית רהוטה, ברורה ומזמינה (RTL) בהתבסס על הממצאים של הסוכנים הרלוונטיים.\n"
+                    f"2. אם שאלת הלקוח נוגעת אך ורק למעקב משלוח/חבילה/הזמנה (כמו 'איפה החבילה שלי?'), אל תציע מוצרים לרכישה בקטלוג! התמקד בלספק תשובה מפורטת וברורה על סטטוס ההזמנה, חברת השילוח (DHL), מספר המעקב ומועד האספקה המשוער.\n"
+                    f"3. שמור על מבנה מסודר עם סעיפים ברורים ופרטי מעקב מדויקים.\n"
                 )
                 gemini_resp = genai_client.models.generate_content(
                     model=GEMINI_MODEL,
@@ -812,10 +830,13 @@ class SupervisorRouterAgent:
         paragraphs: List[str] = []
 
         # Intro
-        paragraphs.append("שלום! צוות הסוכנים האוטונומי פעל בתיאום מלא ועיבד את בקשתך:\n")
+        if "ORDER_LOGISTICS_WORKSPACE" in intents and not ("CATALOG_DISCOVERY" in intents):
+            paragraphs.append("שלום! בדקתי את סטטוס המשלוח והחבילה שלך מול מערכות המרלו״ג וחברת השילוח:\n")
+        else:
+            paragraphs.append("שלום! צוות הסוכנים האוטונומי פעל בתיאום מלא ועיבד את בקשתך:\n")
 
-        # Catalog Findings
-        if catalog_res and catalog_res.get("citations"):
+        # Catalog Findings (only if catalog search was part of the intents)
+        if "CATALOG_DISCOVERY" in intents and catalog_res and catalog_res.get("citations"):
             citations: List[Citation] = catalog_res["citations"]
             top = citations[0]
             paragraphs.append(f"🔍 **איתור בקטלוג וזמינות מלאי**:\nאיתרנו עבורך את **{top.title}** (מק\"ט `{top.skuCode}`) במחיר של **₪{top.price:,.2f}**.")

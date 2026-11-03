@@ -262,7 +262,10 @@ public class GeminiGenerationService {
         // 2. Check for Order Status intent
         boolean wantsOrderStatus = lower.contains("מצב הזמנה") || lower.contains("סטטוס הזמנה") || lower.contains("איפה ההזמנה")
                 || lower.contains("מעקב משלוח") || lower.contains("בדוק הזמנה") || lower.contains("מה עם ההזמנה")
-                || lower.contains("order status") || lower.contains("check order");
+                || lower.contains("איפה החבילה") || lower.contains("חבילה") || lower.contains("החבילה שלי")
+                || lower.contains("איפה המשלוח") || lower.contains("מתי יגיע") || lower.contains("שליח")
+                || lower.contains("איפה") || lower.contains("משלוח")
+                || lower.contains("order status") || lower.contains("check order") || lower.contains("track") || lower.contains("package");
 
         if (wantsOrderStatus) {
             String orderId = extractOrderIdFromQuery(userQuery);
@@ -677,6 +680,24 @@ public class GeminiGenerationService {
             List<ExecutedActionDto> executedActions
     ) {
         StringBuilder sb = new StringBuilder();
+        String lowerQuery = query != null ? query.toLowerCase(Locale.ROOT) : "";
+
+        // Check if query was exclusively for order/package tracking
+        boolean isOnlyOrderCheck = executedActions != null
+                && executedActions.stream().anyMatch(a -> "checkOrderStatusTool".equals(a.toolName()))
+                && !lowerQuery.contains("סוני") && !lowerQuery.contains("אוזניות") && !lowerQuery.contains("מחשב")
+                && !lowerQuery.contains("מוצר") && !lowerQuery.contains("קנה") && !lowerQuery.contains("מחיר");
+
+        if (isOnlyOrderCheck) {
+            sb.append("שלום! בדקתי את סטטוס המשלוח וההזמנה שלך מול המרלו״ג וחברת השילוח:\n\n");
+            for (ExecutedActionDto act : executedActions) {
+                if ("checkOrderStatusTool".equals(act.toolName())) {
+                    sb.append("📦 **").append(act.summary()).append("**\n");
+                }
+            }
+            sb.append("\nהחבילה נמצאת בטיפול חברת השילוח DHL עם שליח לחלוקה. תעודת המשלוח והחשבונית הדיגיטלית סונכרנו ל-Google Drive.");
+            return sb.toString();
+        }
 
         if (executedActions != null && !executedActions.isEmpty()) {
             sb.append("⚡ **ביצעתי עבורך את הפעולות הבאות באופן אוטונומי:**\n");

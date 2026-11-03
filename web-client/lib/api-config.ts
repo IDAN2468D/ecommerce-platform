@@ -8,6 +8,15 @@ export function getGatewayUrl(): string {
   );
 }
 
+export function getAgentSwarmUrl(): string {
+  return (
+    process.env.AGENT_SWARM_SERVICE_URL ||
+    (typeof window === "undefined" && process.env.NODE_ENV === "production"
+      ? "http://agent-swarm-service:8093"
+      : "http://localhost:8093")
+  );
+}
+
 /**
  * Generates W3C TraceContext (traceparent) and X-Trace-Id headers
  * for end-to-end Distributed Tracing from Next.js web-client -> API Gateway -> Microservices -> Kafka -> SSE.
