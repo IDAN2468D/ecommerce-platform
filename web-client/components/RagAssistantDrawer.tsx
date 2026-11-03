@@ -65,6 +65,7 @@ export const RagAssistantDrawer: React.FC = () => {
   const [onlyInStock, setOnlyInStock] = useState<boolean>(false);
   const [minRating, setMinRating] = useState<number>(0);
   const [maxPrice, setMaxPrice] = useState<number | null>(null);
+  const [showFilters, setShowFilters] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState(false);
   const [addedSkus, setAddedSkus] = useState<Record<string, boolean>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -348,6 +349,19 @@ export const RagAssistantDrawer: React.FC = () => {
 
             <div className="flex items-center gap-1">
               <button
+                type="button"
+                onClick={() => setShowFilters(!showFilters)}
+                title={showFilters ? "הסתר מסננים" : "הצג מסנני חיפוש מתקדמים"}
+                className={`p-2 rounded-xl transition ${
+                  showFilters
+                    ? "bg-indigo-100 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800"
+                    : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+                }`}
+              >
+                <SlidersHorizontal className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
                 onClick={handleClearChat}
                 title="איפוס היסטוריית השיחה"
                 className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
@@ -355,6 +369,7 @@ export const RagAssistantDrawer: React.FC = () => {
                 <RotateCcw className="w-4 h-4" />
               </button>
               <button
+                type="button"
                 onClick={() => setIsOpen(false)}
                 title="סגור חלונית"
                 className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
@@ -364,67 +379,70 @@ export const RagAssistantDrawer: React.FC = () => {
             </div>
           </div>
 
-          {/* Category & Hybrid Reranking Filter Pills */}
-          <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-950/40 space-y-1.5 text-xs">
-            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-              <span className="text-[11px] text-slate-400 font-medium shrink-0 flex items-center gap-1 ml-1">
-                <SlidersHorizontal className="w-3 h-3 text-slate-400" /> סינון:
-              </span>
-              {[
-                { id: "ALL", label: "כל הקטלוג" },
-                { id: "מחשבים", label: "מחשבים" },
-                { id: "אוזניות", label: "אוזניות ושמע" },
-                { id: "אביזרים", label: "אביזרים" },
-              ].map((cat) => (
+          {/* Collapsible Category & Hybrid Reranking Filter Pills */}
+          {showFilters && (
+            <div className="px-4 py-2.5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-950/50 space-y-1.5 text-xs animate-fade-in">
+              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+                <span className="text-[11px] text-slate-400 font-medium shrink-0 flex items-center gap-1 ml-1">
+                  קטגוריה:
+                </span>
+                {[
+                  { id: "ALL", label: "כל הקטלוג" },
+                  { id: "מחשבים", label: "מחשבים" },
+                  { id: "אוזניות", label: "אוזניות ושמע" },
+                  { id: "אביזרים", label: "אביזרים" },
+                ].map((cat) => (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => setSelectedCategory(cat.id)}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-medium transition shrink-0 ${
+                      selectedCategory === cat.id
+                        ? "bg-brand-600 text-white shadow-xs"
+                        : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-100"
+                    }`}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-0.5">
                 <button
-                  key={cat.id}
-                  onClick={() => setSelectedCategory(cat.id)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition shrink-0 ${
-                    selectedCategory === cat.id
-                      ? "bg-brand-600 text-white shadow-xs"
-                      : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-100"
+                  type="button"
+                  onClick={() => setOnlyInStock((v) => !v)}
+                  className={`px-2 py-0.5 rounded-md text-[11px] font-semibold transition shrink-0 ${
+                    onlyInStock
+                      ? "bg-emerald-600 text-white"
+                      : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
                   }`}
                 >
-                  {cat.label}
+                  {onlyInStock ? "✓ רק במלאי" : "רק במלאי"}
                 </button>
-              ))}
+                <button
+                  type="button"
+                  onClick={() => setMinRating((r) => (r === 4.5 ? 0 : 4.5))}
+                  className={`px-2 py-0.5 rounded-md text-[11px] font-semibold transition shrink-0 ${
+                    minRating >= 4.5
+                      ? "bg-amber-500 text-slate-950"
+                      : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
+                  }`}
+                >
+                  ★ 4.5+
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMaxPrice((p) => (p === 6000 ? null : 6000))}
+                  className={`px-2 py-0.5 rounded-md text-[11px] font-semibold transition shrink-0 ${
+                    maxPrice === 6000
+                      ? "bg-indigo-600 text-white"
+                      : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
+                  }`}
+                >
+                  {maxPrice === 6000 ? "✓ עד ₪6,000" : "עד ₪6,000"}
+                </button>
+              </div>
             </div>
-            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-0.5">
-              <button
-                type="button"
-                onClick={() => setOnlyInStock((v) => !v)}
-                className={`px-2 py-0.5 rounded-md text-[11px] font-semibold transition shrink-0 ${
-                  onlyInStock
-                    ? "bg-emerald-600 text-white"
-                    : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
-                }`}
-              >
-                {onlyInStock ? "✓ רק במלאי" : "רק במלאי"}
-              </button>
-              <button
-                type="button"
-                onClick={() => setMinRating((r) => (r === 4.5 ? 0 : 4.5))}
-                className={`px-2 py-0.5 rounded-md text-[11px] font-semibold transition shrink-0 ${
-                  minRating >= 4.5
-                    ? "bg-amber-500 text-slate-950"
-                    : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
-                }`}
-              >
-                ★ 4.5+
-              </button>
-              <button
-                type="button"
-                onClick={() => setMaxPrice((p) => (p === 6000 ? null : 6000))}
-                className={`px-2 py-0.5 rounded-md text-[11px] font-semibold transition shrink-0 ${
-                  maxPrice === 6000
-                    ? "bg-indigo-600 text-white"
-                    : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
-                }`}
-              >
-                {maxPrice === 6000 ? "✓ עד ₪6,000" : "עד ₪6,000"}
-              </button>
-            </div>
-          </div>
+          )}
 
           {/* Messages Container */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -729,14 +747,14 @@ export const RagAssistantDrawer: React.FC = () => {
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="שאל שאלה על המוצרים, מפרטים, או המלצה..."
+                placeholder="שאל אותי כל דבר (למשל: תוסיף לי לסל את אוזניות סוני ותבדוק קופון)..."
                 disabled={isLoading}
-                className="flex-1 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/50 transition disabled:opacity-60"
+                className="flex-1 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition disabled:opacity-60"
               />
               <button
                 type="submit"
                 disabled={isLoading || !query.trim()}
-                className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-700 hover:to-indigo-700 text-white font-bold text-sm shadow-md transition disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 active:scale-95"
+                className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-indigo-600 to-brand-600 hover:opacity-90 text-white font-bold text-sm shadow-md transition disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 active:scale-95"
               >
                 <Send className="w-4 h-4 rotate-180" />
                 <span className="hidden sm:inline">שלח</span>
@@ -746,9 +764,9 @@ export const RagAssistantDrawer: React.FC = () => {
             <div className="mt-2 flex items-center justify-between text-[10px] text-slate-400 font-mono">
               <span className="flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                RAG Engine: Ready
+                Swarm Multi-Agent Engine • 5 Agents Active
               </span>
-              <span>Resilience4j Circuit Breaker Active</span>
+              <span>Google Gemini • Atlas Vector</span>
             </div>
           </div>
         </div>

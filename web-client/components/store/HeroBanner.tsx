@@ -4,12 +4,17 @@ import React from "react";
 import { Sparkles, ShoppingBag, ArrowLeft, ShieldCheck, Zap, Truck } from "lucide-react";
 
 export const HeroBanner: React.FC = () => {
-  const handleOpenAi = () => {
-    window.dispatchEvent(new Event("open-rag-drawer"));
-  };
-
   const handleOpenCart = () => {
     window.dispatchEvent(new Event("open-cart-drawer"));
+  };
+
+  const handleScrollToCatalog = () => {
+    const el = document.getElementById("catalog-products");
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth" });
+    } else {
+      window.scrollTo({ top: 450, behavior: "smooth" });
+    }
   };
 
   return (
@@ -38,19 +43,19 @@ export const HeroBanner: React.FC = () => {
 
           <div className="flex flex-wrap items-center gap-3 pt-2">
             <button
-              onClick={handleOpenAi}
-              className="px-5 py-3 rounded-2xl bg-gradient-to-r from-amber-500 via-indigo-600 to-brand-600 hover:from-amber-600 hover:to-indigo-700 text-white font-extrabold text-sm shadow-xl shadow-indigo-600/25 hover:scale-105 active:scale-95 transition flex items-center gap-2"
+              onClick={handleScrollToCatalog}
+              className="px-5 py-3 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-sm shadow-xl shadow-amber-500/25 hover:scale-105 active:scale-95 transition flex items-center gap-2"
             >
-              <Sparkles className="w-4 h-4 text-amber-300" />
-              <span>שאל את עוזר הקניות AI</span>
+              <ShoppingBag className="w-4 h-4 stroke-[2.5]" />
+              <span>צפה בכל המוצרים</span>
             </button>
 
             <button
               onClick={handleOpenCart}
               className="px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-sm border border-white/20 backdrop-blur-md transition flex items-center gap-2 active:scale-95"
             >
-              <ShoppingBag className="w-4 h-4" />
-              <span>צפה בעגלה</span>
+              <Zap className="w-4 h-4 text-amber-300" />
+              <span>עגלת קניות ומבצעים</span>
             </button>
           </div>
         </div>
