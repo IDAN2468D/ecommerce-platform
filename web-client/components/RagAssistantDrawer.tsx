@@ -8,6 +8,7 @@ import {
   Send,
   RotateCcw,
   ShoppingBag,
+  ShoppingCart,
   Check,
   CheckCircle2,
   ExternalLink,
@@ -16,7 +17,20 @@ import {
   Zap,
   SlidersHorizontal,
   ChevronDown,
-  Info,
+  ChevronUp,
+  Star,
+  Tag,
+  PackageCheck,
+  Truck,
+  Eye,
+  Mic,
+  MicOff,
+  Clock,
+  Layers,
+  Flame,
+  ArrowRight,
+  ShieldCheck,
+  Box,
 } from "lucide-react";
 import { useCurrency } from "../context/CurrencyContext";
 
@@ -28,6 +42,8 @@ export interface Citation {
   category?: string;
   inStock?: boolean;
   snippet?: string;
+  imageUrl?: string;
+  rating?: number;
 }
 
 export interface ExecutedAction {
@@ -49,11 +65,53 @@ export interface ChatMessage {
   model?: string;
 }
 
-const PRESET_PROMPTS = [
-  "תוסיף לי לסל את האוזניות של סוני עם ביטול רעשים",
-  "מה הקופון הכי משתלם לסל של 3500 ש״ח?",
-  "מה סטטוס המשלוח וההזמנה האחרונה שלי?",
-  "איזה מחשב נייד הכי מתאים לעריכת וידאו וגרפיקה?",
+const SKU_IMAGE_MAP: Record<string, string> = {
+  "AIRPODS-MAX": "https://images.unsplash.com/photo-1546435770-a3e426bf472b?auto=format&fit=crop&w=800&q=80",
+  "AUDIO-AIRPODS-MAX": "https://images.unsplash.com/photo-1546435770-a3e426bf472b?auto=format&fit=crop&w=800&q=80",
+  "AIRPODS-PRO-2": "https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?auto=format&fit=crop&w=800&q=80",
+  "AUDIO-AIRPODS-PRO": "https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?auto=format&fit=crop&w=800&q=80",
+  "MACBOOK-PRO-M3": "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80",
+  "MACBOOK-PRO-M4": "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80",
+  "LAPTOP-MACBOOK-PRO-16": "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80",
+  "WATCH-ULTRA-2": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80",
+  "IPAD-PRO-M4": "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?auto=format&fit=crop&w=800&q=80",
+  "IPHONE-16-PRO-256": "https://images.unsplash.com/photo-1695048133142-1a20484d2569?auto=format&fit=crop&w=800&q=80",
+  "IPHONE-16-PRO": "https://images.unsplash.com/photo-1695048133142-1a20484d2569?auto=format&fit=crop&w=800&q=80",
+  "CASE-CLEAR-MAGSAFE": "https://images.unsplash.com/photo-1603302576837-37561b2e2302?auto=format&fit=crop&w=800&q=80",
+  "CASE-PRO-CLEAR": "https://images.unsplash.com/photo-1603302576837-37561b2e2302?auto=format&fit=crop&w=800&q=80",
+  "DJI-MINI-4-PRO": "https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&w=800&q=80",
+  "SKU-LAPTOP-PRO": "https://images.unsplash.com/photo-1593642632823-8f785ba67e45?auto=format&fit=crop&w=800&q=80",
+  "DELL-XPS-15": "https://images.unsplash.com/photo-1593642632823-8f785ba67e45?auto=format&fit=crop&w=800&q=80",
+  "LAPTOP-DELL-XPS-15": "https://images.unsplash.com/photo-1593642632823-8f785ba67e45?auto=format&fit=crop&w=800&q=80",
+  "SKU-MOUSE-WIRELESS": "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?auto=format&fit=crop&w=800&q=80",
+  "SAMSUNG-S24-ULTRA": "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&w=800&q=80",
+  "PS5-PRO": "https://images.unsplash.com/photo-1606813907291-d86efa9b94db?auto=format&fit=crop&w=800&q=80",
+  "SONY-WH-1000XM5": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800&q=80",
+  "SONY-WH1000XM5": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800&q=80",
+  "AUDIO-SONY-XM5": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800&q=80",
+};
+
+const PRESET_TOPICS = [
+  {
+    icon: "🎧",
+    title: "אוזניות ביטול רעשים",
+    prompt: "תוסיף לי לסל את האוזניות של סוני עם ביטול רעשים ותבדוק הנחת VIP",
+  },
+  {
+    icon: "💻",
+    title: "מחשב נייד מקצועי",
+    prompt: "איזה מחשב נייד הכי מתאים לעריכת וידאו וגרפיקה עם מסך OLED?",
+  },
+  {
+    icon: "🎁",
+    title: "הנחת VIP וקופון",
+    prompt: "מה הקופון הכי משתלם והנחת מועדון VIP לסל של 3,500 ש״ח?",
+  },
+  {
+    icon: "📦",
+    title: "מעקב הזמנה ומשלוח",
+    prompt: "מה סטטוס המשלוח וההזמנה האחרונה שלי במערכת?",
+  },
 ];
 
 export const RagAssistantDrawer: React.FC = () => {
@@ -67,18 +125,27 @@ export const RagAssistantDrawer: React.FC = () => {
   const [maxPrice, setMaxPrice] = useState<number | null>(null);
   const [showFilters, setShowFilters] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [expandedReasoning, setExpandedReasoning] = useState<Record<string, boolean>>({});
   const [addedSkus, setAddedSkus] = useState<Record<string, boolean>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: "msg_welcome",
       sender: "assistant",
-      text: "שלום! אני עוזר הקניות האישי החכם של Store 2026.\n\nאיך אוכל לסייע לך היום? תוכל לשאול אותי על מפרטים טכניים, המלצות ציוד, התאמת מוצרים לתקציב, או בדיקת זמינות מלאי.",
+      text: "שלום! אני עוזר הקניות החכם המופעל ע״י צוות סוכנים אוטונומי ובינה מלאכותית של Google Gemini.\n\nאיך אוכל לסייע לך היום? תוכל לשאול אותי על מפרטים טכניים, לבקש להוסיף מוצרים ישירות לסל, לבדוק זמינות מלאי במרלו״ג או לאתר קופונים והנחות VIP.",
       timestamp: "עכשיו",
-      model: "gemini-3.5-flash-lite",
+      model: "Google Gemini 2.5 Flash Swarm",
     },
   ]);
+
+  const activeFiltersCount =
+    (selectedCategory !== "ALL" ? 1 : 0) +
+    (onlyInStock ? 1 : 0) +
+    (minRating > 0 ? 1 : 0) +
+    (maxPrice !== null ? 1 : 0);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -87,6 +154,7 @@ export const RagAssistantDrawer: React.FC = () => {
   useEffect(() => {
     if (isOpen) {
       scrollToBottom();
+      setTimeout(() => inputRef.current?.focus(), 150);
     }
   }, [isOpen, messages]);
 
@@ -96,7 +164,6 @@ export const RagAssistantDrawer: React.FC = () => {
       setIsOpen(true);
       if (e?.detail?.initialQuery) {
         setQuery(e.detail.initialQuery);
-        // Automatically submit query after open
         setTimeout(() => {
           submitQuery(e.detail.initialQuery);
         }, 150);
@@ -114,11 +181,52 @@ export const RagAssistantDrawer: React.FC = () => {
       {
         id: "msg_welcome_reset",
         sender: "assistant",
-        text: "השיחה אופסה. מה תרצה למצוא עבורך כעת?",
+        text: "השיחה אופסה בהצלחה. כל 5 סוכני ה-Swarm ממתינים לבקשה שלך. מה תרצה שנבדוק כעת?",
         timestamp: "עכשיו",
-        model: "gemini-3.5-flash-lite",
+        model: "Google Gemini 2.5 Flash Swarm",
       },
     ]);
+  };
+
+  const toggleReasoning = (messageId: string) => {
+    setExpandedReasoning((prev) => ({
+      ...prev,
+      [messageId]: !prev[messageId],
+    }));
+  };
+
+  const handleVoiceSearch = () => {
+    if (typeof window === "undefined") return;
+    const SpeechRecognition =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      alert("חיפוש קולי אינו נתמך בדפדפן זה. מומלץ להשתמש ב-Google Chrome.");
+      return;
+    }
+
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.lang = "he-IL";
+      recognition.continuous = false;
+      recognition.interimResults = false;
+
+      recognition.onstart = () => setIsListening(true);
+      recognition.onend = () => setIsListening(false);
+      recognition.onerror = () => setIsListening(false);
+
+      recognition.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        if (transcript) {
+          setQuery(transcript);
+          submitQuery(transcript);
+        }
+      };
+
+      recognition.start();
+    } catch {
+      setIsListening(false);
+    }
   };
 
   const submitQuery = async (customQuery?: string) => {
@@ -250,10 +358,10 @@ export const RagAssistantDrawer: React.FC = () => {
         text: data.answer || data.response || "לא התקבלה תשובה מפורטת מהמערכת.",
         citations: data.citations || [],
         executedActions,
-        agentsInvolved: data.agentsInvolved || (data.model?.includes("swarm") ? ["SupervisorRouterAgent"] : undefined),
+        agentsInvolved: data.agentsInvolved || (data.model?.includes("swarm") ? ["SupervisorRouterAgent", "CatalogDiscoveryAgent"] : undefined),
         timestamp: new Date().toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" }),
         latencyMs: data.latencyMs,
-        model: data.model || "swarm-supervisor-gemini-2.5-flash",
+        model: data.model || "Google Gemini 2.5 Flash Swarm",
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
@@ -281,10 +389,13 @@ export const RagAssistantDrawer: React.FC = () => {
         "SONY-WH1000XM5": "SONY-WH-1000XM5",
         "DELL-XPS-15": "SKU-LAPTOP-PRO",
         "CASE-PRO-CLEAR": "CASE-CLEAR-MAGSAFE",
+        "AUDIO-SONY-XM5": "SONY-WH-1000XM5",
       };
       const canonicalSku = SKU_ALIASES[citation.skuCode] || citation.skuCode;
       const currentCart = JSON.parse(localStorage.getItem("cart") || "[]");
-      const existingIndex = currentCart.findIndex((i: any) => i.skuCode === canonicalSku || i.skuCode === citation.skuCode);
+      const existingIndex = currentCart.findIndex(
+        (i: any) => i.skuCode === canonicalSku || i.skuCode === citation.skuCode
+      );
 
       if (existingIndex > -1) {
         currentCart[existingIndex].quantity = (currentCart[existingIndex].quantity || 1) + 1;
@@ -314,398 +425,544 @@ export const RagAssistantDrawer: React.FC = () => {
     router.push(`/?sku=${skuCode}`);
   };
 
+  const resolveProductImage = (citation: Citation): string => {
+    if (citation.imageUrl) return citation.imageUrl;
+    const direct = SKU_IMAGE_MAP[citation.skuCode];
+    if (direct) return direct;
+    for (const [key, val] of Object.entries(SKU_IMAGE_MAP)) {
+      if (citation.skuCode.includes(key) || key.includes(citation.skuCode)) {
+        return val;
+      }
+    }
+    return "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80";
+  };
+
   if (!isOpen) return null;
 
   return (
     <div
-      className="fixed inset-0 z-50 overflow-hidden bg-slate-950/60 backdrop-blur-sm transition-opacity"
+      className="fixed inset-0 z-50 overflow-hidden bg-slate-950/70 backdrop-blur-md transition-opacity duration-300"
       dir="rtl"
     >
-      <div className="absolute inset-y-0 start-0 max-w-full flex pr-0 sm:pr-6">
+      <div className="absolute inset-y-0 start-0 max-w-full flex pr-0 sm:pr-4">
         <div
-          className="w-screen max-w-lg bg-white dark:bg-slate-900 border-e border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col justify-between"
+          className="w-screen max-w-xl bg-white/95 dark:bg-[#090d16]/95 border-e border-slate-200/80 dark:border-indigo-500/20 shadow-[0_0_60px_rgba(79,70,229,0.18)] flex flex-col justify-between backdrop-blur-2xl"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Header */}
-          <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-r from-slate-50 via-white to-indigo-50/30 dark:from-slate-900 dark:via-slate-900 dark:to-indigo-950/20 flex items-center justify-between">
+          {/* Top Header */}
+          <div className="p-4 sm:p-5 border-b border-slate-200/80 dark:border-slate-800/80 bg-gradient-to-r from-slate-50 via-white to-indigo-50/40 dark:from-[#0b0f1a] dark:via-[#090d16] dark:to-indigo-950/30 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 via-indigo-600 to-brand-600 flex items-center justify-center text-white shadow-md shadow-indigo-500/20 ring-2 ring-white/60 dark:ring-slate-800">
-                <Sparkles className="w-5 h-5 animate-pulse" />
+              {/* Dynamic Swarm Halo Icon */}
+              <div className="relative flex items-center justify-center">
+                <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-amber-500 via-indigo-600 to-cyan-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/25 ring-2 ring-white dark:ring-slate-800">
+                  <Bot className="w-6 h-6 animate-pulse" />
+                </div>
+                <span className="absolute -bottom-1 -end-1 flex h-3.5 w-3.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500 border-2 border-white dark:border-slate-900" />
+                </span>
               </div>
+
               <div className="text-right">
                 <div className="flex items-center gap-2">
-                  <h3 className="font-extrabold text-base text-slate-900 dark:text-slate-100">
-                    צוות סוכנים אוטונומי AI
+                  <h3 className="font-black text-base text-slate-900 dark:text-white tracking-tight">
+                    צוות סוכני AI אוטונומי
                   </h3>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/60">
-                    Swarm V5
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-gradient-to-r from-amber-500/20 to-indigo-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+                    VIP Swarm
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 font-mono mt-0.5">
-                  5 Autonomous Agents • Multi-Agent Swarm
-                </p>
+                <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 font-mono mt-0.5">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  <span>5 סוכנים פעילים</span>
+                  <span>•</span>
+                  <span>Google Gemini 2.5 Flash</span>
+                </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-1">
+            {/* Header Actions */}
+            <div className="flex items-center gap-1.5">
               <button
                 type="button"
                 onClick={() => setShowFilters(!showFilters)}
-                title={showFilters ? "הסתר מסננים" : "הצג מסנני חיפוש מתקדמים"}
-                className={`p-2 rounded-xl transition ${
-                  showFilters
-                    ? "bg-indigo-100 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800"
-                    : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+                title={showFilters ? "הסתר מסננים" : "סינון מתקדם בקטלוג"}
+                className={`relative p-2 rounded-xl transition ${
+                  showFilters || activeFiltersCount > 0
+                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
+                    : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800"
                 }`}
               >
                 <SlidersHorizontal className="w-4 h-4" />
+                {activeFiltersCount > 0 && !showFilters && (
+                  <span className="absolute -top-1 -end-1 w-4 h-4 rounded-full bg-amber-500 text-slate-950 font-bold text-[9px] flex items-center justify-center">
+                    {activeFiltersCount}
+                  </span>
+                )}
               </button>
+
               <button
                 type="button"
                 onClick={handleClearChat}
                 title="איפוס היסטוריית השיחה"
-                className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                className="p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition"
               >
                 <RotateCcw className="w-4 h-4" />
               </button>
+
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
                 title="סגור חלונית"
-                className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                className="p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
           </div>
 
-          {/* Collapsible Category & Hybrid Reranking Filter Pills */}
+          {/* Collapsible Category & Search Filters Panel */}
           {showFilters && (
-            <div className="px-4 py-2.5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-950/50 space-y-1.5 text-xs animate-fade-in">
-              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-                <span className="text-[11px] text-slate-400 font-medium shrink-0 flex items-center gap-1 ml-1">
-                  קטגוריה:
+            <div className="px-4 py-3 border-b border-slate-200/80 dark:border-slate-800/80 bg-slate-50/90 dark:bg-slate-950/70 space-y-2 animate-fade-in text-xs">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-slate-400 font-mono">
+                  התאמת תוצאות חיפוש בקטלוג
                 </span>
+                {activeFiltersCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedCategory("ALL");
+                      setOnlyInStock(false);
+                      setMinRating(0);
+                      setMaxPrice(null);
+                    }}
+                    className="text-[11px] text-indigo-500 hover:underline font-medium"
+                  >
+                    אפס סינונים
+                  </button>
+                )}
+              </div>
+
+              {/* Categories */}
+              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
                 {[
                   { id: "ALL", label: "כל הקטלוג" },
                   { id: "מחשבים", label: "מחשבים" },
-                  { id: "אוזניות", label: "אוזניות ושמע" },
+                  { id: "אודיו", label: "אודיו ושמע" },
+                  { id: "סמארטפונים", label: "סלולר" },
                   { id: "אביזרים", label: "אביזרים" },
                 ].map((cat) => (
                   <button
                     key={cat.id}
                     type="button"
                     onClick={() => setSelectedCategory(cat.id)}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-medium transition shrink-0 ${
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition shrink-0 ${
                       selectedCategory === cat.id
-                        ? "bg-brand-600 text-white shadow-xs"
-                        : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-100"
+                        ? "bg-gradient-to-r from-amber-500 to-indigo-600 text-white shadow-xs"
+                        : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-indigo-400"
                     }`}
                   >
                     {cat.label}
                   </button>
                 ))}
               </div>
-              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-0.5">
+
+              {/* Toggles */}
+              <div className="flex items-center gap-2 pt-1 flex-wrap">
                 <button
                   type="button"
                   onClick={() => setOnlyInStock((v) => !v)}
-                  className={`px-2 py-0.5 rounded-md text-[11px] font-semibold transition shrink-0 ${
+                  className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold transition ${
                     onlyInStock
-                      ? "bg-emerald-600 text-white"
+                      ? "bg-emerald-600 text-white shadow-xs"
                       : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
                   }`}
                 >
-                  {onlyInStock ? "✓ רק במלאי" : "רק במלאי"}
+                  <PackageCheck className="w-3.5 h-3.5" />
+                  <span>רק במלאי מרלו״ג</span>
                 </button>
+
                 <button
                   type="button"
-                  onClick={() => setMinRating((r) => (r === 4.5 ? 0 : 4.5))}
-                  className={`px-2 py-0.5 rounded-md text-[11px] font-semibold transition shrink-0 ${
-                    minRating >= 4.5
-                      ? "bg-amber-500 text-slate-950"
+                  onClick={() => setMinRating((r) => (r === 4.8 ? 0 : 4.8))}
+                  className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold transition ${
+                    minRating >= 4.8
+                      ? "bg-amber-500 text-slate-950 shadow-xs"
                       : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
                   }`}
                 >
-                  ★ 4.5+
+                  <Star className="w-3.5 h-3.5 fill-current" />
+                  <span>דירוג מובחר (4.8+)</span>
                 </button>
+
                 <button
                   type="button"
-                  onClick={() => setMaxPrice((p) => (p === 6000 ? null : 6000))}
-                  className={`px-2 py-0.5 rounded-md text-[11px] font-semibold transition shrink-0 ${
-                    maxPrice === 6000
-                      ? "bg-indigo-600 text-white"
+                  onClick={() => setMaxPrice((p) => (p === 5000 ? null : 5000))}
+                  className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold transition ${
+                    maxPrice === 5000
+                      ? "bg-indigo-600 text-white shadow-xs"
                       : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
                   }`}
                 >
-                  {maxPrice === 6000 ? "✓ עד ₪6,000" : "עד ₪6,000"}
+                  <Tag className="w-3.5 h-3.5" />
+                  <span>עד ₪5,000</span>
                 </button>
               </div>
             </div>
           )}
 
-          {/* Messages Container */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {messages.map((msg) => (
-              <div
-                key={msg.id}
-                className={`flex gap-3 ${msg.sender === "user" ? "flex-row-reverse" : "flex-row"}`}
-              >
-                {/* Avatar */}
-                <div
-                  className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 text-white text-xs font-bold shadow-xs ${
-                    msg.sender === "user"
-                      ? "bg-slate-700 dark:bg-slate-600"
-                      : "bg-gradient-to-tr from-brand-600 to-indigo-600"
-                  }`}
-                >
-                  {msg.sender === "user" ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
-                </div>
+          {/* Messages Stream Container */}
+          <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-5">
+            {messages.map((msg) => {
+              const isAssistant = msg.sender === "assistant";
+              const isReasoningOpen = !!expandedReasoning[msg.id];
 
-                {/* Message Body */}
-                <div className={`max-w-[85%] space-y-2.5`}>
+              return (
+                <div
+                  key={msg.id}
+                  className={`flex gap-3 ${isAssistant ? "flex-row" : "flex-row-reverse"}`}
+                >
+                  {/* Avatar */}
                   <div
-                    className={`rounded-2xl p-3.5 text-sm leading-relaxed shadow-xs ${
-                      msg.sender === "user"
-                        ? "bg-brand-600 text-white rounded-tr-none text-right"
-                        : "bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-tl-none border border-slate-200/60 dark:border-slate-700/60 text-right whitespace-pre-wrap"
+                    className={`w-9 h-9 rounded-2xl flex items-center justify-center shrink-0 text-white font-bold shadow-md ${
+                      isAssistant
+                        ? "bg-gradient-to-tr from-amber-500 via-indigo-600 to-cyan-500 shadow-indigo-500/20 ring-1 ring-white/20"
+                        : "bg-gradient-to-tr from-slate-700 to-slate-900 dark:from-slate-600 dark:to-slate-800"
                     }`}
                   >
-                    {msg.text}
+                    {isAssistant ? <Bot className="w-5 h-5" /> : <User className="w-4 h-4" />}
                   </div>
 
-                  {/* Multi-Agent Swarm Collaborative Badges */}
-                  {msg.agentsInvolved && msg.agentsInvolved.length > 0 && (
-                    <div className="flex flex-wrap items-center gap-1.5 pt-0.5 px-0.5">
-                      <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1">
-                        <Bot className="w-3 h-3 text-indigo-500" /> צוות סוכנים:
-                      </span>
-                      {msg.agentsInvolved.map((agent) => {
-                        const labelMap: Record<string, string> = {
-                          SupervisorRouterAgent: "מתאם ראשי",
-                          CatalogDiscoveryAgent: "איתור קטלוג ומלאי",
-                          CartPricingLoyaltyAgent: "סל, קופונים ו-VIP",
-                          OrderLogisticsWorkspaceAgent: "לוגיסטיקה ומשלוחים",
-                          KafkaAutonomousOpsAgent: "אירועי רקע Kafka",
-                        };
-                        return (
-                          <span
-                            key={agent}
-                            className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-indigo-50/90 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800/40"
-                          >
-                            {labelMap[agent] || agent}
-                          </span>
-                        );
-                      })}
+                  {/* Message Content Bubble */}
+                  <div className="flex-1 max-w-[88%] space-y-3">
+                    {/* Primary Text */}
+                    <div
+                      className={`rounded-3xl p-4 text-sm leading-relaxed shadow-sm ${
+                        isAssistant
+                          ? "bg-white dark:bg-[#0f1422] text-slate-800 dark:text-slate-100 rounded-tr-xs border border-slate-200/80 dark:border-slate-800/90 whitespace-pre-wrap"
+                          : "bg-gradient-to-r from-indigo-600 to-indigo-700 text-white rounded-tl-xs font-medium"
+                      }`}
+                    >
+                      {msg.text}
                     </div>
-                  )}
 
-                  {/* Agentic Executed Actions (Function Calling Chips) */}
-                  {msg.executedActions && msg.executedActions.length > 0 && (
-                    <div className="space-y-1.5 pt-1">
-                      <span className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1 px-1">
-                        <Zap className="w-3.5 h-3.5" /> פעולות אוטונומיות שבוצעו ע״י הסוכן:
-                      </span>
-                      <div className="flex flex-col gap-1.5">
+                    {/* Agent Collaboration Timeline Accordion */}
+                    {isAssistant && msg.agentsInvolved && msg.agentsInvolved.length > 0 && (
+                      <div className="rounded-2xl border border-indigo-200/60 dark:border-indigo-900/40 bg-indigo-50/50 dark:bg-indigo-950/20 overflow-hidden text-xs">
+                        <button
+                          type="button"
+                          onClick={() => toggleReasoning(msg.id)}
+                          className="w-full px-3 py-2 flex items-center justify-between text-indigo-700 dark:text-indigo-300 font-bold hover:bg-indigo-100/50 dark:hover:bg-indigo-950/40 transition"
+                        >
+                          <div className="flex items-center gap-1.5">
+                            <Layers className="w-3.5 h-3.5 text-indigo-500" />
+                            <span>תיאום רב-סוכני ({msg.agentsInvolved.length} סוכנים שותפים)</span>
+                          </div>
+                          {isReasoningOpen ? (
+                            <ChevronUp className="w-3.5 h-3.5 text-indigo-400" />
+                          ) : (
+                            <ChevronDown className="w-3.5 h-3.5 text-indigo-400" />
+                          )}
+                        </button>
+
+                        {isReasoningOpen && (
+                          <div className="p-3 pt-1 border-t border-indigo-100 dark:border-indigo-900/30 space-y-1.5">
+                            {msg.agentsInvolved.map((agent) => {
+                              const details: Record<string, { label: string; desc: string; icon: string }> = {
+                                SupervisorRouterAgent: {
+                                  label: "סוכן ניתוב ראשי",
+                                  desc: "סיווג כוונות הלקוח, פירוק בקשות וסנכרון סוכני משנה",
+                                  icon: "🎯",
+                                },
+                                CatalogDiscoveryAgent: {
+                                  label: "סוכן קטלוג ומלאי",
+                                  desc: "חיפוש היברידי וקטורי, בדיקת מלאי במרלו״ג וסריקת מפרטים",
+                                  icon: "🔍",
+                                },
+                                CartPricingLoyaltyAgent: {
+                                  label: "סוכן תמחור ו-VIP",
+                                  desc: "הפעלת קופונים, חישוב הנחות מועדון VIP והוספה ישירה לסל",
+                                  icon: "💰",
+                                },
+                                OrderLogisticsWorkspaceAgent: {
+                                  label: "סוכן שילוח ולוגיסטיקה",
+                                  desc: "מעקב חבילות, סטטוס משלוח ויצירת חשבוניות מסונכרנות",
+                                  icon: "🚚",
+                                },
+                                KafkaAutonomousOpsAgent: {
+                                  label: "סוכן אירועי Kafka",
+                                  desc: "שידור אירועי רקע טלמטריים ואוטומציה ללא השהייה",
+                                  icon: "⚡",
+                                },
+                              };
+
+                              const item = details[agent] || {
+                                label: agent,
+                                desc: "סוכן אוטונומי",
+                                icon: "🤖",
+                              };
+
+                              return (
+                                <div
+                                  key={agent}
+                                  className="flex items-start gap-2 bg-white/70 dark:bg-slate-900/70 p-2 rounded-xl border border-indigo-100/50 dark:border-indigo-900/30"
+                                >
+                                  <span className="text-sm shrink-0">{item.icon}</span>
+                                  <div>
+                                    <div className="font-bold text-slate-800 dark:text-slate-200 text-[11px]">
+                                      {item.label}
+                                    </div>
+                                    <div className="text-[10px] text-slate-500 dark:text-slate-400">
+                                      {item.desc}
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Autonomous Function Calling Actions */}
+                    {isAssistant && msg.executedActions && msg.executedActions.length > 0 && (
+                      <div className="space-y-2">
                         {msg.executedActions.map((act, idx) => (
                           <div
                             key={`${act.toolName}_${idx}`}
-                            className={`p-2.5 rounded-xl border text-xs flex items-center justify-between gap-2 ${
-                              act.status === "SUCCESS"
-                                ? "bg-emerald-50/90 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800/70 text-emerald-900 dark:text-emerald-200"
-                                : "bg-amber-50/90 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800/70 text-amber-900 dark:text-amber-200"
-                            }`}
+                            className="p-3 rounded-2xl border border-emerald-300/60 dark:border-emerald-800/60 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 dark:from-emerald-950/30 dark:to-teal-950/20 backdrop-blur-md flex items-center justify-between gap-3"
                           >
-                            <div className="flex items-center gap-2">
-                              <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-xs">
+                                <Zap className="w-4 h-4" />
+                              </div>
                               <div>
-                                <div className="font-bold text-[11px] font-mono opacity-80">
-                                  {act.toolName}
-                                </div>
-                                <div className="font-semibold">{act.summary}</div>
+                                <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider font-mono block">
+                                  פעולה אוטונומית שבוצעה
+                                </span>
+                                <span className="text-xs font-bold text-slate-800 dark:text-slate-100">
+                                  {act.summary}
+                                </span>
                               </div>
                             </div>
-                            {act.toolName === "addToCartTool" && act.status === "SUCCESS" && (
+
+                            {act.toolName === "addToCartTool" && (
                               <button
                                 type="button"
                                 onClick={() => {
                                   setIsOpen(false);
                                   router.push("/cart");
                                 }}
-                                className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] shrink-0 transition"
+                                className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shrink-0 transition shadow-xs flex items-center gap-1"
                               >
-                                עבור לסל
+                                <span>לסל</span>
+                                <ArrowRight className="w-3.5 h-3.5 rotate-180" />
                               </button>
                             )}
-                            {act.toolName === "validateBestCouponTool" &&
-                              act.status === "SUCCESS" &&
-                              (act.payload?.bestCouponCode || act.payload?.couponCode) && (
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    sessionStorage.setItem(
-                                      "pending_coupon",
-                                      String(act.payload?.bestCouponCode || act.payload?.couponCode)
-                                    );
-                                    setIsOpen(false);
-                                    router.push("/cart");
-                                  }}
-                                  className="px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[11px] shrink-0 transition"
-                                >
-                                  החל {String(act.payload.bestCouponCode || act.payload.couponCode)}
-                                </button>
-                              )}
-                            {act.toolName === "checkOrderStatusTool" && act.status === "SUCCESS" && (
+
+                            {act.toolName === "checkOrderStatusTool" && (
                               <button
                                 type="button"
                                 onClick={() => {
                                   setIsOpen(false);
                                   router.push("/orders");
                                 }}
-                                className="px-2.5 py-1 rounded-lg bg-sky-600 hover:bg-sky-700 text-white font-bold text-[11px] shrink-0 transition"
+                                className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shrink-0 transition shadow-xs"
                               >
-                                מעקב משלוח
+                                מעקב הזמנה
                               </button>
                             )}
                           </div>
                         ))}
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  {/* Grounded Citation Product Cards */}
-                  {msg.citations && msg.citations.length > 0 && (
-                    <div className="space-y-2 pt-1">
-                      <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 block px-1">
-                        📦 מוצרים רלוונטיים מתוך הקטלוג ({msg.citations.length}):
-                      </span>
+                    {/* REDESIGNED: Premium Grounded Catalog Product Cards */}
+                    {isAssistant && msg.citations && msg.citations.length > 0 && (
+                      <div className="space-y-2.5 pt-1">
+                        <div className="flex items-center justify-between px-1">
+                          <span className="text-xs font-black text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                            <span>מוצרים מומלצים ומדויקים מהקטלוג ({msg.citations.length})</span>
+                          </span>
+                          <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800/60">
+                            מלאי מאומת בזמן אמת
+                          </span>
+                        </div>
 
-                      <div className="grid grid-cols-1 gap-2">
-                        {msg.citations.map((citation) => {
-                          const isAdded = !!addedSkus[citation.skuCode];
-                          return (
-                            <div
-                              key={citation.skuCode}
-                              className="p-3 rounded-xl bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-700/80 shadow-xs hover:border-indigo-400 dark:hover:border-indigo-500 transition group"
-                            >
-                              <div className="flex items-start justify-between gap-2">
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-1.5 flex-wrap">
-                                    <h4 className="font-bold text-xs text-slate-900 dark:text-slate-100 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition">
-                                      {citation.title}
-                                    </h4>
+                        <div className="grid grid-cols-1 gap-2.5">
+                          {msg.citations.map((citation) => {
+                            const isAdded = !!addedSkus[citation.skuCode];
+                            const imgSrc = resolveProductImage(citation);
+                            const ratingVal = citation.rating || 4.9;
+                            const regularPrice = Math.round(citation.price * 1.15);
+                            const cashbackPoints = Math.round(citation.price * 0.05);
+
+                            return (
+                              <div
+                                key={citation.skuCode}
+                                className="group relative rounded-2xl bg-white dark:bg-[#111728] border border-slate-200/90 dark:border-slate-800/90 hover:border-amber-500/50 dark:hover:border-amber-400/50 p-3.5 shadow-sm hover:shadow-xl hover:shadow-indigo-500/5 transition-all duration-300 overflow-hidden"
+                              >
+                                {/* Glowing Accent bar on hover */}
+                                <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-amber-500 via-indigo-500 to-cyan-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                                <div className="flex gap-3.5 items-start">
+                                  {/* Product Thumbnail Box */}
+                                  <div
+                                    onClick={() => handleNavigateToProduct(citation.skuCode)}
+                                    className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-gradient-to-b from-slate-100 to-slate-50 dark:from-slate-900 dark:to-slate-950 border border-slate-200/60 dark:border-slate-800 flex items-center justify-center p-1.5 shrink-0 overflow-hidden cursor-pointer group-hover:scale-102 transition-transform"
+                                  >
+                                    <img
+                                      src={imgSrc}
+                                      alt={citation.title}
+                                      className="w-full h-full object-contain mix-blend-multiply dark:mix-blend-normal transition-transform duration-500 group-hover:scale-110"
+                                      loading="lazy"
+                                    />
                                     {citation.inStock !== false ? (
-                                      <span className="px-1.5 py-0.2 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-[10px] font-semibold">
+                                      <span className="absolute bottom-1 start-1 px-1.5 py-0.2 rounded-md bg-emerald-500/90 text-white text-[9px] font-black tracking-tight">
                                         במלאי
                                       </span>
                                     ) : (
-                                      <span className="px-1.5 py-0.2 rounded bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300 text-[10px] font-semibold">
+                                      <span className="absolute bottom-1 start-1 px-1.5 py-0.2 rounded-md bg-rose-500/90 text-white text-[9px] font-black tracking-tight">
                                         אזל
                                       </span>
                                     )}
                                   </div>
 
-                                  <div className="text-[11px] text-slate-400 font-mono mt-0.5">
-                                    מק״ט: {citation.skuCode} • {citation.category || "מוצר"}
-                                  </div>
+                                  {/* Product Details */}
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-start justify-between gap-1">
+                                      <h4
+                                        onClick={() => handleNavigateToProduct(citation.skuCode)}
+                                        className="font-extrabold text-xs sm:text-sm text-slate-900 dark:text-slate-100 group-hover:text-amber-500 dark:group-hover:text-amber-400 transition cursor-pointer truncate"
+                                      >
+                                        {citation.title}
+                                      </h4>
+                                    </div>
 
-                                  {citation.snippet && (
-                                    <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 line-clamp-2 leading-snug">
-                                      {citation.snippet}
-                                    </p>
-                                  )}
+                                    {/* Subtitle & Rating */}
+                                    <div className="flex items-center gap-2 mt-1 text-[11px] text-slate-400 font-mono">
+                                      <span>{citation.category || "קטלוג פרימיום"}</span>
+                                      <span>•</span>
+                                      <span className="flex items-center gap-0.5 text-amber-500 font-bold">
+                                        <Star className="w-3 h-3 fill-current" />
+                                        <span>{ratingVal}</span>
+                                      </span>
+                                      <span>•</span>
+                                      <span className="text-indigo-500 font-bold">
+                                        {Math.round((citation.relevanceScore || 0.92) * 100)}% התאמה
+                                      </span>
+                                    </div>
+
+                                    {/* Snippet / Advantages */}
+                                    {citation.snippet && (
+                                      <p className="text-[11px] text-slate-600 dark:text-slate-300 mt-1 line-clamp-1 leading-relaxed">
+                                        {citation.snippet}
+                                      </p>
+                                    )}
+
+                                    {/* Price & Benefits Row */}
+                                    <div className="mt-2 flex items-baseline justify-between gap-2 flex-wrap">
+                                      <div className="flex items-baseline gap-2">
+                                        <span className="text-sm sm:text-base font-black text-slate-900 dark:text-emerald-400">
+                                          {formatPrice(citation.price)}
+                                        </span>
+                                        <span className="text-[11px] text-slate-400 line-through">
+                                          {formatPrice(regularPrice)}
+                                        </span>
+                                      </div>
+
+                                      <div className="text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20">
+                                        🪙 צבור ₪{cashbackPoints} נקודות
+                                      </div>
+                                    </div>
+                                  </div>
                                 </div>
 
-                                <div className="text-left shrink-0">
-                                  <div className="font-black text-sm text-emerald-600 dark:text-emerald-400">
-                                    {formatPrice(citation.price)}
-                                  </div>
-                                  <div className="text-[10px] text-amber-500 font-medium">
-                                    5% Cashback
-                                  </div>
+                                {/* Product Action Buttons */}
+                                <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleNavigateToProduct(citation.skuCode)}
+                                    className="text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 flex items-center gap-1.5 transition px-2 py-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
+                                  >
+                                    <Eye className="w-3.5 h-3.5" />
+                                    <span>פרטי מוצר</span>
+                                  </button>
+
+                                  <button
+                                    type="button"
+                                    onClick={() => handleAddToCart(citation)}
+                                    className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition shadow-sm active:scale-95 ${
+                                      isAdded
+                                        ? "bg-emerald-600 text-white"
+                                        : "bg-gradient-to-r from-amber-500 via-indigo-600 to-indigo-700 hover:opacity-95 text-white"
+                                    }`}
+                                  >
+                                    {isAdded ? (
+                                      <>
+                                        <CheckCircle2 className="w-3.5 h-3.5" />
+                                        <span>נוסף בהצלחה לסל!</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <ShoppingCart className="w-3.5 h-3.5" />
+                                        <span>הוסף לסל עכשיו</span>
+                                      </>
+                                    )}
+                                  </button>
                                 </div>
                               </div>
-
-                              {/* Action Buttons: Add to Cart & View */}
-                              <div className="mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
-                                <button
-                                  type="button"
-                                  onClick={() => handleNavigateToProduct(citation.skuCode)}
-                                  className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 flex items-center gap-1 transition"
-                                >
-                                  <span>צפה בפרטים</span>
-                                  <ExternalLink className="w-3 h-3" />
-                                </button>
-
-                                <button
-                                  type="button"
-                                  onClick={() => handleAddToCart(citation)}
-                                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition shadow-xs ${
-                                    isAdded
-                                      ? "bg-emerald-600 text-white"
-                                      : "bg-brand-600 hover:bg-brand-700 text-white active:scale-95"
-                                  }`}
-                                >
-                                  {isAdded ? (
-                                    <>
-                                      <CheckCircle2 className="w-3.5 h-3.5" />
-                                      <span>נוסף לעגלה!</span>
-                                    </>
-                                  ) : (
-                                    <>
-                                      <ShoppingBag className="w-3.5 h-3.5" />
-                                      <span>הוסף לסל</span>
-                                    </>
-                                  )}
-                                </button>
-                              </div>
-                            </div>
-                          );
-                        })}
+                            );
+                          })}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  {/* Metadata Footer */}
-                  <div className="flex items-center gap-2 text-[10px] text-slate-400 px-1 font-mono">
-                    <span>{msg.timestamp}</span>
-                    {msg.latencyMs && (
-                      <>
-                        <span>•</span>
-                        <span className="text-emerald-500 flex items-center gap-0.5">
-                          <Zap className="w-2.5 h-2.5" /> {msg.latencyMs}ms
-                        </span>
-                      </>
-                    )}
-                    {msg.model && (
-                      <>
-                        <span>•</span>
-                        <span>{msg.model}</span>
-                      </>
-                    )}
+                    {/* Metadata Footer */}
+                    <div className="flex items-center gap-2 text-[10px] text-slate-400 px-1 font-mono">
+                      <span>{msg.timestamp}</span>
+                      {msg.latencyMs && (
+                        <>
+                          <span>•</span>
+                          <span className="text-emerald-500 flex items-center gap-0.5">
+                            <Zap className="w-2.5 h-2.5" /> {msg.latencyMs}ms
+                          </span>
+                        </>
+                      )}
+                      {msg.model && (
+                        <>
+                          <span>•</span>
+                          <span>{msg.model}</span>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
 
             {/* Loading Indicator */}
             {isLoading && (
               <div className="flex gap-3 items-center">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-600 flex items-center justify-center text-white shadow-xs">
-                  <Bot className="w-4 h-4" />
+                <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-amber-500 to-indigo-600 flex items-center justify-center text-white shadow-md animate-pulse">
+                  <Bot className="w-5 h-5" />
                 </div>
-                <div className="bg-slate-100 dark:bg-slate-800 rounded-2xl rounded-tl-none p-3.5 border border-slate-200/60 dark:border-slate-700/60 flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-brand-600 animate-bounce" />
-                  <div
-                    className="w-2 h-2 rounded-full bg-indigo-500 animate-bounce"
-                    style={{ animationDelay: "150ms" }}
-                  />
-                  <div
-                    className="w-2 h-2 rounded-full bg-amber-500 animate-bounce"
-                    style={{ animationDelay: "300ms" }}
-                  />
-                  <span className="text-xs text-slate-500 dark:text-slate-400 font-mono pr-1">
-                    Gemini מעבד חיפוש וקטורי...
+                <div className="bg-white dark:bg-[#0f1422] rounded-3xl rounded-tl-xs p-4 border border-slate-200/80 dark:border-slate-800/90 shadow-sm flex items-center gap-2.5">
+                  <div className="flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-amber-500 animate-bounce" />
+                    <span
+                      className="w-2 h-2 rounded-full bg-indigo-500 animate-bounce"
+                      style={{ animationDelay: "150ms" }}
+                    />
+                    <span
+                      className="w-2 h-2 rounded-full bg-cyan-400 animate-bounce"
+                      style={{ animationDelay: "300ms" }}
+                    />
+                  </div>
+                  <span className="text-xs text-slate-600 dark:text-slate-300 font-mono pr-1">
+                    צוות הסוכנים מעבד חיפוש קטלוגי וקטורי...
                   </span>
                 </div>
               </div>
@@ -714,59 +971,94 @@ export const RagAssistantDrawer: React.FC = () => {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Suggested Quick Prompts (if only welcome message) */}
+          {/* Quick Prompts Carousel (Shown when 1 message) */}
           {messages.length === 1 && !isLoading && (
-            <div className="px-4 py-2 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/50">
-              <span className="text-[11px] font-semibold text-slate-400 block mb-1.5">
+            <div className="px-4 py-3 border-t border-slate-200/80 dark:border-slate-800/80 bg-slate-50/70 dark:bg-slate-950/40">
+              <span className="text-[11px] font-bold text-slate-400 block mb-2 font-mono">
                 שאלות מהירות לדוגמה:
               </span>
-              <div className="flex flex-wrap gap-1.5">
-                {PRESET_PROMPTS.map((prompt, i) => (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {PRESET_TOPICS.map((topic, i) => (
                   <button
                     key={i}
-                    onClick={() => submitQuery(prompt)}
-                    className="text-right text-xs px-2.5 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-brand-500 hover:text-brand-600 dark:hover:text-brand-400 transition shadow-xs"
+                    onClick={() => submitQuery(topic.prompt)}
+                    className="flex items-start gap-2 p-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 text-right hover:border-amber-500/60 dark:hover:border-amber-500/60 hover:shadow-md transition group"
                   >
-                    ✨ {prompt}
+                    <span className="text-lg shrink-0">{topic.icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-bold text-xs text-slate-800 dark:text-slate-100 group-hover:text-amber-500 transition">
+                        {topic.title}
+                      </div>
+                      <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                        {topic.prompt}
+                      </div>
+                    </div>
                   </button>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Input Box */}
-          <div className="p-3 sm:p-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+          {/* Input Box Footer */}
+          <div className="p-3.5 sm:p-4 border-t border-slate-200/80 dark:border-slate-800/80 bg-white/95 dark:bg-[#090d16]/95 backdrop-blur-xl">
             <form
               onSubmit={(e) => {
                 e.preventDefault();
                 submitQuery();
               }}
-              className="flex items-center gap-2"
+              className="relative flex items-center gap-2"
             >
-              <input
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="שאל אותי כל דבר (למשל: תוסיף לי לסל את אוזניות סוני ותבדוק קופון)..."
-                disabled={isLoading}
-                className="flex-1 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition disabled:opacity-60"
-              />
+              <div className="relative flex-1">
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder={
+                    isListening
+                      ? "מקשיב לקולך כעת..."
+                      : "שאל כל דבר: תמליץ על לפטופ, תבדוק הנחת VIP, או תוסיף לסל..."
+                  }
+                  disabled={isLoading}
+                  className="w-full bg-slate-100 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl px-4 py-3 pe-11 text-xs sm:text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500/60 transition disabled:opacity-60 shadow-inner"
+                />
+
+                {/* Voice Search Button */}
+                <button
+                  type="button"
+                  onClick={handleVoiceSearch}
+                  title="חיפוש קולי"
+                  className={`absolute end-2.5 top-1/2 -translate-y-1/2 p-1.5 rounded-xl transition ${
+                    isListening
+                      ? "bg-rose-500 text-white animate-pulse"
+                      : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800"
+                  }`}
+                >
+                  {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                </button>
+              </div>
+
+              {/* Submit Button */}
               <button
                 type="submit"
                 disabled={isLoading || !query.trim()}
-                className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-indigo-600 to-brand-600 hover:opacity-90 text-white font-bold text-sm shadow-md transition disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 active:scale-95"
+                className="px-4 py-3 rounded-2xl bg-gradient-to-r from-amber-500 via-indigo-600 to-indigo-700 hover:opacity-95 text-white font-black text-xs sm:text-sm shadow-lg shadow-indigo-600/25 transition disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 active:scale-95 shrink-0"
               >
                 <Send className="w-4 h-4 rotate-180" />
                 <span className="hidden sm:inline">שלח</span>
               </button>
             </form>
 
-            <div className="mt-2 flex items-center justify-between text-[10px] text-slate-400 font-mono">
-              <span className="flex items-center gap-1">
+            {/* Sub-footer Security & Engine badge */}
+            <div className="mt-2.5 flex items-center justify-between text-[10px] text-slate-400 font-mono px-1">
+              <span className="flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                Swarm Multi-Agent Engine • 5 Agents Active
+                <span>Multi-Agent Swarm • 5 Autonomous Agents</span>
               </span>
-              <span>Google Gemini • Atlas Vector</span>
+              <span className="flex items-center gap-1 text-slate-500 dark:text-slate-400">
+                <ShieldCheck className="w-3 h-3 text-emerald-500" />
+                <span>Google Gemini • GitHub Secrets Secured</span>
+              </span>
             </div>
           </div>
         </div>

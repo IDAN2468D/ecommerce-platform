@@ -73,6 +73,8 @@ class Citation(BaseModel):
     category: Optional[str] = "GENERAL"
     inStock: Optional[bool] = True
     snippet: Optional[str] = None
+    imageUrl: Optional[str] = None
+    rating: Optional[float] = 4.9
 
 class ExecutedAction(BaseModel):
     toolName: str
@@ -120,6 +122,7 @@ CATALOG_MOCK_DATA = [
         "inStock": True,
         "stockQuantity": 18,
         "rating": 4.9,
+        "imageUrl": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800&q=80",
         "snippet": "אוזניות ביטול רעשים מובילות בתעשייה עם מעבד V1, סוללה ל-30 שעות ואיכות שיחה קריסטלית.",
         "pros": ["ביטול רעשים אקטיבי הטוב בקטגוריה", "נוחות מקסימלית בשימוש ממושך", "איכות מיקרופונים מעולה"],
         "cons": ["אינן מתקפלות לגודל קומפקטי כמו הדור הקודם", "מחיר פרימיום"]
@@ -132,6 +135,7 @@ CATALOG_MOCK_DATA = [
         "inStock": True,
         "stockQuantity": 8,
         "rating": 4.8,
+        "imageUrl": "https://images.unsplash.com/photo-1546435770-a3e426bf472b?auto=format&fit=crop&w=800&q=80",
         "snippet": "אוזניות Over-Ear יוקרתיות עם שמע מרחבי דינמי וביטול רעשים מבוסס שבב H1 בכל אוזניה.",
         "pros": ["מבנה אלומיניום ובד רשת עמיד במיוחד", "אודיו מרחבי יוצא דופן עם מעקב ראש", "שילוב חלק במערכת אפל"],
         "cons": ["משקל מעט כבד (385 גרם)", "כיסוי Smart Case בסיסי"]
@@ -144,6 +148,7 @@ CATALOG_MOCK_DATA = [
         "inStock": True,
         "stockQuantity": 4,
         "rating": 4.95,
+        "imageUrl": "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80",
         "snippet": 'תחנת עבודה ניידת רבת-עוצמה לעריכת וידאו 8K ותלת-ממד עם מסך Liquid Retina XDR.',
         "pros": ["ביצועי גרפיקה ועיבוד פנומנליים", "זמן סוללה של עד 22 שעות", "מסך בהיר וחד ומערכת שמע משובחת"],
         "cons": ["משקל של 2.16 ק\"ג", "עלות גבוהה"]
@@ -156,6 +161,7 @@ CATALOG_MOCK_DATA = [
         "inStock": True,
         "stockQuantity": 12,
         "rating": 4.7,
+        "imageUrl": "https://images.unsplash.com/photo-1593642632823-8f785ba67e45?auto=format&fit=crop&w=800&q=80",
         "snippet": 'מחשב נייד מקצועי עם מסך מגע 3.5K OLED InfinityEdge וכרטיס מסך ייעודי.',
         "pros": ["מסך OLED מרהיב עם דיוק צבעים מושלם", "מקלדת ומשטח מגע נוחים", "מארז אלומיניום יוקרתי"],
         "cons": ["התחממות תחת מאמץ גרפי כבד", "ללא שקעי USB-A מסורתיים"]
@@ -226,7 +232,9 @@ class CatalogDiscoveryAgent:
                     relevanceScore=score,
                     category=item["category"],
                     inStock=item["inStock"],
-                    snippet=item["snippet"]
+                    snippet=item["snippet"],
+                    imageUrl=item.get("imageUrl"),
+                    rating=item.get("rating", 4.9)
                 ))
                 found_products.append(item["skuCode"])
 
