@@ -1,8 +1,16 @@
 "use client";
 
 import React from "react";
-import { Search, ArrowUpDown, Filter, X, SlidersHorizontal, Mic, MicOff, Camera } from "lucide-react";
+import { Search, ArrowUpDown, Filter, X, SlidersHorizontal, Mic, MicOff, Camera, ChevronDown, Check } from "lucide-react";
 import { Button } from "../ui/Button";
+
+const SORT_OPTIONS: { id: "featured" | "price-asc" | "price-desc" | "name" | "stock"; label: string }[] = [
+  { id: "featured", label: "מומלץ לחברי VIP" },
+  { id: "price-asc", label: "מחיר: מהנמוך לגבוה" },
+  { id: "price-desc", label: "מחיר: מהגבוה לנמוך" },
+  { id: "name", label: "שם מוצר (א-ת)" },
+  { id: "stock", label: "זמינות מלאי במרלו״ג" },
+];
 
 export interface CatalogFilterBarProps {
   categories: string[];
@@ -39,6 +47,19 @@ export const CatalogFilterBar: React.FC<CatalogFilterBarProps> = ({
 }) => {
   const [isFilterPanelOpen, setIsFilterPanelOpen] = React.useState(false);
   const [isListening, setIsListening] = React.useState(false);
+  const [isSortOpen, setIsSortOpen] = React.useState(false);
+  const sortRef = React.useRef<HTMLDivElement>(null);
+
+  // Close dropdown on outside click
+  React.useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (sortRef.current && !sortRef.current.contains(e.target as Node)) {
+        setIsSortOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleVoiceSearch = () => {
     if (typeof window === "undefined") return;
@@ -134,20 +155,51 @@ export const CatalogFilterBar: React.FC<CatalogFilterBarProps> = ({
             )}
           </button>
 
-          {/* Sort Dropdown */}
-          <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 px-3 py-2 rounded-2xl border border-slate-200 dark:border-slate-700 text-xs">
-            <ArrowUpDown className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-            <select
-              value={sortBy}
-              onChange={(e) => onSortChange(e.target.value)}
-              className="bg-transparent text-slate-800 dark:text-slate-100 font-bold outline-none cursor-pointer text-xs dark:[color-scheme:dark] [color-scheme:light]"
+          {/* Custom Modern Sort Dropdown (Replacing native select for 100% theme control) */}
+          <div className="relative" ref={sortRef}>
+            <button
+              type="button"
+              onClick={() => setIsSortOpen((v) => !v)}
+              className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700/80 px-3.5 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-100 transition-all active:scale-95 shadow-xs"
+              title="מיון מוצרים"
             >
-              <option value="featured" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-medium">מומלץ לחברי VIP</option>
-              <option value="price-asc" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-medium">מחיר: מהנמוך לגבוה</option>
-              <option value="price-desc" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-medium">מחיר: מהגבוה לנמוך</option>
-              <option value="name" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-medium">שם מוצר (א-ת)</option>
-              <option value="stock" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-medium">זמינות מלאי במרלו״ג</option>
-            </select>
+              <ArrowUpDown className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+              <span>{SORT_OPTIONS.find((o) => o.id === sortBy)?.label || "מומלץ לחברי VIP"}</span>
+              <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${isSortOpen ? "rotate-180" : ""}`} />
+            </button>
+
+            {/* Custom Dropdown Floating Menu with 100% Contrast & Liquid Glass Style */}
+            {isSortOpen && (
+              <div
+                className="absolute end-0 top-full mt-2 w-52 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl p-1.5 z-50 animate-fade-in backdrop-blur-xl"
+                dir="rtl"
+              >
+                <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 px-2.5 py-1 font-mono uppercase tracking-wider">
+                  מיון לפי
+                </div>
+                {SORT_OPTIONS.map((opt) => {
+                  const isSelected = sortBy === opt.id;
+                  return (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() => {
+                        onSortChange(opt.id);
+                        setIsSortOpen(false);
+                      }}
+                      className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition text-right ${
+                        isSelected
+                          ? "bg-amber-500/15 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 font-bold"
+                          : "text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80"
+                      }`}
+                    >
+                      <span>{opt.label}</span>
+                      {isSelected && <Check className="w-3.5 h-3.5 text-amber-500 shrink-0" />}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       </div>
