@@ -75,6 +75,32 @@ jobs:
         working-directory: ./web-client
         run: npm run build
 
+  agent-swarm-validation:
+    name: Multi-Agent Swarm (Python 3.12 + FastAPI + Self-Test)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: './agent-swarm-service/requirements.txt'
+
+      - name: Install Swarm Dependencies
+        working-directory: ./agent-swarm-service
+        run: pip install -r requirements.txt
+
+      - name: Run Swarm Integration Self-Test
+        working-directory: ./agent-swarm-service
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: gemini-2.5-flash
+        run: python ecommerce_agent_swarm.py --self-test
+
   docker-compose-validation:
     name: Docker Compose & Infrastructure Validation
     runs-on: ubuntu-latest

@@ -54,5 +54,15 @@
 
 ---
 
+## 🤖 Track E: Python Multi-Agent Swarm Service (V5.0)
+- [x] E.0 יצירת מפרט ספק ארכיטקטוני `.agents/specs/MULTI_AGENT_SWARM_SPEC.md` ותוכנית יישום `.agents/tasks/MULTI_AGENT_SWARM_PLAN.md`.
+- [x] E.1 יצירת מיקרו-שירות Python ייעודי `agent-swarm-service` עם `Dockerfile`, `requirements.txt` ו-`ecommerce_agent_swarm.py` (FastAPI בפורט `8093`).
+- [x] E.2 מימוש 5 סוכנים אוטונומיים: `SupervisorRouterAgent`, `CatalogDiscoveryAgent`, `CartPricingLoyaltyAgent`, `OrderLogisticsWorkspaceAgent` ו-`KafkaAutonomousOpsAgent`.
+- [x] E.3 חיווט נתיב 12 ב-`api-gateway/src/main/resources/application.yml` (`/api/v1/agents/**`) והוספת השירות ל-`docker-compose.yml`.
+- [x] E.4 אינטגרציה ב-Next.js: הוספת נתיבי פרוקסי `/api/agents/swarm/query` ו-`/api/agents/swarm/stream` ועידכון `RagAssistantDrawer.tsx` עם תגיות סוכנים פעילות.
+- [x] E.5 אימות מלא מקצה לקצה: בדיקת הרצה עצמית של 5 הסוכנים (`python agent-swarm-service/ecommerce_agent_swarm.py --self-test` 100% Green) ובניית `npm run build` ללא שגיאות.
+
+---
+
 ## 🚦 Track A & B Archive (Completed)
 - Track A (Initial Storefront Redesign) & Track B (Consolidated RAG) - 100% Complete & Verified in Git.

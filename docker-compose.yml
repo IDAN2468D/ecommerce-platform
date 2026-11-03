@@ -372,6 +372,7 @@ services:
       LOYALTY_SERVICE_URL: http://recommendation-loyalty-service:8089
       WORKSPACE_SERVICE_URL: http://workspace-integration-service:8091
       RAG_SERVICE_URL: http://rag-service:8092
+      AGENT_SWARM_SERVICE_URL: http://agent-swarm-service:8093
     mem_limit: 512m
     depends_on:
       - order-service
@@ -385,6 +386,38 @@ services:
       - recommendation-loyalty-service
       - workspace-integration-service
       - rag-service
+      - agent-swarm-service
+    networks:
+      - platform-network
+
+  agent-swarm-service:
+    build:
+      context: ./agent-swarm-service
+      dockerfile: Dockerfile
+    container_name: agent-swarm-service
+    ports:
+      - "8093:8093"
+    environment:
+      AGENT_SWARM_PORT: "8093"
+      GATEWAY_URL: http://api-gateway:8080
+      ORDER_SERVICE_URL: http://order-service:8081
+      INVENTORY_SERVICE_URL: http://inventory-service:8082
+      SHIPPING_SERVICE_URL: http://shipping-delivery-service:8086
+      REVIEW_SERVICE_URL: http://review-rating-service:8087
+      CART_SERVICE_URL: http://cart-wishlist-service:8088
+      LOYALTY_SERVICE_URL: http://recommendation-loyalty-service:8089
+      WORKSPACE_SERVICE_URL: http://workspace-integration-service:8091
+      RAG_SERVICE_URL: http://rag-service:8092
+      WORKSPACE_MCP_URL: http://google-workspace-mcp:8000
+      JWT_SECRET: ${JWT_SECRET:-order-service-default-secret-key-32-bytes!!}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-demo_key}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash}
+    mem_limit: 256m
+    depends_on:
+      - rag-service
+      - order-service
+      - cart-wishlist-service
+      - workspace-integration-service
     networks:
       - platform-network
 

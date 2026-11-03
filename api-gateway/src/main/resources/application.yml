@@ -93,6 +93,12 @@ spring:
           predicates:
             - Path=/api/v1/rag/**
 
+        # 12. Python Multi-Agent Swarm Service Route
+        - id: agent-swarm-service-route
+          uri: ${AGENT_SWARM_SERVICE_URL:http://localhost:8093}
+          predicates:
+            - Path=/api/v1/agents/**
+
 jwt:
   secret: ${JWT_SECRET:order-service-default-secret-key-32-bytes!!}
 

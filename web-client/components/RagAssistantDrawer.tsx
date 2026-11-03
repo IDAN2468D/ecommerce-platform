@@ -43,6 +43,7 @@ export interface ChatMessage {
   text: string;
   citations?: Citation[];
   executedActions?: ExecutedAction[];
+  agentsInvolved?: string[];
   timestamp: string;
   latencyMs?: number;
   model?: string;
@@ -175,17 +176,34 @@ export const RagAssistantDrawer: React.FC = () => {
         payload.maxPrice = maxPrice;
       }
 
-      const res = await fetch("/api/rag/query", {
-        method: "POST",
-        headers: { "Content-Type": "application/json; charset=utf-8" },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        throw new Error(`שגיאת תקשורת עם שירות RAG (${res.status})`);
+      let data: any = null;
+      try {
+        const swarmRes = await fetch("/api/agents/swarm/query", {
+          method: "POST",
+          headers: { "Content-Type": "application/json; charset=utf-8" },
+          body: JSON.stringify(payload),
+        });
+        if (swarmRes.ok) {
+          data = await swarmRes.json();
+        }
+      } catch {
+        // Fallback to standard RAG if swarm is unreachable
       }
 
-      const data = await res.json();
+      if (!data) {
+        const res = await fetch("/api/rag/query", {
+          method: "POST",
+          headers: { "Content-Type": "application/json; charset=utf-8" },
+          body: JSON.stringify(payload),
+        });
+
+        if (!res.ok) {
+          throw new Error(`שגיאת תקשורת עם שירות הסוכנים (${res.status})`);
+        }
+
+        data = await res.json();
+      }
+
       const executedActions: ExecutedAction[] = Array.isArray(data.executedActions)
         ? data.executedActions
         : [];
@@ -231,9 +249,10 @@ export const RagAssistantDrawer: React.FC = () => {
         text: data.answer || data.response || "לא התקבלה תשובה מפורטת מהמערכת.",
         citations: data.citations || [],
         executedActions,
+        agentsInvolved: data.agentsInvolved || (data.model?.includes("swarm") ? ["SupervisorRouterAgent"] : undefined),
         timestamp: new Date().toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" }),
         latencyMs: data.latencyMs,
-        model: data.model || "gemini-3.5-flash-lite",
+        model: data.model || "swarm-supervisor-gemini-2.5-flash",
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
@@ -315,14 +334,14 @@ export const RagAssistantDrawer: React.FC = () => {
               <div className="text-right">
                 <div className="flex items-center gap-2">
                   <h3 className="font-extrabold text-base text-slate-900 dark:text-slate-100">
-                    עוזר קניות אישי AI
+                    צוות סוכנים אוטונומי AI
                   </h3>
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/60">
-                    RAG
+                    Swarm V5
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400 font-mono mt-0.5">
-                  Google Gemini gemini-3.5-flash-lite • MongoDB Vector
+                  5 Autonomous Agents • Multi-Agent Swarm
                 </p>
               </div>
             </div>
@@ -436,6 +455,32 @@ export const RagAssistantDrawer: React.FC = () => {
                   >
                     {msg.text}
                   </div>
+
+                  {/* Multi-Agent Swarm Collaborative Badges */}
+                  {msg.agentsInvolved && msg.agentsInvolved.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-1.5 pt-0.5 px-0.5">
+                      <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                        <Bot className="w-3 h-3 text-indigo-500" /> צוות סוכנים:
+                      </span>
+                      {msg.agentsInvolved.map((agent) => {
+                        const labelMap: Record<string, string> = {
+                          SupervisorRouterAgent: "מתאם ראשי",
+                          CatalogDiscoveryAgent: "איתור קטלוג ומלאי",
+                          CartPricingLoyaltyAgent: "סל, קופונים ו-VIP",
+                          OrderLogisticsWorkspaceAgent: "לוגיסטיקה ומשלוחים",
+                          KafkaAutonomousOpsAgent: "אירועי רקע Kafka",
+                        };
+                        return (
+                          <span
+                            key={agent}
+                            className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-indigo-50/90 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800/40"
+                          >
+                            {labelMap[agent] || agent}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  )}
 
                   {/* Agentic Executed Actions (Function Calling Chips) */}
                   {msg.executedActions && msg.executedActions.length > 0 && (

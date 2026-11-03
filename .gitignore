@@ -36,6 +36,14 @@ out/
 build/
 dist/
 
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+
 # Environment & Credentials
 .env
 .env*.local
