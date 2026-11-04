@@ -2,16 +2,13 @@
 FROM eclipse-temurin:21-jdk-alpine AS builder
 WORKDIR /workspace
 
-# Copy Maven wrapper and root descriptor
+# Copy Maven wrapper, root descriptor and all source modules
 COPY pom.xml mvnw ./
 COPY .mvn .mvn
-RUN chmod +x mvnw
-
-# Copy all source modules for multi-module Maven resolution
 COPY . .
 
-# Build the central API Gateway and all common dependencies
-RUN ./mvnw clean package -pl api-gateway -am -DskipTests -B
+# Ensure wrapper script is executable and build the central API Gateway
+RUN chmod +x ./mvnw && ./mvnw clean package -pl api-gateway -am -DskipTests -B
 
 # Runtime stage
 FROM eclipse-temurin:21-jre-alpine

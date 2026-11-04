@@ -3,9 +3,8 @@ FROM eclipse-temurin:21-jdk-alpine AS builder
 WORKDIR /workspace
 COPY pom.xml mvnw ./
 COPY .mvn .mvn
-RUN chmod +x mvnw
 COPY . .
-RUN ./mvnw clean package -pl auth-service -am -DskipTests -B
+RUN chmod +x ./mvnw && ./mvnw clean package -pl auth-service -am -DskipTests -B
 
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
