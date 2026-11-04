@@ -51,15 +51,15 @@ export default function CatalogPage() {
         }
         if (mounted && Array.isArray(data)) {
           const mapped = data.map((item: any) => ({
-            skuCode: item.skuCode,
-            name: item.productName,
-            price: Number(item.unitPrice),
-            description: item.description || "מוצר איכותי מקורי עם אחריות יבואן רשמי",
-            image: item.imageUrl || "📦",
-            category: item.category || "כללי",
+            skuCode: String(item.skuCode || ""),
+            name: String(item.productName || item.name || item.skuCode || "מוצר איכותי"),
+            price: Number(item.unitPrice || item.price || 0),
+            description: String(item.description || "מוצר איכותי מקורי עם אחריות יבואן רשמי"),
+            image: String(item.imageUrl || item.image || "📦"),
+            category: String(item.category || "כללי"),
             stock: {
-              availableQuantity: item.availableQuantity,
-              reservedQuantity: item.reservedQuantity,
+              availableQuantity: Number(item.availableQuantity ?? item.stock?.availableQuantity ?? 10),
+              reservedQuantity: Number(item.reservedQuantity ?? item.stock?.reservedQuantity ?? 0),
             },
           }));
           setProducts(mapped);
@@ -100,22 +100,23 @@ export default function CatalogPage() {
   };
 
   const filteredProducts = useMemo(() => {
+    const q = (searchQuery || "").toLowerCase();
     return products
       .filter((p) => {
         const matchesCat = selectedCategory === "הכל" || p.category === selectedCategory;
-        const matchesQuery =
-          p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          p.skuCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          p.description.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesMin = minPrice === "" || p.price >= Number(minPrice);
-        const matchesMax = maxPrice === "" || p.price <= Number(maxPrice);
-        const matchesStock = !onlyInStock || (p.stock && p.stock.availableQuantity > 0);
+        const pName = (p.name || "").toLowerCase();
+        const pSku = (p.skuCode || "").toLowerCase();
+        const pDesc = (p.description || "").toLowerCase();
+        const matchesQuery = !q || pName.includes(q) || pSku.includes(q) || pDesc.includes(q);
+        const matchesMin = minPrice === "" || (p.price || 0) >= Number(minPrice);
+        const matchesMax = maxPrice === "" || (p.price || 0) <= Number(maxPrice);
+        const matchesStock = !onlyInStock || ((p.stock?.availableQuantity || 0) > 0);
         return matchesCat && matchesQuery && matchesMin && matchesMax && matchesStock;
       })
       .sort((a, b) => {
-        if (sortBy === "price-asc") return a.price - b.price;
-        if (sortBy === "price-desc") return b.price - a.price;
-        if (sortBy === "name") return a.name.localeCompare(b.name, "he");
+        if (sortBy === "price-asc") return (a.price || 0) - (b.price || 0);
+        if (sortBy === "price-desc") return (b.price || 0) - (a.price || 0);
+        if (sortBy === "name") return String(a.name || "").localeCompare(String(b.name || ""), "he");
         if (sortBy === "stock") return (b.stock?.availableQuantity || 0) - (a.stock?.availableQuantity || 0);
         return 0;
       });

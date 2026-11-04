@@ -1,5 +1,17 @@
 import { FALLBACK_PRODUCTS } from "./fallback-catalog";
 
+export interface Citation {
+  skuCode: string;
+  title: string;
+  price: number;
+  relevanceScore?: number;
+  category?: string;
+  inStock?: boolean;
+  snippet?: string;
+  imageUrl?: string;
+  rating?: number;
+}
+
 export interface ExecutedAction {
   toolName: string;
   status: "SUCCESS" | "FAILED";
@@ -8,7 +20,7 @@ export interface ExecutedAction {
 
 export interface AssistantResponse {
   answer: string;
-  citations: string[];
+  citations: Citation[];
   executedActions: ExecutedAction[];
   agentsInvolved: string[];
   model: string;
@@ -169,14 +181,46 @@ function detectAddToCartIntent(query: string): ExecutedAction | null {
   return null;
 }
 
-function extractCitations(text: string): string[] {
-  const citations: string[] = [];
+function extractCitations(text: string): Citation[] {
+  const citations: Citation[] = [];
+  const lower = text.toLowerCase();
   for (const p of FALLBACK_PRODUCTS) {
-    if (text.includes(p.skuCode) || text.includes(p.productName)) {
-      citations.push(`${p.productName} — ₪${p.unitPrice.toLocaleString()}`);
+    const nameMatch = p.productName.toLowerCase().split(" ").some(
+      (w) => w.length > 3 && lower.includes(w)
+    );
+    const skuMatch = lower.includes(p.skuCode.toLowerCase());
+
+    if (nameMatch || skuMatch) {
+      citations.push({
+        skuCode: p.skuCode,
+        title: p.productName,
+        price: p.unitPrice,
+        relevanceScore: 0.96,
+        category: p.category,
+        inStock: p.availableQuantity > 0,
+        snippet: p.description,
+        imageUrl: p.imageUrl,
+        rating: 4.9,
+      });
     }
   }
   return citations.slice(0, 3);
+}
+
+function findProductCitation(skuCode: string): Citation | null {
+  const p = FALLBACK_PRODUCTS.find((item) => item.skuCode === skuCode);
+  if (!p) return null;
+  return {
+    skuCode: p.skuCode,
+    title: p.productName,
+    price: p.unitPrice,
+    relevanceScore: 0.98,
+    category: p.category,
+    inStock: p.availableQuantity > 0,
+    snippet: p.description,
+    imageUrl: p.imageUrl,
+    rating: 4.9,
+  };
 }
 
 function generateLocalSmartResponse(
@@ -188,9 +232,10 @@ function generateLocalSmartResponse(
 
   if (cartAction) {
     const item = cartAction.payload;
+    const citation = findProductCitation(item.skuCode);
     return {
       answer: `בשמחה רבה! הוספתי עבורך את **${item.productName}** (מק"ט: \`${item.skuCode}\`) לעגלת הקניות במחיר של ₪${item.unitPrice.toLocaleString()}.\n\nהמשלוח חינם לכל הארץ תוך 1-3 ימי עסקים! תוכל לעבור לעגלה בכל שלב להשלמת ההזמנה.`,
-      citations: [`${item.productName} — ₪${item.unitPrice.toLocaleString()}`],
+      citations: citation ? [citation] : [],
       executedActions: [cartAction],
       agentsInvolved: ["CartManagerAgent", "CatalogDiscoveryAgent"],
       model: "Local AI Fallback Agent",
@@ -199,12 +244,11 @@ function generateLocalSmartResponse(
   }
 
   if (lower.includes("אייפון") || lower.includes("iphone") || lower.includes("טלפון") || lower.includes("סמארטפון") || lower.includes("גלקסי") || lower.includes("s24")) {
+    const c1 = findProductCitation("IPHONE-16-PRO-256");
+    const c2 = findProductCitation("SAMSUNG-S24-ULTRA");
     return {
       answer: `בקטגוריית הסמארטפונים המובילים יש לנו שני דגמי דגל מדהימים:\n\n1. **Apple iPhone 16 Pro 256GB Desert Titanium** — ₪4,899 (שבב A18 Pro, מסך Super Retina XDR 120Hz וגימור טיטניום יוקרתי).\n2. **Samsung Galaxy S24 Ultra 512GB** — ₪5,199 (מצלמת 200MP, מעבד Snapdragon 8 Gen 3 ועט S-Pen מובנה).\n\nאיזה מהם מעניין אותך יותר? אוכל להוסיף אותו לעגלה עבורך מיד!`,
-      citations: [
-        "Apple iPhone 16 Pro 256GB — ₪4,899",
-        "Samsung Galaxy S24 Ultra 512GB — ₪5,199",
-      ],
+      citations: [c1, c2].filter(Boolean) as Citation[],
       executedActions: [],
       agentsInvolved: ["CatalogDiscoveryAgent"],
       model: "Local AI Fallback Agent",
@@ -213,12 +257,11 @@ function generateLocalSmartResponse(
   }
 
   if (lower.includes("מחשב") || lower.includes("נייד") || lower.includes("macbook") || lower.includes("dell") || lower.includes("laptop")) {
+    const c1 = findProductCitation("MACBOOK-PRO-M3");
+    const c2 = findProductCitation("SKU-LAPTOP-PRO");
     return {
       answer: `במחלקת המחשבים הניידים אנו מציעים שתי תחנות עבודה עוצמתיות:\n\n1. **Apple MacBook Pro 14 M3 Pro** (18GB / 512GB) — ₪8,999: מושלם לעריכת וידאו, פיתוח וגרפיקה מקצועית עם זמן סוללה אגדי.\n2. **Dell XPS 15 OLED Core i9** (32GB / RTX 4070) — ₪6,500: מעולה לגיימינג, חישובים הנדסיים ומולטימדיה.\n\nרוצה שאשווה ביניהם עבור שימוש מסוים?`,
-      citations: [
-        "Apple MacBook Pro 14 M3 Pro — ₪8,999",
-        "Dell XPS 15 OLED Core i9 — ₪6,500",
-      ],
+      citations: [c1, c2].filter(Boolean) as Citation[],
       executedActions: [],
       agentsInvolved: ["CatalogDiscoveryAgent"],
       model: "Local AI Fallback Agent",
@@ -237,9 +280,11 @@ function generateLocalSmartResponse(
     };
   }
 
+  const default1 = findProductCitation("IPHONE-16-PRO-256");
+  const default2 = findProductCitation("PS5-PRO");
   return {
     answer: `שלום! אני עוזר ה-AI האישי שלך בחנות. יש לנו מגוון מוצרי אלקטרוניקה מתקדמים, כולל **iPhone 16 Pro**, **MacBook Pro M3**, **PlayStation 5 Pro**, **Sony WH-1000XM5**, **רחפן DJI Mini 4 Pro** ועוד.\n\nתוכל לשאול אותי כל שאלה על מפרט, מחיר, זמינות במלאי או פשוט לבקש: *"תוסיף לי מקבוק לעגלה"*!`,
-    citations: ["Apple iPhone 16 Pro — ₪4,899", "PlayStation 5 Pro — ₪3,399"],
+    citations: [default1, default2].filter(Boolean) as Citation[],
     executedActions: [],
     agentsInvolved: ["SupervisorRouterAgent"],
     model: "Local AI Fallback Agent",

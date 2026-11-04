@@ -428,12 +428,16 @@ export const RagAssistantDrawer: React.FC = () => {
     router.push(`/?sku=${skuCode}`);
   };
 
-  const resolveProductImage = (citation: Citation): string => {
+  const resolveProductImage = (citation: any): string => {
+    if (!citation) return "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80";
+    if (typeof citation === "string") return "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80";
     if (citation.imageUrl) return citation.imageUrl;
-    const direct = SKU_IMAGE_MAP[citation.skuCode];
+    const sku = String(citation.skuCode || "");
+    if (!sku) return "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80";
+    const direct = SKU_IMAGE_MAP[sku];
     if (direct) return direct;
     for (const [key, val] of Object.entries(SKU_IMAGE_MAP)) {
-      if (citation.skuCode.includes(key) || key.includes(citation.skuCode)) {
+      if (sku.includes(key) || key.includes(sku)) {
         return val;
       }
     }
@@ -753,16 +757,28 @@ export const RagAssistantDrawer: React.FC = () => {
                         </div>
 
                         <div className="grid grid-cols-1 gap-2.5">
-                          {msg.citations.map((citation) => {
-                            const isAdded = !!addedSkus[citation.skuCode];
+                          {msg.citations.map((rawCitation, cIdx) => {
+                            const citation: Citation = typeof rawCitation === "string"
+                              ? {
+                                  skuCode: `ITEM-${cIdx}`,
+                                  title: rawCitation,
+                                  price: 0,
+                                  relevanceScore: 0.95,
+                                  inStock: true,
+                                }
+                              : rawCitation;
+                            const sku = String(citation.skuCode || `sku-${cIdx}`);
+                            const title = String(citation.title || "מוצר פרימיום");
+                            const price = Number(citation.price || 0);
+                            const isAdded = !!addedSkus[sku];
                             const imgSrc = resolveProductImage(citation);
                             const ratingVal = citation.rating || 4.9;
-                            const regularPrice = Math.round(citation.price * 1.15);
-                            const cashbackPoints = Math.round(citation.price * 0.05);
+                            const regularPrice = Math.round(price * 1.15);
+                            const cashbackPoints = Math.round(price * 0.05);
 
                             return (
                               <div
-                                key={citation.skuCode}
+                                key={sku}
                                 className="group relative rounded-2xl bg-white dark:bg-[#111728] border border-slate-200/90 dark:border-slate-800/90 hover:border-amber-500/50 dark:hover:border-amber-400/50 p-3.5 shadow-sm hover:shadow-xl hover:shadow-indigo-500/5 transition-all duration-300 overflow-hidden"
                               >
                                 {/* Glowing Accent bar on hover */}
@@ -771,12 +787,12 @@ export const RagAssistantDrawer: React.FC = () => {
                                 <div className="flex gap-3.5 items-start">
                                   {/* Product Thumbnail Box */}
                                   <div
-                                    onClick={() => handleNavigateToProduct(citation.skuCode)}
+                                    onClick={() => handleNavigateToProduct(sku)}
                                     className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-gradient-to-b from-slate-100 to-slate-50 dark:from-slate-900 dark:to-slate-950 border border-slate-200/60 dark:border-slate-800 flex items-center justify-center p-1.5 shrink-0 overflow-hidden cursor-pointer group-hover:scale-102 transition-transform"
                                   >
                                     <img
                                       src={imgSrc}
-                                      alt={citation.title}
+                                      alt={title}
                                       className="w-full h-full object-contain mix-blend-multiply dark:mix-blend-normal transition-transform duration-500 group-hover:scale-110"
                                       loading="lazy"
                                     />
@@ -795,10 +811,10 @@ export const RagAssistantDrawer: React.FC = () => {
                                   <div className="flex-1 min-w-0">
                                     <div className="flex items-start justify-between gap-1">
                                       <h4
-                                        onClick={() => handleNavigateToProduct(citation.skuCode)}
+                                        onClick={() => handleNavigateToProduct(sku)}
                                         className="font-extrabold text-xs sm:text-sm text-slate-900 dark:text-slate-100 group-hover:text-amber-500 dark:group-hover:text-amber-400 transition cursor-pointer truncate"
                                       >
-                                        {citation.title}
+                                        {title}
                                       </h4>
                                     </div>
 
@@ -827,7 +843,7 @@ export const RagAssistantDrawer: React.FC = () => {
                                     <div className="mt-2 flex items-baseline justify-between gap-2 flex-wrap">
                                       <div className="flex items-baseline gap-2">
                                         <span className="text-sm sm:text-base font-black text-slate-900 dark:text-emerald-400">
-                                          {formatPrice(citation.price)}
+                                          {formatPrice(price)}
                                         </span>
                                         <span className="text-[11px] text-slate-400 line-through">
                                           {formatPrice(regularPrice)}
@@ -845,7 +861,7 @@ export const RagAssistantDrawer: React.FC = () => {
                                 <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2">
                                   <button
                                     type="button"
-                                    onClick={() => handleNavigateToProduct(citation.skuCode)}
+                                    onClick={() => handleNavigateToProduct(sku)}
                                     className="text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 flex items-center gap-1.5 transition px-2 py-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
                                   >
                                     <Eye className="w-3.5 h-3.5" />
