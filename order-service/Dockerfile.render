@@ -1,0 +1,17 @@
+# Multi-stage cloud build for Render
+FROM eclipse-temurin:21-jdk-alpine AS builder
+WORKDIR /workspace
+COPY pom.xml mvnw ./
+COPY .mvn .mvn
+RUN chmod +x mvnw
+COPY . .
+RUN ./mvnw clean package -pl order-service -am -DskipTests -B
+
+FROM eclipse-temurin:21-jre-alpine
+WORKDIR /app
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+USER appuser
+COPY --from=builder /workspace/order-service/target/*.jar app.jar
+ENV JAVA_OPTS="-XX:+UseZGC -XX:+ZGenerational -XX:MaxRAMPercentage=75.0 -Dspring.threads.virtual.enabled=true"
+EXPOSE 8081
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]

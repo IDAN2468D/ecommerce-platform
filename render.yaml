@@ -1,0 +1,429 @@
+envVarGroups:
+- name: platform-shared-secrets
+  envVars:
+  - key: MONGODB_URI
+    sync: false
+  - key: KAFKA_BOOTSTRAP_SERVERS
+    sync: false
+  - key: JWT_SECRET
+    generateValue: true
+  - key: GEMINI_API_KEY
+    sync: false
+  - key: SPRING_PROFILES_ACTIVE
+    value: prod
+  - key: SPRING_THREADS_VIRTUAL_ENABLED
+    value: 'true'
+services:
+- type: keyvalue
+  name: platform-redis
+  region: frankfurt
+  plan: starter
+  ipAllowList: []
+- type: web
+  name: web-client
+  runtime: docker
+  region: frankfurt
+  plan: starter
+  dockerContext: ./web-client
+  dockerfilePath: ./web-client/Dockerfile
+  envVars:
+  - key: NEXT_PUBLIC_API_GATEWAY_URL
+    fromService:
+      type: web
+      name: api-gateway
+      property: host
+  - key: GATEWAY_URL
+    fromService:
+      type: web
+      name: api-gateway
+      property: host
+- type: web
+  name: api-gateway
+  runtime: docker
+  region: frankfurt
+  plan: starter
+  dockerContext: .
+  dockerfilePath: api-gateway/Dockerfile.render
+  healthCheckPath: /actuator/health
+  envVars:
+  - fromGroup: platform-shared-secrets
+  - key: REDIS_HOST
+    fromService:
+      type: keyvalue
+      name: platform-redis
+      property: host
+  - key: REDIS_PORT
+    fromService:
+      type: keyvalue
+      name: platform-redis
+      property: port
+  - key: ORDER_SERVICE_URL
+    value: http://order-service:8081
+  - key: INVENTORY_SERVICE_URL
+    value: http://inventory-service:8082
+  - key: PAYMENT_SERVICE_URL
+    value: http://payment-service:8083
+  - key: AUTH_SERVICE_URL
+    value: http://auth-service:8084
+  - key: NOTIFICATION_SERVICE_URL
+    value: http://notification-service:8085
+  - key: SHIPPING_SERVICE_URL
+    value: http://shipping-delivery-service:8086
+  - key: REVIEW_SERVICE_URL
+    value: http://review-rating-service:8087
+  - key: CART_SERVICE_URL
+    value: http://cart-wishlist-service:8088
+  - key: LOYALTY_SERVICE_URL
+    value: http://recommendation-loyalty-service:8089
+  - key: WORKSPACE_SERVICE_URL
+    value: http://workspace-integration-service:8091
+  - key: RAG_SERVICE_URL
+    value: http://rag-service:8092
+  - key: AGENT_SWARM_SERVICE_URL
+    value: http://agent-swarm-service:8093
+  - key: RMA_SERVICE_URL
+    value: http://rma-returns-service:8094
+  - key: PRICING_SERVICE_URL
+    value: http://dynamic-pricing-service:8095
+  - key: FRAUD_SERVICE_URL
+    value: http://fraud-risk-service:8096
+  - key: ANALYTICS_SERVICE_URL
+    value: http://merchant-analytics-service:8097
+- type: pserv
+  name: agent-swarm-service
+  runtime: docker
+  region: frankfurt
+  plan: starter
+  dockerContext: ./agent-swarm-service
+  dockerfilePath: ./agent-swarm-service/Dockerfile
+  healthCheckPath: /health
+  envVars:
+  - fromGroup: platform-shared-secrets
+  - key: GATEWAY_URL
+    value: http://api-gateway:8080
+  - key: ORDER_SERVICE_URL
+    value: http://order-service:8081
+  - key: INVENTORY_SERVICE_URL
+    value: http://inventory-service:8082
+  - key: PAYMENT_SERVICE_URL
+    value: http://payment-service:8083
+  - key: SHIPPING_SERVICE_URL
+    value: http://shipping-delivery-service:8086
+  - key: REVIEW_SERVICE_URL
+    value: http://review-rating-service:8087
+  - key: CART_SERVICE_URL
+    value: http://cart-wishlist-service:8088
+  - key: LOYALTY_SERVICE_URL
+    value: http://recommendation-loyalty-service:8089
+  - key: WORKSPACE_SERVICE_URL
+    value: http://workspace-integration-service:8091
+  - key: RAG_SERVICE_URL
+    value: http://rag-service:8092
+  - key: RMA_SERVICE_URL
+    value: http://rma-returns-service:8094
+  - key: PRICING_SERVICE_URL
+    value: http://dynamic-pricing-service:8095
+  - key: FRAUD_SERVICE_URL
+    value: http://fraud-risk-service:8096
+  - key: ANALYTICS_SERVICE_URL
+    value: http://merchant-analytics-service:8097
+- type: pserv
+  name: order-service
+  runtime: docker
+  region: frankfurt
+  plan: starter
+  dockerContext: .
+  dockerfilePath: order-service/Dockerfile.render
+  healthCheckPath: /actuator/health
+  envVars:
+  - fromGroup: platform-shared-secrets
+  - key: REDIS_HOST
+    fromService:
+      type: keyvalue
+      name: platform-redis
+      property: host
+  - key: REDIS_PORT
+    fromService:
+      type: keyvalue
+      name: platform-redis
+      property: port
+- type: pserv
+  name: inventory-service
+  runtime: docker
+  region: frankfurt
+  plan: starter
+  dockerContext: .
+  dockerfilePath: inventory-service/Dockerfile.render
+  healthCheckPath: /actuator/health
+  envVars:
+  - fromGroup: platform-shared-secrets
+  - key: REDIS_HOST
+    fromService:
+      type: keyvalue
+      name: platform-redis
+      property: host
+  - key: REDIS_PORT
+    fromService:
+      type: keyvalue
+      name: platform-redis
+      property: port
+- type: pserv
+  name: payment-service
+  runtime: docker
+  region: frankfurt
+  plan: starter
+  dockerContext: .
+  dockerfilePath: payment-service/Dockerfile.render
+  healthCheckPath: /actuator/health
+  envVars:
+  - fromGroup: platform-shared-secrets
+  - key: REDIS_HOST
+    fromService:
+      type: keyvalue
+      name: platform-redis
+      property: host
+  - key: REDIS_PORT
+    fromService:
+      type: keyvalue
+      name: platform-redis
+      property: port
+- type: pserv
+  name: auth-service
+  runtime: docker
+  region: frankfurt
+  plan: starter
+  dockerContext: .
+  dockerfilePath: auth-service/Dockerfile.render
+  healthCheckPath: /actuator/health
+  envVars:
+  - fromGroup: platform-shared-secrets
+  - key: REDIS_HOST
+    fromService:
+      type: keyvalue
+      name: platform-redis
+      property: host
+  - key: REDIS_PORT
+    fromService:
+      type: keyvalue
+      name: platform-redis
+      property: port
+- type: pserv
+  name: notification-service
+  runtime: docker
+  region: frankfurt
+  plan: starter
+  dockerContext: .
+  dockerfilePath: notification-service/Dockerfile.render
+  healthCheckPath: /actuator/health
+  envVars:
+  - fromGroup: platform-shared-secrets
+  - key: REDIS_HOST
+    fromService:
+      type: keyvalue
+      name: platform-redis
+      property: host
+  - key: REDIS_PORT
+    fromService:
+      type: keyvalue
+      name: platform-redis
+      property: port
+- type: pserv
+  name: shipping-delivery-service
+  runtime: docker
+  region: frankfurt
+  plan: starter
+  dockerContext: .
+  dockerfilePath: shipping-delivery-service/Dockerfile.render
+  healthCheckPath: /actuator/health
+  envVars:
+  - fromGroup: platform-shared-secrets
+  - key: REDIS_HOST
+    fromService:
+      type: keyvalue
+      name: platform-redis
+      property: host
+  - key: REDIS_PORT
+    fromService:
+      type: keyvalue
+      name: platform-redis
+      property: port
+- type: pserv
+  name: review-rating-service
+  runtime: docker
+  region: frankfurt
+  plan: starter
+  dockerContext: .
+  dockerfilePath: review-rating-service/Dockerfile.render
+  healthCheckPath: /actuator/health
+  envVars:
+  - fromGroup: platform-shared-secrets
+  - key: REDIS_HOST
+    fromService:
+      type: keyvalue
+      name: platform-redis
+      property: host
+  - key: REDIS_PORT
+    fromService:
+      type: keyvalue
+      name: platform-redis
+      property: port
+- type: pserv
+  name: cart-wishlist-service
+  runtime: docker
+  region: frankfurt
+  plan: starter
+  dockerContext: .
+  dockerfilePath: cart-wishlist-service/Dockerfile.render
+  healthCheckPath: /actuator/health
+  envVars:
+  - fromGroup: platform-shared-secrets
+  - key: REDIS_HOST
+    fromService:
+      type: keyvalue
+      name: platform-redis
+      property: host
+  - key: REDIS_PORT
+    fromService:
+      type: keyvalue
+      name: platform-redis
+      property: port
+- type: pserv
+  name: recommendation-loyalty-service
+  runtime: docker
+  region: frankfurt
+  plan: starter
+  dockerContext: .
+  dockerfilePath: recommendation-loyalty-service/Dockerfile.render
+  healthCheckPath: /actuator/health
+  envVars:
+  - fromGroup: platform-shared-secrets
+  - key: REDIS_HOST
+    fromService:
+      type: keyvalue
+      name: platform-redis
+      property: host
+  - key: REDIS_PORT
+    fromService:
+      type: keyvalue
+      name: platform-redis
+      property: port
+- type: pserv
+  name: workspace-integration-service
+  runtime: docker
+  region: frankfurt
+  plan: starter
+  dockerContext: .
+  dockerfilePath: workspace-integration-service/Dockerfile.render
+  healthCheckPath: /actuator/health
+  envVars:
+  - fromGroup: platform-shared-secrets
+  - key: REDIS_HOST
+    fromService:
+      type: keyvalue
+      name: platform-redis
+      property: host
+  - key: REDIS_PORT
+    fromService:
+      type: keyvalue
+      name: platform-redis
+      property: port
+- type: pserv
+  name: rag-service
+  runtime: docker
+  region: frankfurt
+  plan: starter
+  dockerContext: .
+  dockerfilePath: rag-service/Dockerfile.render
+  healthCheckPath: /actuator/health
+  envVars:
+  - fromGroup: platform-shared-secrets
+  - key: REDIS_HOST
+    fromService:
+      type: keyvalue
+      name: platform-redis
+      property: host
+  - key: REDIS_PORT
+    fromService:
+      type: keyvalue
+      name: platform-redis
+      property: port
+- type: pserv
+  name: rma-returns-service
+  runtime: docker
+  region: frankfurt
+  plan: starter
+  dockerContext: .
+  dockerfilePath: rma-returns-service/Dockerfile.render
+  healthCheckPath: /actuator/health
+  envVars:
+  - fromGroup: platform-shared-secrets
+  - key: REDIS_HOST
+    fromService:
+      type: keyvalue
+      name: platform-redis
+      property: host
+  - key: REDIS_PORT
+    fromService:
+      type: keyvalue
+      name: platform-redis
+      property: port
+- type: pserv
+  name: dynamic-pricing-service
+  runtime: docker
+  region: frankfurt
+  plan: starter
+  dockerContext: .
+  dockerfilePath: dynamic-pricing-service/Dockerfile.render
+  healthCheckPath: /actuator/health
+  envVars:
+  - fromGroup: platform-shared-secrets
+  - key: REDIS_HOST
+    fromService:
+      type: keyvalue
+      name: platform-redis
+      property: host
+  - key: REDIS_PORT
+    fromService:
+      type: keyvalue
+      name: platform-redis
+      property: port
+- type: pserv
+  name: fraud-risk-service
+  runtime: docker
+  region: frankfurt
+  plan: starter
+  dockerContext: .
+  dockerfilePath: fraud-risk-service/Dockerfile.render
+  healthCheckPath: /actuator/health
+  envVars:
+  - fromGroup: platform-shared-secrets
+  - key: REDIS_HOST
+    fromService:
+      type: keyvalue
+      name: platform-redis
+      property: host
+  - key: REDIS_PORT
+    fromService:
+      type: keyvalue
+      name: platform-redis
+      property: port
+- type: pserv
+  name: merchant-analytics-service
+  runtime: docker
+  region: frankfurt
+  plan: starter
+  dockerContext: .
+  dockerfilePath: merchant-analytics-service/Dockerfile.render
+  healthCheckPath: /actuator/health
+  envVars:
+  - fromGroup: platform-shared-secrets
+  - key: REDIS_HOST
+    fromService:
+      type: keyvalue
+      name: platform-redis
+      property: host
+  - key: REDIS_PORT
+    fromService:
+      type: keyvalue
+      name: platform-redis
+      property: port
