@@ -140,6 +140,10 @@ export default function CartPage() {
       await new Promise((r) => setTimeout(r, 400));
       const createdOrder = await res.json();
       setOrderResult(createdOrder);
+      try {
+        const existingHistory = JSON.parse(localStorage.getItem("nexus_orders_history") || "[]");
+        localStorage.setItem("nexus_orders_history", JSON.stringify([createdOrder, ...existingHistory]));
+      } catch {}
       localStorage.removeItem("cart");
       setCart([]);
       window.dispatchEvent(new Event("cart-updated"));
@@ -147,7 +151,7 @@ export default function CartPage() {
     } catch (err: any) {
       const rawMsg = err.message || "";
       const displayMsg =
-        !rawMsg || rawMsg === "Internal Server Error"
+        !rawMsg || rawMsg === "Internal Server Error" || rawMsg === "fetch failed" || rawMsg.includes("Failed to fetch")
           ? "שרת ההזמנות חווה עומס רגעי. אנא נסה שוב בעוד מספר רגעים."
           : rawMsg;
       alert("שגיאה בביצוע ההזמנה: " + displayMsg);

@@ -39,9 +39,24 @@ export default function OrdersPage() {
         const data = await res.json();
         const rawList = Array.isArray(data) ? data : (data?.content || []);
         const list = rawList.map((o: any) => ({ ...o, id: o.id || o.orderId }));
-        setOrders(list);
 
-        list.forEach((ord: any) => {
+        let localHistory: any[] = [];
+        try {
+          localHistory = JSON.parse(localStorage.getItem("nexus_orders_history") || "[]");
+        } catch {}
+        const seen = new Set<string>();
+        const combined: any[] = [];
+        for (const ord of [...list, ...localHistory]) {
+          const key = String(ord?.orderId || ord?.id || "");
+          if (key && !seen.has(key)) {
+            seen.add(key);
+            combined.push({ ...ord, id: key });
+          }
+        }
+        const finalList = combined.length > 0 ? combined : list;
+        setOrders(finalList);
+
+        finalList.forEach((ord: any) => {
           if (ord.id) {
             fetch(`/api/shipping/${ord.id}`).then((r) => (r.ok ? r.json() : null)).then((s) => s?.trackingNumber && setShipments((prev) => ({ ...prev, [ord.id]: s }))).catch(() => {});
             fetch(`/api/workspace/${ord.id}`).then((r) => (r.ok ? r.json() : null)).then((w) => w && setWorkspaceLinks((prev) => ({ ...prev, [ord.id]: w }))).catch(() => {});
@@ -50,6 +65,12 @@ export default function OrdersPage() {
       }
     } catch (err) {
       console.error("Failed to load orders:", err);
+      try {
+        const localHistory = JSON.parse(localStorage.getItem("nexus_orders_history") || "[]");
+        if (localHistory.length > 0) {
+          setOrders(localHistory.map((o: any) => ({ ...o, id: o.id || o.orderId })));
+        }
+      } catch {}
     } finally {
       setLoading(false);
     }
