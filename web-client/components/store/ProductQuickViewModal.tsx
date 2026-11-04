@@ -5,6 +5,7 @@ import { X, Star, Check, ShoppingCart, ShieldCheck, CheckCircle2, MessageSquare,
 import { Button } from "../ui/Button";
 import { Badge } from "../ui/Badge";
 import { useCurrency } from "../../context/CurrencyContext";
+import { PriceHistoryAutoBuySection } from "./PriceHistoryAutoBuySection";
 
 export interface QuickViewProduct {
   skuCode: string;
@@ -241,6 +242,7 @@ export const ProductQuickViewModal: React.FC<ProductQuickViewModalProps> = ({
           </div>
 
           <div className="space-y-3 pt-3 border-t border-slate-200 dark:border-slate-800">
+            <PriceHistoryAutoBuySection skuCode={product.skuCode} currentPrice={product.price} />
             <div className="flex justify-between items-baseline">
               <span className="text-xs text-slate-500">מחיר מיוחד:</span>
               <div className="flex items-baseline gap-2">

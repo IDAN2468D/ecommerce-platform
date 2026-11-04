@@ -40,6 +40,10 @@
 		<module>workspace-integration-service</module>
 		<module>api-gateway</module>
 		<module>rag-service</module>
+		<module>rma-returns-service</module>
+		<module>dynamic-pricing-service</module>
+		<module>fraud-risk-service</module>
+		<module>merchant-analytics-service</module>
 	</modules>
 
 	<dependencyManagement>

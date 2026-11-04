@@ -99,6 +99,30 @@ spring:
           predicates:
             - Path=/api/v1/agents/**
 
+        # 13. RMA & Returns Service Route
+        - id: rma-returns-service-route
+          uri: ${RMA_SERVICE_URL:http://localhost:8094}
+          predicates:
+            - Path=/api/v1/returns/**
+
+        # 14. Dynamic Pricing & Auto-Buy Service Route
+        - id: dynamic-pricing-service-route
+          uri: ${PRICING_SERVICE_URL:http://localhost:8095}
+          predicates:
+            - Path=/api/v1/pricing/**
+
+        # 15. Fraud & Risk Protection Service Route
+        - id: fraud-risk-service-route
+          uri: ${FRAUD_SERVICE_URL:http://localhost:8096}
+          predicates:
+            - Path=/api/v1/fraud/**
+
+        # 16. Merchant Analytics & Forecasting Service Route
+        - id: merchant-analytics-service-route
+          uri: ${ANALYTICS_SERVICE_URL:http://localhost:8097}
+          predicates:
+            - Path=/api/v1/analytics/**
+
 jwt:
   secret: ${JWT_SECRET:order-service-default-secret-key-32-bytes!!}
 

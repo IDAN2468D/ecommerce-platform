@@ -33,6 +33,9 @@ import {
   Box,
 } from "lucide-react";
 import { useCurrency } from "../context/CurrencyContext";
+import { SwarmAgentBadges } from "./store/SwarmAgentBadges";
+import { SmartBundleCard, SmartBundlePayload, BundleItem } from "./store/SmartBundleCard";
+import { AssistantFormattedResponse } from "./store/AssistantFormattedResponse";
 
 export interface Citation {
   skuCode: string;
@@ -637,98 +640,55 @@ export const RagAssistantDrawer: React.FC = () => {
                   {/* Message Content Bubble */}
                   <div className="flex-1 max-w-[88%] space-y-3">
                     {/* Primary Text */}
-                    <div
-                      className={`rounded-3xl p-4 text-sm leading-relaxed shadow-sm ${
-                        isAssistant
-                          ? "bg-white dark:bg-[#0f1422] text-slate-800 dark:text-slate-100 rounded-tr-xs border border-slate-200/80 dark:border-slate-800/90 whitespace-pre-wrap"
-                          : "bg-gradient-to-r from-indigo-600 to-indigo-700 text-white rounded-tl-xs font-medium"
-                      }`}
-                    >
-                      {msg.text}
-                    </div>
-
-                    {/* Agent Collaboration Timeline Accordion */}
-                    {isAssistant && msg.agentsInvolved && msg.agentsInvolved.length > 0 && (
-                      <div className="rounded-2xl border border-indigo-200/60 dark:border-indigo-900/40 bg-indigo-50/50 dark:bg-indigo-950/20 overflow-hidden text-xs">
-                        <button
-                          type="button"
-                          onClick={() => toggleReasoning(msg.id)}
-                          className="w-full px-3 py-2 flex items-center justify-between text-indigo-700 dark:text-indigo-300 font-bold hover:bg-indigo-100/50 dark:hover:bg-indigo-950/40 transition"
-                        >
-                          <div className="flex items-center gap-1.5">
-                            <Layers className="w-3.5 h-3.5 text-indigo-500" />
-                            <span>תיאום רב-סוכני ({msg.agentsInvolved.length} סוכנים שותפים)</span>
-                          </div>
-                          {isReasoningOpen ? (
-                            <ChevronUp className="w-3.5 h-3.5 text-indigo-400" />
-                          ) : (
-                            <ChevronDown className="w-3.5 h-3.5 text-indigo-400" />
-                          )}
-                        </button>
-
-                        {isReasoningOpen && (
-                          <div className="p-3 pt-1 border-t border-indigo-100 dark:border-indigo-900/30 space-y-1.5">
-                            {msg.agentsInvolved.map((agent) => {
-                              const details: Record<string, { label: string; desc: string; icon: string }> = {
-                                SupervisorRouterAgent: {
-                                  label: "סוכן ניתוב ראשי",
-                                  desc: "סיווג כוונות הלקוח, פירוק בקשות וסנכרון סוכני משנה",
-                                  icon: "🎯",
-                                },
-                                CatalogDiscoveryAgent: {
-                                  label: "סוכן קטלוג ומלאי",
-                                  desc: "חיפוש היברידי וקטורי, בדיקת מלאי במרלו״ג וסריקת מפרטים",
-                                  icon: "🔍",
-                                },
-                                CartPricingLoyaltyAgent: {
-                                  label: "סוכן תמחור ו-VIP",
-                                  desc: "הפעלת קופונים, חישוב הנחות מועדון VIP והוספה ישירה לסל",
-                                  icon: "💰",
-                                },
-                                OrderLogisticsWorkspaceAgent: {
-                                  label: "סוכן שילוח ולוגיסטיקה",
-                                  desc: "מעקב חבילות, סטטוס משלוח ויצירת חשבוניות מסונכרנות",
-                                  icon: "🚚",
-                                },
-                                KafkaAutonomousOpsAgent: {
-                                  label: "סוכן אירועי Kafka",
-                                  desc: "שידור אירועי רקע טלמטריים ואוטומציה ללא השהייה",
-                                  icon: "⚡",
-                                },
-                              };
-
-                              const item = details[agent] || {
-                                label: agent,
-                                desc: "סוכן אוטונומי",
-                                icon: "🤖",
-                              };
-
-                              return (
-                                <div
-                                  key={agent}
-                                  className="flex items-start gap-2 bg-white/70 dark:bg-slate-900/70 p-2 rounded-xl border border-indigo-100/50 dark:border-indigo-900/30"
-                                >
-                                  <span className="text-sm shrink-0">{item.icon}</span>
-                                  <div>
-                                    <div className="font-bold text-slate-800 dark:text-slate-200 text-[11px]">
-                                      {item.label}
-                                    </div>
-                                    <div className="text-[10px] text-slate-500 dark:text-slate-400">
-                                      {item.desc}
-                                    </div>
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        )}
+                    {isAssistant ? (
+                      <AssistantFormattedResponse text={msg.text} />
+                    ) : (
+                      <div className="rounded-3xl p-4 text-sm leading-relaxed shadow-sm bg-gradient-to-r from-indigo-600 to-indigo-700 text-white rounded-tl-xs font-medium whitespace-pre-wrap">
+                        {msg.text}
                       </div>
                     )}
 
-                    {/* Autonomous Function Calling Actions */}
+                    {/* Upgraded 9-Agent Swarm Badges (Track F V6.0) */}
+                    {isAssistant && msg.agentsInvolved && msg.agentsInvolved.length > 0 && (
+                      <SwarmAgentBadges agentsInvolved={msg.agentsInvolved} />
+                    )}
+
+                     {/* Autonomous Function Calling Actions */}
                     {isAssistant && msg.executedActions && msg.executedActions.length > 0 && (
                       <div className="space-y-2">
-                        {msg.executedActions.map((act, idx) => (
+                        {msg.executedActions.map((act, idx) => {
+                          if (act.toolName === "buildSmartBundleTool" && act.payload) {
+                            return (
+                              <SmartBundleCard
+                                key={`${act.toolName}_${idx}`}
+                                bundle={act.payload as any}
+                                onAddToCartAll={(items) => {
+                                  try {
+                                    const currentCart = JSON.parse(localStorage.getItem("cart") || "[]");
+                                    items.forEach((item) => {
+                                      const existingIdx = currentCart.findIndex((i: any) => i.skuCode === item.skuCode);
+                                      if (existingIdx > -1) {
+                                        currentCart[existingIdx].quantity = (currentCart[existingIdx].quantity || 1) + 1;
+                                      } else {
+                                        currentCart.push({
+                                          skuCode: item.skuCode,
+                                          productName: item.title,
+                                          unitPrice: item.unitPrice,
+                                          quantity: 1,
+                                        });
+                                      }
+                                    });
+                                    localStorage.setItem("cart", JSON.stringify(currentCart));
+                                    window.dispatchEvent(new Event("cart-updated"));
+                                  } catch (e) {
+                                    console.error("Failed adding bundle to cart:", e);
+                                  }
+                                }}
+                              />
+                            );
+                          }
+
+                          return (
                           <div
                             key={`${act.toolName}_${idx}`}
                             className="p-3 rounded-2xl border border-emerald-300/60 dark:border-emerald-800/60 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 dark:from-emerald-950/30 dark:to-teal-950/20 backdrop-blur-md flex items-center justify-between gap-3"
@@ -774,7 +734,8 @@ export const RagAssistantDrawer: React.FC = () => {
                               </button>
                             )}
                           </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     )}
 

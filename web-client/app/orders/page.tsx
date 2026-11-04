@@ -2,10 +2,11 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { Package, FileText, RefreshCw, ExternalLink, Clock, Calendar, Cloud, CheckCircle2, XCircle, Receipt, Sparkles } from "lucide-react";
+import { Package, FileText, RefreshCw, ExternalLink, Clock, Calendar, Cloud, CheckCircle2, XCircle, Receipt, Sparkles, RotateCcw } from "lucide-react";
 import { useCurrency } from "../../context/CurrencyContext";
 import { OrderTracker } from "../../components/store/OrderTracker";
 import { DigitalReceiptModal, DigitalReceiptData } from "../../components/store/DigitalReceiptModal";
+import { VisualRmaReturnModal } from "../../components/store/VisualRmaReturnModal";
 import { Button } from "../../components/ui/Button";
 import { Badge } from "../../components/ui/Badge";
 
@@ -17,6 +18,7 @@ export default function OrdersPage() {
   const [workspaceLinks, setWorkspaceLinks] = useState<Record<string, any>>({});
   const [cancellingId, setCancellingId] = useState<string | null>(null);
   const [selectedReceiptData, setSelectedReceiptData] = useState<DigitalReceiptData | null>(null);
+  const [rmaTarget, setRmaTarget] = useState<any | null>(null);
 
   const fetchOrders = async () => {
     setLoading(true);
@@ -153,6 +155,21 @@ export default function OrdersPage() {
                       קבלה דיגיטלית
                     </Button>
 
+                    <Button
+                      onClick={() => setRmaTarget({
+                        orderId: order.id,
+                        skuCode: order.items?.[0]?.skuCode || "AUDIO-SONY-XM5",
+                        itemTitle: order.items?.[0]?.skuCode || ("הזמנה #" + order.id.slice(0, 8)),
+                        itemPrice: order.totalAmount || 1499.00
+                      })}
+                      variant="secondary"
+                      size="sm"
+                      className="text-xs text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-900/50"
+                      icon={<RotateCcw className="w-3.5 h-3.5" />}
+                    >
+                      החזרה / החלפה (RMA)
+                    </Button>
+
                     <a
                       href={`/api/orders/${order.id}/invoice`}
                       target="_blank"
@@ -255,6 +272,18 @@ export default function OrdersPage() {
         isOpen={Boolean(selectedReceiptData)}
         onClose={() => setSelectedReceiptData(null)}
       />
+
+      {/* Autonomous RMA Return & Defect Modal */}
+      {rmaTarget && (
+        <VisualRmaReturnModal
+          isOpen={Boolean(rmaTarget)}
+          onClose={() => setRmaTarget(null)}
+          orderId={rmaTarget.orderId}
+          skuCode={rmaTarget.skuCode}
+          itemTitle={rmaTarget.itemTitle}
+          itemPrice={rmaTarget.itemPrice}
+        />
+      )}
     </div>
   );
 }

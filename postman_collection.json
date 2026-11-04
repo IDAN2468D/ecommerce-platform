@@ -1,6 +1,6 @@
 {
   "info": {
-    "_postman_id": "a9e61234-582b-4fc4-bb11-477d9e7943c2",
+    "_postman_id": "2be224cb-4e76-4522-bc97-83cf1b4a569b",
     "name": "E-Commerce Microservices Platform",
     "description": "אוסף קריאות Postman מלא עבור פלטפורמת המיקרו-שירותים (Spring Boot 3, Java 21). כולל ניתוב דרך ה-API Gateway, תזמור SAGA, שאילתות מלאי, סליקה והתראות.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
@@ -131,6 +131,30 @@
       "value": "usr_demo",
       "type": "string",
       "description": "מזהה לקוח לדוגמה"
+    },
+    {
+      "key": "rmaServiceUrl",
+      "value": "http://localhost:8094",
+      "type": "string",
+      "description": "כתובת ישירה ל-RMA & Reverse Logistics Service"
+    },
+    {
+      "key": "pricingServiceUrl",
+      "value": "http://localhost:8095",
+      "type": "string",
+      "description": "כתובת ישירה ל-Dynamic Pricing & Auto-Buy Service"
+    },
+    {
+      "key": "fraudServiceUrl",
+      "value": "http://localhost:8096",
+      "type": "string",
+      "description": "כתובת ישירה ל-Fraud & Risk Guard Service"
+    },
+    {
+      "key": "analyticsServiceUrl",
+      "value": "http://localhost:8097",
+      "type": "string",
+      "description": "כתובת ישירה ל-Merchant Analytics & Intelligence Service"
     }
   ],
   "item": [
@@ -1173,6 +1197,313 @@
               ]
             },
             "description": "קבלת קישורים לחשבונית ב-Drive ולאירוע משלוח ב-Calendar"
+          }
+        }
+      ]
+    },
+    {
+      "name": "13. Autonomous RMA & Reverse Logistics Service",
+      "description": "הערכת זכאות להחזרה, בונוס VIP של 10%+ באשראי מיידי, פתיחת RMA והפקת תעודת החזרה עם DHL",
+      "item": [
+        {
+          "name": "Evaluate Return Eligibility (VIP +10% Bonus vs Refund)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": \"8f19c23a-7b24-4f9e-9912-882fa4c03b12\",\n  \"skuCode\": \"AUDIO-SONY-XM5\",\n  \"customerId\": \"{{customerId}}\",\n  \"returnReason\": \"DEFECTIVE_OR_DAMAGED\",\n  \"reportedCondition\": \"LIKE_NEW\",\n  \"originalPrice\": 1499.0\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/returns/evaluate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "returns",
+                "evaluate"
+              ]
+            },
+            "description": "בדיקת התאמה להחזרה והשוואה בין החזר כספי רגיל לזיכוי VIP מוגדל ב-10%"
+          }
+        },
+        {
+          "name": "Create Autonomous RMA Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": \"8f19c23a-7b24-4f9e-9912-882fa4c03b12\",\n  \"skuCode\": \"AUDIO-SONY-XM5\",\n  \"customerId\": \"{{customerId}}\",\n  \"returnReason\": \"DEFECTIVE_OR_DAMAGED\",\n  \"defectPhotoUrl\": \"https://storage.googleapis.com/demo-ecommerce-defect-photos/defect_headband_crack.jpg\",\n  \"notes\": \"\\u05e1\\u05d3\\u05e7 \\u05e7\\u05dc \\u05d1\\u05e7\\u05e9\\u05ea \\u05d4\\u05d0\\u05d5\\u05d6\\u05e0\\u05d9\\u05d9\\u05d4 \\u05d4\\u05e9\\u05de\\u05d0\\u05dc\\u05d9\\u05ea\",\n  \"resolution\": \"INSTANT_VIP_CREDIT\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/returns",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "returns"
+              ]
+            },
+            "description": "פתיחת בקשת RMA מלאה עם הפקת שטר מטען DHL ותיאום איסוף"
+          }
+        },
+        {
+          "name": "Get Customer RMA Return Requests",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/returns/customer/{{customerId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "returns",
+                "customer",
+                "{{customerId}}"
+              ]
+            },
+            "description": "שליפת כל בקשות ההחזרה והסטטוסים עבור הלקוח"
+          }
+        }
+      ]
+    },
+    {
+      "name": "14. Dynamic Pricing & Price Watch Service",
+      "description": "היסטוריית מחירים 30 יום, תמחור חבילות מרובות פריטים בהנחה סינרגטית, ורישום מנדטי Auto-Buy",
+      "item": [
+        {
+          "name": "Get 30-Day Rolling Price History",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/pricing/history/AUDIO-SONY-XM5",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "pricing",
+                "history",
+                "AUDIO-SONY-XM5"
+              ]
+            },
+            "description": "שליפת היסטוריית מחירי מוצר ב-30 הימים האחרונים עם חישוב מחיר שפל ומגמת גמישות"
+          }
+        },
+        {
+          "name": "Calculate Multi-SKU Bundle Synergy Quote",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"skuCodes\": [\n    \"AUDIO-SONY-XM5\",\n    \"LAPTOP-MACBOOK-PRO-16\"\n  ],\n  \"baseSubtotal\": 15498.0\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/pricing/bundles/calculate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "pricing",
+                "bundles",
+                "calculate"
+              ]
+            },
+            "description": "חישוב ציון תאימות והנחת סינרגיה לחבילת מוצרים מרובה"
+          }
+        },
+        {
+          "name": "Register Autonomous Auto-Buy Rule",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"skuCode\": \"AUDIO-SONY-XM5\",\n  \"customerId\": \"{{customerId}}\",\n  \"targetPrice\": 1349.0,\n  \"mode\": \"AUTONOMOUS_BUY\",\n  \"budgetLimit\": 1400.0\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/pricing/autobuy",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "pricing",
+                "autobuy"
+              ]
+            },
+            "description": "הגדרת מנדט רכישה אוטומטי כשמחיר המוצר יורד מתחת לרף המוגדר"
+          }
+        }
+      ]
+    },
+    {
+      "name": "15. Fraud & Risk Guard Service",
+      "description": "ניטור סיכוני הונאה בזמן אמת במסגרת SAGA Gate לפני סליקה, בדיקות מהירות ואיתור אנומליות",
+      "item": [
+        {
+          "name": "Assess Transaction Risk Score (SAGA Risk Gate)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": \"f25b689a-7fd1-4ed5-b552-0a4ac776ad0f\",\n  \"customerId\": \"{{customerId}}\",\n  \"amount\": 1499.0,\n  \"deviceFingerprint\": \"fp_chrome_win11_desktop_v6\",\n  \"ipAddress\": \"192.168.1.100\",\n  \"shippingCountry\": \"IL\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/fraud/assess",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "fraud",
+                "assess"
+              ]
+            },
+            "description": "בדיקת סיכון מיידית ומניעת הונאות טרם ביצוע סליקת אשראי"
+          }
+        },
+        {
+          "name": "Get Recent Fraud Alerts & Logs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/fraud/alerts/recent",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "fraud",
+                "alerts",
+                "recent"
+              ]
+            },
+            "description": "שליפת לוג התראות אבטחה וטרנזקציות שנבדקו לאחרונה"
+          }
+        }
+      ]
+    },
+    {
+      "name": "16. Merchant Analytics & Intelligence Service",
+      "description": "מדדי טלמטריה בזמן אמת, חיזוי קצב דלדול מלאי לפי מק\"טים ו-Copilot AI למסחר חכם",
+      "item": [
+        {
+          "name": "Get Real-Time Platform KPIs Summary",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/analytics/summary",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "analytics",
+                "summary"
+              ]
+            },
+            "description": "שליפת מדדי GMV, AOV, יחסי המרה ושיעור חסימת הונאות"
+          }
+        },
+        {
+          "name": "Get Inventory Depletion Stock-Out Forecast",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/analytics/inventory-forecast?onlyCritical=false",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "analytics",
+                "inventory-forecast"
+              ],
+              "query": [
+                {
+                  "key": "onlyCritical",
+                  "value": "false"
+                }
+              ]
+            },
+            "description": "תחזית קצב מכירה וחיזוי תוך כמה ימים המלאי יאזל לכל מק\"ט"
+          }
+        },
+        {
+          "name": "Ask Merchant AI Copilot (Shopify Sidekick)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"prompt\": \"\\u05de\\u05d4\\u05dd \\u05d4\\u05de\\u05d5\\u05e6\\u05e8\\u05d9\\u05dd \\u05e2\\u05dd \\u05e1\\u05d9\\u05db\\u05d5\\u05df \\u05d4\\u05de\\u05dc\\u05d0\\u05d9 \\u05d4\\u05d3\\u05d7\\u05d5\\u05e3 \\u05d1\\u05d9\\u05d5\\u05ea\\u05e8 \\u05d5\\u05de\\u05d4 \\u05e7\\u05e6\\u05d1 \\u05d4\\u05de\\u05db\\u05d9\\u05e8\\u05d5\\u05ea \\u05d4\\u05e0\\u05d5\\u05db\\u05d7\\u05d9?\",\n  \"merchantId\": \"merchant_tech_il\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/analytics/ai-copilot",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "analytics",
+                "ai-copilot"
+              ]
+            },
+            "description": "שאלות ותשובות בשפה טבעית מול סוכן הבינה המלאכותית של הסוחר"
           }
         }
       ]
