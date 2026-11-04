@@ -1,0 +1,15 @@
+.git
+.github
+.idea
+.vscode
+target/
+**/target/
+node_modules/
+**/node_modules/
+.next/
+**/.next/
+__pycache__/
+**/__pycache__/
+*.pyc
+*.log
+*.md

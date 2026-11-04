@@ -1,17 +1,19 @@
-# Build Stage
+# Multi-stage cloud build for Maven Multi-Module Platform
 FROM eclipse-temurin:21-jdk-alpine AS builder
 WORKDIR /workspace
 
-# Copy Maven wrapper and pom.xml for dependency caching
-COPY .mvn/ .mvn/
-COPY mvnw pom.xml ./
-RUN chmod +x mvnw && ./mvnw dependency:go-offline -B
+# Copy Maven wrapper and root descriptor
+COPY pom.xml mvnw ./
+COPY .mvn .mvn
+RUN chmod +x mvnw
 
-# Copy source code and build
-COPY src/ src/
-RUN ./mvnw clean package -DskipTests
+# Copy all source modules for multi-module Maven resolution
+COPY . .
 
-# Run Stage
+# Build the central API Gateway and all common dependencies
+RUN ./mvnw clean package -pl api-gateway -am -DskipTests -B
+
+# Runtime stage
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
@@ -19,15 +21,15 @@ WORKDIR /app
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 USER appuser
 
-# Copy jar from builder
-COPY --from=builder --chown=appuser:appgroup /workspace/target/order-service-0.0.1-SNAPSHOT.jar app.jar
+# Copy API Gateway jar from builder
+COPY --from=builder --chown=appuser:appgroup /workspace/api-gateway/target/*.jar app.jar
 
 # JVM options enabling Virtual Threads and optimized container memory
 ENV JAVA_OPTS="-XX:+UseZGC -XX:+ZGenerational -XX:MaxRAMPercentage=75.0 -Dspring.threads.virtual.enabled=true"
 
-EXPOSE 8081
+EXPOSE 8080
 
 HEALTHCHECK --interval=15s --timeout=5s --start-period=30s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:8081/actuator/health/liveness || exit 1
+  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1
 
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
