@@ -1,32 +1,53 @@
-# Multi-stage cloud build for Maven Multi-Module Platform
-FROM eclipse-temurin:21-jdk-alpine AS builder
-WORKDIR /workspace
+# Multi-stage Unified Cloud Build for Render (Frontend Next.js 14 + Backend Spring Cloud Gateway)
 
-# Copy Maven wrapper, root descriptor and all source modules
+# Stage 1: Build Java Spring Boot API Gateway
+FROM eclipse-temurin:21-jdk-alpine AS java-builder
+WORKDIR /workspace
 COPY pom.xml mvnw ./
 COPY .mvn .mvn
 COPY . .
-
-# Ensure wrapper script is executable and build the central API Gateway
 RUN chmod +x ./mvnw && ./mvnw clean package -pl api-gateway -am -DskipTests -B
 
-# Runtime stage
-FROM eclipse-temurin:21-jre-alpine
+# Stage 2: Build Next.js 14 Frontend Storefront
+FROM node:20-alpine AS node-builder
+WORKDIR /app
+COPY web-client/package*.json ./
+RUN npm install
+COPY web-client/ ./
+RUN mkdir -p public
+RUN npm run build
+
+# Stage 3: Unified Production Runtime (Node.js 20 + OpenJDK 21)
+FROM node:20-alpine AS runner
 WORKDIR /app
 
-# Add non-root system user for security
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
-USER appuser
+# Install lightweight OpenJDK 21 JRE for Gateway execution
+RUN apk add --no-cache openjdk21-jre-headless ca-certificates tzdata
 
-# Copy API Gateway jar from builder
-COPY --from=builder --chown=appuser:appgroup /workspace/api-gateway/target/*.jar app.jar
+ENV NODE_ENV=production
+ENV GATEWAY_URL=http://127.0.0.1:8080
+ENV PORT=10000
 
-# JVM options enabling Virtual Threads and optimized container memory
-ENV JAVA_OPTS="-XX:+UseZGC -XX:+ZGenerational -XX:MaxRAMPercentage=75.0 -Dspring.threads.virtual.enabled=true"
+# Copy Gateway JAR
+COPY --from=java-builder /workspace/api-gateway/target/*.jar /app/gateway.jar
 
-EXPOSE 8080
+# Copy Next.js Production Build
+WORKDIR /app/web-client
+COPY --from=node-builder /app/package*.json ./
+COPY --from=node-builder /app/node_modules ./node_modules
+COPY --from=node-builder /app/.next ./.next
+COPY --from=node-builder /app/public ./public
 
-HEALTHCHECK --interval=15s --timeout=5s --start-period=30s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1
+WORKDIR /app
 
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
+# Copy startup orchestration script
+COPY start.sh /app/start.sh
+RUN chmod +x /app/start.sh
+
+# Expose Render default port (10000) and internal Gateway port (8080)
+EXPOSE 10000 8080 3000
+
+HEALTHCHECK --interval=20s --timeout=5s --start-period=45s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://127.0.0.1:${PORT:-10000}/ || exit 1
+
+ENTRYPOINT ["/bin/sh", "/app/start.sh"]
