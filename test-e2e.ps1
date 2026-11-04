@@ -1,4 +1,4 @@
-# Comprehensive End-to-End Test for E-Commerce Distributed Microservices Platform v2.0
+﻿# Comprehensive End-to-End Test for E-Commerce Distributed Microservices Platform v2.0
 $GatewayUrl = "http://localhost:8080"
 $WebClientUrl = "http://localhost:3000"
 $PrometheusUrl = "http://localhost:9090"
