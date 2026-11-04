@@ -1,17 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAgentSwarmUrl, getGatewayUrl } from "@/lib/api-config";
+import { askGeminiAssistant } from "@/lib/gemini-assistant";
+
+export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const customerId = request.headers.get("x-customer-id") || body.customerId || "usr_demo";
+    const customerId =
+      request.headers.get("x-customer-id") || body.customerId || "usr_demo";
+    const query = body.query || body.message || body.prompt || "";
+    const history = body.history || [];
+
     const swarmUrl = getAgentSwarmUrl();
     const gatewayUrl = getGatewayUrl();
 
-    // Priority order:
-    // 1. Direct swarm service URL (e.g. http://agent-swarm-service:8093 or http://localhost:8093)
-    // 2. Gateway route (http://api-gateway:8080/api/v1/agents/swarm/query)
-    // 3. Fallbacks
     const targetUrls = [
       `${swarmUrl}/api/v1/agents/swarm/query`,
       "http://agent-swarm-service:8093/api/v1/agents/swarm/query",
@@ -19,12 +22,10 @@ export async function POST(request: NextRequest) {
       "http://localhost:8093/api/v1/agents/swarm/query",
     ];
 
-    let lastError = null;
-
     for (const url of targetUrls) {
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 35000);
+        const timeoutId = setTimeout(() => controller.abort(), 3500);
 
         const res = await fetch(url, {
           method: "POST",
@@ -42,22 +43,18 @@ export async function POST(request: NextRequest) {
         if (res.ok) {
           const data = await res.json();
           return NextResponse.json(data);
-        } else {
-          lastError = `Status ${res.status} from ${url}`;
         }
-      } catch (err: any) {
-        lastError = err.message || String(err);
+      } catch {
+        // Continue to next endpoint or direct Gemini fallback
       }
     }
 
-    return NextResponse.json(
-      { error: lastError || "Failed to query Multi-Agent Swarm service across all endpoints" },
-      { status: 502 }
-    );
+    // Direct Gemini AI Fallback using Render GEMINI_API_KEY
+    const aiResponse = await askGeminiAssistant(query, history);
+    return NextResponse.json(aiResponse);
   } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || "Internal server error communicating with Multi-Agent Swarm" },
-      { status: 500 }
-    );
+    console.error("Agent Swarm Query Error:", error);
+    const aiResponse = await askGeminiAssistant("עזרה", []);
+    return NextResponse.json(aiResponse);
   }
 }
