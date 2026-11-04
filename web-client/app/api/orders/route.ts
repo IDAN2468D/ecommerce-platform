@@ -140,15 +140,47 @@ export async function POST(request: NextRequest) {
             "Content-Type": "application/json",
             "Idempotency-Key": idempotencyKey,
             Authorization: `Bearer ${token}`,
+            ...traceHeaders,
           },
           body: JSON.stringify(normalizedPayload),
         });
       }
     }
 
+    // Auto-retry once on transient 500 / 502 / 503 / 504 server errors (e.g. Atlas replica set discovery or gateway latency)
+    if (!res.ok && [500, 502, 503, 504].includes(res.status)) {
+      await new Promise((resolve) => setTimeout(resolve, 800));
+      try {
+        const retryRes = await fetch(`${gatewayUrl}/api/v1/orders`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Idempotency-Key": idempotencyKey,
+            Authorization: `Bearer ${token}`,
+            ...traceHeaders,
+          },
+          body: JSON.stringify(normalizedPayload),
+        });
+        if (retryRes.ok) {
+          res = retryRes;
+        }
+      } catch {
+        // Keep initial response if retry threw
+      }
+    }
+
     const { data, status, ok } = await safeParseJson(res);
     if (!ok) {
-      const errorMsg = data?.error || data?.detail || data?.message || (Array.isArray(data?.errors) ? data.errors.join(", ") : null) || `שגיאת שרת: סטטוס ${status}`;
+      let errorMsg =
+        data?.detail ||
+        data?.message ||
+        data?.error ||
+        (Array.isArray(data?.errors) ? data.errors.join(", ") : null) ||
+        `שגיאת שרת: סטטוס ${status}`;
+
+      if (errorMsg === "Internal Server Error" || status >= 500) {
+        errorMsg = "שרת ההזמנות חווה עומס רגעי או ניתוק זמני ממסד הנתונים. אנא נסה שוב בעוד מספר רגעים.";
+      }
       return NextResponse.json({ error: errorMsg, message: errorMsg }, { status });
     }
 

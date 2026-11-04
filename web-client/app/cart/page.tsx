@@ -145,7 +145,12 @@ export default function CartPage() {
       window.dispatchEvent(new Event("cart-updated"));
       setIsReceiptOpen(true);
     } catch (err: any) {
-      alert("שגיאה בביצוע ההזמנה: " + (err.message || "אנא נסה שוב מאוחר יותר"));
+      const rawMsg = err.message || "";
+      const displayMsg =
+        !rawMsg || rawMsg === "Internal Server Error"
+          ? "שרת ההזמנות חווה עומס רגעי. אנא נסה שוב בעוד מספר רגעים."
+          : rawMsg;
+      alert("שגיאה בביצוע ההזמנה: " + displayMsg);
     } finally {
       setLoading(false);
       setCheckoutStep(0);
