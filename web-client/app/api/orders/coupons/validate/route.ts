@@ -33,7 +33,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const discountPercent = VALID_COUPONS[rawCode] || (rawCode.includes("10") ? 10 : rawCode.includes("15") ? 15 : rawCode.includes("20") ? 20 : null);
+    let discountPercent: number | null = VALID_COUPONS[rawCode] ?? null;
+    if (discountPercent === null) {
+      if (rawCode.startsWith("DEAL_") || rawCode.startsWith("VIP_")) {
+        const match = rawCode.match(/_(\d+)_/);
+        discountPercent = match ? Number(match[1]) : 12;
+      } else if (rawCode.includes("10")) discountPercent = 10;
+      else if (rawCode.includes("15")) discountPercent = 15;
+      else if (rawCode.includes("20")) discountPercent = 20;
+    }
 
     if (discountPercent !== null) {
       const discountAmount = Math.round(orderAmount * (discountPercent / 100));

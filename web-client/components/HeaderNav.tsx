@@ -18,6 +18,7 @@ import {
   Check,
   ChevronLeft,
   Layers,
+  Mic,
 } from "lucide-react";
 import { useNotificationStream } from "../lib/useNotificationStream";
 import { NotificationToast } from "./NotificationToast";
@@ -277,6 +278,16 @@ export const HeaderNav: React.FC = () => {
                 title="חיפוש מהיר"
               >
                 <Search className="w-4 h-4" />
+              </button>
+
+              {/* Voice Shopping Assistant Trigger */}
+              <button
+                type="button"
+                onClick={() => window.dispatchEvent(new Event("open-voice-modal"))}
+                className="relative flex items-center justify-center p-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 hover:text-amber-400 border border-amber-500/30 transition-all hover:scale-105 active:scale-95"
+                title="סוכנת קניות קולית (Gemini Voice)"
+              >
+                <Mic className="w-4 h-4 text-amber-500 animate-pulse" />
               </button>
 
               {/* Live Notification Bell */}

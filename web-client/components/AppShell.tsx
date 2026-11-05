@@ -8,12 +8,16 @@ import { CommandPalette } from "./CommandPalette";
 import { RagAssistantDrawer } from "./RagAssistantDrawer";
 import { FloatingAiButton } from "./FloatingAiButton";
 import { MobileBottomNav } from "./MobileBottomNav";
+import { VoiceShoppingModal } from "./store/VoiceShoppingModal";
+import { DealNegotiatorModal } from "./store/DealNegotiatorModal";
 import { Loader2, Lock } from "lucide-react";
 
 export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const pathname = usePathname();
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [isVoiceOpen, setIsVoiceOpen] = useState(false);
+  const [negotiateProduct, setNegotiateProduct] = useState<any | null>(null);
 
   const checkAuth = () => {
     if (typeof window === "undefined") return;
@@ -24,11 +28,18 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
   useEffect(() => {
     checkAuth();
     const handleAuthChange = () => checkAuth();
+    const handleOpenVoice = () => setIsVoiceOpen(true);
+    const handleOpenNegotiate = (e: any) => setNegotiateProduct(e?.detail?.product || null);
+
     window.addEventListener("auth-changed", handleAuthChange);
     window.addEventListener("storage", handleAuthChange);
+    window.addEventListener("open-voice-modal", handleOpenVoice);
+    window.addEventListener("open-negotiate-modal", handleOpenNegotiate);
     return () => {
       window.removeEventListener("auth-changed", handleAuthChange);
       window.removeEventListener("storage", handleAuthChange);
+      window.removeEventListener("open-voice-modal", handleOpenVoice);
+      window.removeEventListener("open-negotiate-modal", handleOpenNegotiate);
     };
   }, []);
 
@@ -102,6 +113,12 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
       <CartDrawer />
       <CommandPalette />
       <RagAssistantDrawer />
+      <VoiceShoppingModal isOpen={isVoiceOpen} onClose={() => setIsVoiceOpen(false)} />
+      <DealNegotiatorModal
+        isOpen={!!negotiateProduct}
+        product={negotiateProduct}
+        onClose={() => setNegotiateProduct(null)}
+      />
     </div>
   );
 };

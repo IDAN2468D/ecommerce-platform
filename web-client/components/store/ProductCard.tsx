@@ -219,6 +219,30 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           </div>
         </div>
 
+        {/* Deal Negotiator Quick Trigger */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            window.dispatchEvent(
+              new CustomEvent("open-negotiate-modal", {
+                detail: {
+                  product: {
+                    skuCode,
+                    productName: name,
+                    unitPrice: price,
+                    imageUrl: image,
+                  },
+                },
+              })
+            );
+          }}
+          className="w-full py-1.5 px-3 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/25 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+        >
+          <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
+          <span>משא ומתן על המחיר עם סוכן AI</span>
+        </button>
+
         <div className="flex items-center gap-3 relative z-30">
           {!isOutOfStock && (
             <div className="flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 rounded-2xl h-12 px-1.5 shrink-0">
