@@ -13,4 +13,6 @@ services:
       - key: NODE_ENV
         value: production
       - key: NEXT_PUBLIC_GATEWAY_URL
-        value: http://localhost:8080
+        value: https://colon-minolta-increased-buys.trycloudflare.com
+      - key: GATEWAY_URL
+        value: https://colon-minolta-increased-buys.trycloudflare.com
