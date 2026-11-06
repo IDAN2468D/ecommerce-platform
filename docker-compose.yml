@@ -65,6 +65,8 @@ services:
       KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
       KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
       CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
+    volumes:
+      - kafka_platform_data:/tmp/kraft-combined-logs
     mem_limit: 384m
     networks:
       - platform-network
@@ -626,3 +628,4 @@ networks:
 
 volumes:
   mongodb_platform_data:
+  kafka_platform_data:
