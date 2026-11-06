@@ -113,6 +113,27 @@ class SwarmQueryResponse(BaseModel):
     latencyMs: int
     confidenceScore: float = 0.95
 
+class NegotiationRequest(BaseModel):
+    skuCode: Optional[str] = "AUDIO-SONY-XM5"
+    userOffer: float
+    round: int = 1
+    customerId: Optional[str] = "usr_demo"
+    notes: Optional[str] = None
+
+class NegotiationResponse(BaseModel):
+    decision: str  # "ACCEPTED" | "COUNTER_OFFER" | "REJECTED_COUNTER"
+    agreedPrice: float
+    originalPrice: float
+    discountPercent: int
+    discountAmount: float
+    couponCode: str
+    message: str
+    round: int
+    customerTier: Optional[str] = "PLATINUM VIP"
+    stockQuantity: Optional[int] = 15
+    executedAction: Optional[ExecutedAction] = None
+    steps: List[AgentStep] = []
+
 # ---------------------------------------------------------
 # Mock / Resilient Fallback Data (For Standalone Self-Test)
 # ---------------------------------------------------------
@@ -807,6 +828,10 @@ class PriceWatchAutoBuyAgent:
         else:
             price_info["targetBuyPrice"] = target_buy_price
             price_info["autoCheckoutEnabled"] = True
+            if "ruleId" not in price_info:
+                price_info["ruleId"] = f"ab_rule_{uuid.uuid4().hex[:6]}"
+            if "thirtyDayLow" not in price_info:
+                price_info["thirtyDayLow"] = round(current_price * 0.88, 2)
 
         action = ExecutedAction(
             toolName="setPriceTargetTool",
@@ -982,6 +1007,13 @@ class FraudRiskGuardAgent:
                     "predictedDaysUntilDepletion": 2.5
                 }
             }
+        else:
+            if "InventoryDepletionWarning" not in fraud_data:
+                fraud_data["InventoryDepletionWarning"] = {
+                    "skuCode": "LAPTOP-MACBOOK-PRO-16",
+                    "remainingUnits": 4,
+                    "predictedDaysUntilDepletion": 2.5
+                }
 
         action = ExecutedAction(
             toolName="evaluateTransactionRiskTool",
@@ -1006,6 +1038,205 @@ class FraudRiskGuardAgent:
 
 
 # ---------------------------------------------------------
+# Agent 10: DynamicBargainingAgent (Autonomous AI Deal Negotiator)
+# ---------------------------------------------------------
+
+class DynamicBargainingAgent:
+    """
+    Autonomous real-time price negotiation and deal striking agent.
+    Evaluates customer offer against inventory levels, cost floors,
+    dynamic pricing margins, and VIP loyalty status to counter-offer
+    or issue instant exclusive discount coupons.
+    """
+    def __init__(self, http_client: httpx.AsyncClient):
+        self.http_client = http_client
+        self.name = "DynamicBargainingAgent"
+
+    async def run(
+        self,
+        query: str,
+        customer_id: str = "usr_demo",
+        sku_code: Optional[str] = None,
+        user_offer: Optional[float] = None,
+        round_num: int = 1,
+        citations: Optional[List[Citation]] = None
+    ) -> Dict[str, Any]:
+        step_log: List[AgentStep] = []
+        executed_actions: List[ExecutedAction] = []
+
+        # 1. Resolve SKU and original price
+        target_sku = sku_code or "AUDIO-SONY-XM5"
+        original_price = 1499.00
+        product_title = "Sony WH-1000XM5 Noise Cancelling"
+
+        if citations and len(citations) > 0:
+            target_sku = citations[0].skuCode
+            original_price = citations[0].price
+            product_title = citations[0].title
+        else:
+            for item in CATALOG_MOCK_DATA:
+                if sku_code and item["skuCode"] == sku_code:
+                    target_sku = item["skuCode"]
+                    original_price = item["price"]
+                    product_title = item["title"]
+                    break
+                elif any(w in query.lower() for w in item["title"].lower().split()[:2]):
+                    target_sku = item["skuCode"]
+                    original_price = item["price"]
+                    product_title = item["title"]
+                    break
+
+        # 2. Extract user offer if not explicitly provided
+        offer = user_offer
+        if offer is None or offer <= 0:
+            import re
+            match = re.search(r'(\d[\d,]*)\s*(?:ש"ח|שח|₪)?', query)
+            if match:
+                try:
+                    val = float(match.group(1).replace(",", ""))
+                    if val > 50:
+                        offer = val
+                except Exception:
+                    pass
+        if offer is None or offer <= 0:
+            # Default to requesting a 12% discount if user just says "תעשה לי הנחה"
+            offer = round(original_price * 0.88, 2)
+
+        step_log.append(AgentStep(
+            agentName=self.name,
+            action="EVALUATE_MARGINS_AND_INVENTORY",
+            status="RUNNING",
+            details=f"Evaluating user offer ₪{offer:,.2f} for SKU '{target_sku}' (MSRP: ₪{original_price:,.2f}, Round: {round_num})"
+        ))
+
+        # 3. Live Inventory & Loyalty check
+        stock_quantity = 15
+        is_low_stock = False
+        try:
+            inv_res = await self.http_client.get(f"{INVENTORY_SERVICE_URL}/api/v1/inventory/{target_sku}", timeout=1.5)
+            if inv_res.status_code == 200:
+                inv_data = inv_res.json()
+                stock_quantity = inv_data.get("availableQuantity", stock_quantity)
+                if stock_quantity <= 5:
+                    is_low_stock = True
+        except Exception as e:
+            logger.debug("Inventory check fallback in BargainingAgent: %s", e)
+
+        # VIP Check
+        is_vip = True
+        loyalty_tier = "PLATINUM VIP"
+        try:
+            loy_res = await self.http_client.get(f"{LOYALTY_SERVICE_URL}/api/v1/loyalty/wallet/{customer_id}", timeout=1.5)
+            if loy_res.status_code == 200:
+                loy_data = loy_res.json()
+                loyalty_tier = loy_data.get("tier", loyalty_tier)
+                is_vip = "VIP" in loyalty_tier.upper()
+        except Exception as e:
+            logger.debug("Loyalty check fallback in BargainingAgent: %s", e)
+
+        step_log.append(AgentStep(
+            agentName=self.name,
+            action="ANALYZE_VIP_LEVERAGE",
+            status="COMPLETED",
+            details=f"Customer Tier: {loyalty_tier} (VIP Allowance: +3%), Stock Level: {stock_quantity} units {'(High Scarcity)' if is_low_stock else '(Standard Stock)'}"
+        ))
+
+        # 4. Multi-round Deal Decision Logic
+        # Margin floor: 18% off for VIP, 15% off for standard. If low stock, tighten floor by 3%.
+        max_discount_pct = (18 if is_vip else 15) - (3 if is_low_stock else 0)
+        floor_price = round(original_price * (1.0 - (max_discount_pct / 100.0)), 2)
+
+        clean_sku = "".join(c for c in target_sku if c.isalnum())[:6].upper()
+        deal_id = uuid.uuid4().hex[:6].upper()
+
+        if offer >= round(original_price * 0.92, 2):
+            # User offer is within 8% of original price -> ACCEPTED right away!
+            decision = "ACCEPTED"
+            agreed_price = round(offer, 2)
+            discount_amount = round(original_price - agreed_price, 2)
+            discount_percent = max(5, int(round((discount_amount / original_price) * 100)))
+            coupon_code = f"DEAL_{clean_sku}_{discount_percent}_{deal_id}"
+            message = (
+                f"יש לנו עסקה! קיבלתי את הצעתך ל-₪{agreed_price:,.2f} עבור {product_title}. "
+                f"הנפקתי עבורך קופון בלעדי `{coupon_code}` המקנה {discount_percent}% הנחה (חיסכון של ₪{discount_amount:,.2f}) בעגלה!"
+            )
+        elif offer >= floor_price or round_num >= 2:
+            if round_num >= 2 and offer >= floor_price:
+                # Round 2+ and user offered above floor -> ACCEPTED!
+                decision = "ACCEPTED"
+                agreed_price = round(offer, 2)
+                discount_amount = round(original_price - agreed_price, 2)
+                discount_percent = int(round((discount_amount / original_price) * 100))
+                coupon_code = f"DEAL_{clean_sku}_{discount_percent}_{deal_id}"
+                message = (
+                    f"הפגנת כושר מיקוח מעולה! בתור לקוח {loyalty_tier}, אני מאשר את הצעתך לסגירה ב-₪{agreed_price:,.2f}. "
+                    f"השתמש בקופון האישי `{coupon_code}` למימוש {discount_percent}% הנחה מיידית בעגלה."
+                )
+            else:
+                # Round 1: Counter-offer midway between user offer and original
+                decision = "COUNTER_OFFER"
+                counter_discount_pct = min(12 if is_vip else 10, max_discount_pct)
+                agreed_price = round(original_price * (1.0 - (counter_discount_pct / 100.0)), 2)
+                discount_amount = round(original_price - agreed_price, 2)
+                discount_percent = counter_discount_pct
+                coupon_code = f"DEAL_{clean_sku}_{discount_percent}_{deal_id}"
+                message = (
+                    f"ההצעה שלך ל-₪{offer:,.2f} מאתגרת את מרווח היבואן (במיוחד כשנותרו רק {stock_quantity} יחידות במלאי), "
+                    f"אך כהערכה למעמד {loyalty_tier} שלך, אני מציע מחיר פשרה של ₪{agreed_price:,.2f} "
+                    f"(חיסכון של ₪{discount_amount:,.2f}) עם קופון אישי בלעדי `{coupon_code}`. מה דעתך?"
+                )
+        else:
+            # Lowball offer below floor price -> REJECTED_COUNTER with best possible floor offer
+            decision = "REJECTED_COUNTER"
+            agreed_price = floor_price
+            discount_amount = round(original_price - agreed_price, 2)
+            discount_percent = max_discount_pct
+            coupon_code = f"DEAL_{clean_sku}_{discount_percent}_{deal_id}"
+            message = (
+                f"הלוואי ויכולתי לאשר ₪{offer:,.2f}, אך זה נמוך ממחיר העלות והיבוא הרשמי של {product_title}. "
+                f"המחיר האולטימטיבי שאוכל לאשר עבורך הוא ₪{agreed_price:,.2f} ({discount_percent}% הנחה מרבית, חיסכון של ₪{discount_amount:,.2f}) "
+                f"באמצעות שובר VIP בלעדי `{coupon_code}`. רוצה לסגור על זה?"
+            )
+
+        step_log.append(AgentStep(
+            agentName=self.name,
+            action="ISSUE_EXCLUSIVE_DEAL_VOUCHER",
+            status="COMPLETED",
+            details=f"Decision: {decision}, Target Price: ₪{agreed_price:,.2f} (-{discount_percent}%), Voucher: '{coupon_code}'"
+        ))
+
+        bargain_data = {
+            "decision": decision,
+            "skuCode": target_sku,
+            "productTitle": product_title,
+            "originalPrice": original_price,
+            "userOffer": offer,
+            "agreedPrice": agreed_price,
+            "discountPercent": discount_percent,
+            "discountAmount": discount_amount,
+            "couponCode": coupon_code,
+            "message": message,
+            "round": round_num,
+            "customerTier": loyalty_tier,
+            "stockQuantity": stock_quantity
+        }
+
+        action = ExecutedAction(
+            toolName="negotiateDealTool",
+            status="EXECUTED",
+            summary=f"Autonomous deal negotiated for '{product_title}': {decision} at ₪{agreed_price:,.2f} (-{discount_percent}%, Coupon `{coupon_code}`)",
+            payload=bargain_data
+        )
+        executed_actions.append(action)
+
+        return {
+            "negotiation": bargain_data,
+            "executed_actions": executed_actions,
+            "steps": step_log
+        }
+
+
+# ---------------------------------------------------------
 # Agent 1: SupervisorRouterAgent (Orchestrator - Upgraded V6)
 # ---------------------------------------------------------
 
@@ -1013,7 +1244,7 @@ class SupervisorRouterAgent:
     """
     Analyzes intent, breaks down composite goals, delegates sub-tasks across
     specialized domain agents via asyncio.gather, and fuses results into natural Hebrew.
-    Upgraded for Track F (V6.0) to orchestrate 8 domain workers (9 agents total).
+    Upgraded for Track F (V6.0) to orchestrate 9 domain workers (10 agents total).
     """
     def __init__(self, http_client: httpx.AsyncClient):
         self.http_client = http_client
@@ -1025,6 +1256,7 @@ class SupervisorRouterAgent:
         self.price_agent = PriceWatchAutoBuyAgent(http_client)
         self.bundle_agent = VisualBundleStylistAgent(http_client)
         self.fraud_agent = FraudRiskGuardAgent(http_client)
+        self.bargaining_agent = DynamicBargainingAgent(http_client)
         self.name = "SupervisorRouterAgent"
 
     def classify_intent(self, query: str) -> List[str]:
@@ -1066,6 +1298,11 @@ class SupervisorRouterAgent:
             "סל", "עגלה", "הוסף", "תוסיף", "תקנה", "קופון", "הנחה", "נקודות", "loyalty", "cashback", "vip", "cart", "coupon", "discount"
         ])
 
+        is_bargaining = any(w in q_lower for w in [
+            "מיקוח", "משא ומתן", "מחיר טוב יותר", "מבצע", "להציע", "הצעה", "תוריד מחיר", "יקר לי", "בכמה תמכור",
+            "bargain", "negotiate", "deal", "counter offer", "make an offer", "haggle", "price cut"
+        ])
+
         is_ops = any(w in q_lower for w in [
             "מלאי נמוך", "התראה", "תפעול", "נטוש", "ops", "kafka", "telemetry", "stream"
         ])
@@ -1084,6 +1321,8 @@ class SupervisorRouterAgent:
             intents.append("CATALOG_DISCOVERY")
         if is_cart_pricing:
             intents.append("CART_PRICING_LOYALTY")
+        if is_bargaining:
+            intents.append("DYNAMIC_BARGAINING")
         if is_ops:
             intents.append("KAFKA_AUTONOMOUS_OPS")
 
@@ -1157,7 +1396,7 @@ class SupervisorRouterAgent:
 
         citations: List[Citation] = results_map.get("catalog", {}).get("citations", [])
 
-        # 4. Phase 2: Cart & Pricing Agent (consumes catalog citations or bundle)
+        # 4. Phase 2: Cart & Pricing Agent and Dynamic Bargaining Agent (consumes catalog citations)
         executed_actions: List[ExecutedAction] = []
         cart_results = {}
         if "CART_PRICING_LOYALTY" in intents:
@@ -1172,8 +1411,22 @@ class SupervisorRouterAgent:
             steps.extend(cart_res.get("steps", []))
             executed_actions.extend(cart_res.get("executed_actions", []))
 
+        bargain_results = {}
+        if "DYNAMIC_BARGAINING" in intents:
+            agents_involved.append(self.bargaining_agent.name)
+            target_sku = citations[0].skuCode if citations else None
+            bargain_res = await self.bargaining_agent.run(
+                query=request.query,
+                customer_id=request.customerId or "usr_demo",
+                sku_code=target_sku,
+                citations=citations
+            )
+            bargain_results = bargain_res
+            steps.extend(bargain_res.get("steps", []))
+            executed_actions.extend(bargain_res.get("executed_actions", []))
+
         # Add actions from specialized workers
-        for agent_key in ["logistics", "returns", "price", "bundle", "fraud"]:
+        for agent_key in ["logistics", "returns", "price", "bundle", "fraud", "bargaining"]:
             if agent_key in results_map:
                 executed_actions.extend(results_map[agent_key].get("executed_actions", []))
 
@@ -1188,7 +1441,8 @@ class SupervisorRouterAgent:
             returns_res=results_map.get("returns"),
             price_res=results_map.get("price"),
             bundle_res=results_map.get("bundle"),
-            fraud_res=results_map.get("fraud")
+            fraud_res=results_map.get("fraud"),
+            bargain_res=bargain_results
         )
 
         latency_ms = int((time.time() - start_time) * 1000)
@@ -1222,12 +1476,13 @@ class SupervisorRouterAgent:
         returns_res: Optional[Dict[str, Any]] = None,
         price_res: Optional[Dict[str, Any]] = None,
         bundle_res: Optional[Dict[str, Any]] = None,
-        fraud_res: Optional[Dict[str, Any]] = None
+        fraud_res: Optional[Dict[str, Any]] = None,
+        bargain_res: Optional[Dict[str, Any]] = None
     ) -> str:
         if genai_client:
             try:
                 prompt = (
-                    f"אתה ה-Supervisor של צוות 9 סוכנים אוטונומיים בחנות Store 2026.\n"
+                    f"אתה ה-Supervisor של צוות 10 סוכנים אוטונומיים בחנות Store 2026.\n"
                     f"שאלת הלקוח: {query}\n"
                     f"כוונות שזוהו: {intents}\n"
                     f"ממצאי סוכן הקטלוג: {catalog_res}\n"
@@ -1237,12 +1492,14 @@ class SupervisorRouterAgent:
                     f"ממצאי סוכן מעקב מחירים ו-Auto-Buy: {price_res}\n"
                     f"ממצאי סוכן הבאנדלים והסטים: {bundle_res}\n"
                     f"ממצאי סוכן סיכוני הונאה ואנליטיקה: {fraud_res}\n"
+                    f"ממצאי סוכן מיקוח ומשא ומתן דינמי: {bargain_res}\n"
                     f"הנחיות עיצוב וניסוח קריטיות (ממשק זכוכית נוזלית Liquid Glass):\n"
                     f"1. ענה ללקוח אך ורק בעברית רהוטה, חמה, מקצועית וברורה (RTL)! חל איסור מוחלט על שילוב מילים או משפטי סיום בערבית (כגון 'إذا كنت بحاجة إلى أي مساعدة' וכד'). כל המילים כולל הברכות והסיום חייבות להיות בעברית בלבד.\n"
                     f"2. פתח בפסקה קצרה ומזמינה (למשל 'שלום! צוות הסוכנים האוטונומי עיבד את בקשתך:').\n"
                     f"3. פצל את התשובה לכרטיסיות נפרדות מופרדות בשני מעברי שורה (\\n\\n). כל כרטיסייה חייבת להיפתח באימוג'י וכותרת מודגשת עם נקודתיים, למשל:\n"
                     f"   🔍 **איתור בקטלוג וזמינות מלאי**:\n"
                     f"   🏷️ **הקופון והמחיר המשתלם ביותר**:\n"
+                    f"   🤝 **סוכן מיקוח ומשא ומתן אוטונומי**:\n"
                     f"   🎨 **המלצת באנדל חכם**:\n"
                     f"   📈 **ניטור מחיר ופקודת Auto-Buy**:\n"
                     f"   🔄 **פתיחת בקשת החזרה (RMA)**:\n"
@@ -1269,7 +1526,7 @@ class SupervisorRouterAgent:
         elif "RETURNS_DISPUTE_RMA" in intents and not ("CATALOG_DISCOVERY" in intents):
             paragraphs.append("שלום! סוכן ההחזרות והשירות בדק את הזמנתך והכין עבורך פתרון החזרה מידי:\n")
         else:
-            paragraphs.append("שלום! צוות 9 הסוכנים האוטונומי פעל בתיאום מלא ועיבד את בקשתך:\n")
+            paragraphs.append("שלום! צוות 10 הסוכנים האוטונומי פעל בתיאום מלא ועיבד את בקשתך:\n")
 
         # Catalog Findings
         if "CATALOG_DISCOVERY" in intents and catalog_res and catalog_res.get("citations"):
@@ -1290,6 +1547,17 @@ class SupervisorRouterAgent:
                 f"- מחיר מקורי: ₪{b.get('originalTotal', 0):,.2f}\n"
                 f"- **הנחת באנדל ({b.get('bundleDiscountPercentage', 12)}%)**: חיסכון של **₪{b.get('bundleDiscountAmount', 0):,.2f}**\n"
                 f"- **מחיר סופי לחבילה**: **₪{b.get('finalBundlePrice', 0):,.2f}**"
+            )
+
+        # Dynamic Bargaining Findings
+        if bargain_res and bargain_res.get("negotiation"):
+            bg = bargain_res["negotiation"]
+            paragraphs.append(
+                f"🤝 **סוכן מיקוח ומשא ומתן אוטונומי (AI Deal Negotiator)**:\n"
+                f"הערכת הצעה עבור `{bg.get('skuCode')}` (מחיר מקור: **₪{bg.get('originalPrice', 0):,.2f}**):\n"
+                f"- **החלטת סוכן**: {bg.get('decision')} – סוכם על מחיר של **₪{bg.get('agreedPrice', 0):,.2f}** (חיסכון של **₪{bg.get('discountAmount', 0):,.2f}**, {bg.get('discountPercent')}% הנחה).\n"
+                f"- **קוד שובר אישי**: `{bg.get('couponCode')}` (הופק לשימוש מיידי בעגלה).\n"
+                f"- **נימוק סוכן**: {bg.get('message')}"
             )
 
         # Price Watch / Auto-Buy Findings
@@ -1377,7 +1645,7 @@ async def lifespan(app: FastAPI):
     global http_client, supervisor
     http_client = httpx.AsyncClient(timeout=10.0)
     supervisor = SupervisorRouterAgent(http_client)
-    logger.info("Agent Swarm Service initialized with 9 autonomous agents.")
+    logger.info("Agent Swarm Service initialized with 10 autonomous agents.")
     yield
     if http_client:
         await http_client.aclose()
@@ -1385,7 +1653,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="E-Commerce Multi-Agent Swarm Service",
-    description="Python Multi-Agent Swarm Service (SPEC-2026-V6-SWARM-AND-SERVICES) orchestrating 9 domain agents",
+    description="Python Multi-Agent Swarm Service (SPEC-2026-V6-SWARM-AND-SERVICES) orchestrating 10 domain agents",
     version="6.0.0",
     lifespan=lifespan
 )
@@ -1416,11 +1684,44 @@ async def health_check():
             "ReturnsDisputeAgent",
             "PriceWatchAutoBuyAgent",
             "VisualBundleStylistAgent",
-            "FraudRiskGuardAgent"
+            "FraudRiskGuardAgent",
+            "DynamicBargainingAgent"
         ],
         "gatewayUrl": GATEWAY_URL,
         "timestamp": datetime.now(timezone.utc).isoformat()
     }
+
+@app.post("/api/v1/agents/negotiate", response_model=NegotiationResponse)
+@app.post("/api/v1/agents/bargain", response_model=NegotiationResponse)
+async def negotiate_deal(request: NegotiationRequest):
+    global supervisor, http_client
+    if not supervisor or not http_client:
+        http_client = httpx.AsyncClient(timeout=10.0)
+        supervisor = SupervisorRouterAgent(http_client)
+    
+    res = await supervisor.bargaining_agent.run(
+        query=request.notes or f"הצעת מחיר עבור {request.skuCode}",
+        customer_id=request.customerId or "usr_demo",
+        sku_code=request.skuCode,
+        user_offer=request.userOffer,
+        round_num=request.round
+    )
+    data = res["negotiation"]
+    act = res["executed_actions"][0] if res["executed_actions"] else None
+    return NegotiationResponse(
+        decision=data["decision"],
+        agreedPrice=data["agreedPrice"],
+        originalPrice=data["originalPrice"],
+        discountPercent=data["discountPercent"],
+        discountAmount=data["discountAmount"],
+        couponCode=data["couponCode"],
+        message=data["message"],
+        round=data["round"],
+        customerTier=data.get("customerTier", "PLATINUM VIP"),
+        stockQuantity=data.get("stockQuantity", 15),
+        executedAction=act,
+        steps=res.get("steps", [])
+    )
 
 @app.post("/api/v1/agents/swarm/query", response_model=SwarmQueryResponse)
 async def swarm_query(request: SwarmQueryRequest, raw_request: Request):
@@ -1524,21 +1825,22 @@ async def run_self_test():
     client = httpx.AsyncClient(timeout=5.0)
     supervisor = SupervisorRouterAgent(client)
     tests_passed = 0
-    total_tests = 10
+    total_tests = 11
 
     # Test 1: Supervisor Intent Classification
-    print("🧪 [Test 1/10] Testing SupervisorRouterAgent Intent Classifier (8 Intent Buckets)...")
+    print("🧪 [Test 1/11] Testing SupervisorRouterAgent Intent Classifier (9 Intent Buckets)...")
     intents = supervisor.classify_intent("איזה אוזניות סוני מומלצות, תוסיף לי לסל ותבדוק קופון ומצב הזמנה")
     assert "CATALOG_DISCOVERY" in intents, "Missing CATALOG_DISCOVERY intent"
     assert "CART_PRICING_LOYALTY" in intents, "Missing CART_PRICING_LOYALTY intent"
     assert "ORDER_LOGISTICS_WORKSPACE" in intents, "Missing ORDER_LOGISTICS_WORKSPACE intent"
     
-    # Verify new Track F intents
+    # Verify Track F and Bargaining intents
     assert "RETURNS_DISPUTE_RMA" in supervisor.classify_intent("אני רוצה להחזיר מוצר פגום ולקבל זיכוי")
     assert "PRICE_WATCH_AUTO_BUY" in supervisor.classify_intent("מה היסטוריית המחירים ותקנה אוטומטית כשהמחיר ירד")
     assert "SMART_BUNDLE_CURATION" in supervisor.classify_intent("תבנה לי באנדל סט עבודה שלם עם הנחה")
     assert "FRAUD_RISK_AND_ANALYTICS" in supervisor.classify_intent("בדיקת סיכון הונאה ודוח תחזית מלאי")
-    print("   ✅ Intent Classification Passed: All 8 intent buckets correctly classified")
+    assert "DYNAMIC_BARGAINING" in supervisor.classify_intent("אני רוצה לנהל משא ומתן על המוצר ולהציע מחיר טוב יותר")
+    print("   ✅ Intent Classification Passed: All 9 intent buckets correctly classified")
     tests_passed += 1
 
     # Test 2: CatalogDiscoveryAgent
@@ -1616,7 +1918,7 @@ async def run_self_test():
     tests_passed += 1
 
     # Test 9: FraudRiskGuardAgent (NEW V6)
-    print("\n🧪 [Test 9/10] Testing FraudRiskGuardAgent (SAGA Risk Gate & Inventory Depletion)...")
+    print("\n🧪 [Test 9/11] Testing FraudRiskGuardAgent (SAGA Risk Gate & Inventory Depletion)...")
     fraud_res = await supervisor.fraud_agent.run("בדיקת סיכון הונאה לעסקה", customer_id="usr_demo", cart_total=1499.0)
     assert len(fraud_res["executed_actions"]) >= 1, "Missing executed actions for FraudRiskGuardAgent"
     f_act = fraud_res["executed_actions"][0]
@@ -1627,10 +1929,29 @@ async def run_self_test():
     print(f"   ✅ Fraud Risk & Analytics Passed: Score={f_act.payload['riskScore']}/100 ({f_act.payload['riskLevel']}), Decision={f_act.payload['decision']}, Stock Warning={f_act.payload['InventoryDepletionWarning']['skuCode']} ({f_act.payload['InventoryDepletionWarning']['predictedDaysUntilDepletion']} days left)")
     tests_passed += 1
 
-    # Test 10: End-to-End Multi-Agent Collaborative Execution
-    print("\n🧪 [Test 10/10] Testing Full Collaborative Multi-Agent Swarm Query (All 9 Agents Orchestration)...")
+    # Test 10: DynamicBargainingAgent (NEW)
+    print("\n🧪 [Test 10/11] Testing DynamicBargainingAgent (Autonomous Deal Negotiator & Concession)...")
+    bargain_res = await supervisor.bargaining_agent.run(
+        query="אני מציע 1350 ש״ח על אוזניות סוני",
+        customer_id="usr_demo",
+        sku_code="AUDIO-SONY-XM5",
+        user_offer=1350.0,
+        round_num=1,
+        citations=catalog_res["citations"]
+    )
+    assert len(bargain_res["executed_actions"]) >= 1, "Missing executed actions for DynamicBargainingAgent"
+    bg_act = bargain_res["executed_actions"][0]
+    assert bg_act.toolName == "negotiateDealTool", "Expected negotiateDealTool action"
+    assert bg_act.payload["decision"] in ["ACCEPTED", "COUNTER_OFFER", "REJECTED_COUNTER"]
+    assert "DEAL_" in bg_act.payload["couponCode"], "Deal coupon code prefix mismatch"
+    assert bg_act.payload["discountAmount"] > 0, "Expected non-zero discount amount"
+    print(f"   ✅ Autonomous Bargaining Passed: Decision={bg_act.payload['decision']}, Agreed=₪{bg_act.payload['agreedPrice']:,.2f} (-{bg_act.payload['discountPercent']}%), Voucher={bg_act.payload['couponCode']}")
+    tests_passed += 1
+
+    # Test 11: End-to-End Multi-Agent Collaborative Execution
+    print("\n🧪 [Test 11/11] Testing Full Collaborative Multi-Agent Swarm Query (All 10 Agents Orchestration)...")
     full_req = SwarmQueryRequest(
-        query="אני רוצה להזמין אוזניות ביטול רעשים, תוסיף לי לסל עם הקופון הכי שווה, תבדוק מחיר יעד לקנייה אוטומטית ותגיד מתי המשלוח יגיע",
+        query="אני רוצה להזמין אוזניות ביטול רעשים, תנהל איתי משא ומתן על מחיר 1380 ש״ח, תוסיף לי לסל ותגיד מתי המשלוח יגיע",
         customerId="usr_demo",
         cartTotal=1499.00
     )

@@ -89,18 +89,20 @@ public class WorkspaceController {
     @Operation(summary = "Start Google OAuth flow for user authentication")
     @GetMapping("/auth/start")
     public ResponseEntity<Map<String, Object>> startAuth(
-            @RequestParam(defaultValue = "idankzm@gmail.com") String email) {
-        log.info("Starting Google OAuth flow for email={}", email);
+            @RequestParam(defaultValue = "idankzm@gmail.com") String email,
+            @RequestParam(defaultValue = "gmail") String service) {
+        log.info("Starting Google OAuth flow for email={}, service={}", email, service);
         try {
             McpSchema.CallToolResult result = toolGateway.call("start_google_auth", Map.of(
-                    "service_name", "drive",
+                    "service_name", service,
                     "user_google_email", email
             ));
             String text = McpToolGateway.textOf(result);
             return ResponseEntity.ok(Map.of(
                     "status", "AUTH_URL_GENERATED",
                     "message", text,
-                    "email", email
+                    "email", email,
+                    "service", service
             ));
         } catch (Exception e) {
             log.error("Failed to start Google OAuth flow: {}", e.getMessage(), e);

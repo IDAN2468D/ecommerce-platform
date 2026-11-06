@@ -34,6 +34,8 @@ workspace:
       drive-create-file: ${MCP_TOOL_DRIVE_CREATE:create_drive_file}
       calendar-create-event: ${MCP_TOOL_CALENDAR_CREATE:manage_event}
       calendar-delete-event: ${MCP_TOOL_CALENDAR_DELETE:manage_event}
+      gmail-send-message: ${MCP_TOOL_GMAIL_SEND:send_gmail_message}
+      drive-manage-access: ${MCP_TOOL_DRIVE_ACCESS:manage_drive_access}
     drive:
       invoices-folder-id: ${DRIVE_INVOICES_FOLDER_ID:18Dinq5x46OWcqmTEljaXytGHd4jJ-aRw}
       invoice-source-url-template: ${INVOICE_SOURCE_URL_TEMPLATE:http://order-service:8081/api/v1/orders/%s/invoice}

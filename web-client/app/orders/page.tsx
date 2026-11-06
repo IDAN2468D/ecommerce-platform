@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { Package, FileText, RefreshCw, ExternalLink, Clock, Calendar, Cloud, CheckCircle2, XCircle, Receipt, Sparkles, RotateCcw } from "lucide-react";
+import { Package, FileText, RefreshCw, ExternalLink, Clock, Calendar, Cloud, CheckCircle2, XCircle, Receipt, Sparkles, RotateCcw, Mail } from "lucide-react";
 import { useCurrency } from "../../context/CurrencyContext";
 import { OrderTracker } from "../../components/store/OrderTracker";
 import { DigitalReceiptModal, DigitalReceiptData } from "../../components/store/DigitalReceiptModal";
@@ -250,13 +250,23 @@ export default function OrdersPage() {
                     <Sparkles className="w-4 h-4 text-amber-500" />
                     <div>
                       <span className="font-bold text-slate-800 dark:text-slate-200">
-                        שירותי ענן ללקוח: שמירת חשבונית ב-Google Drive ותזכורת מסירה ב-Google Calendar
+                        שירותי ענן ללקוח: קבלה ב-Gmail, גיבוי ב-Google Drive ותיאום ב-Google Calendar
                       </span>
-                      <p className="text-[11px] text-slate-400">גיבוי אוטומטי של מסמכי הרכישה בחשבונך האישי</p>
+                      <p className="text-[11px] text-slate-400">הקבלה נשלחה לתיבת הדוא"ל שלך וגובתה בחשבון גוגל</p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2">
+                    <a
+                      href="https://mail.google.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-[11px] font-bold text-rose-600 dark:text-rose-400 hover:underline"
+                    >
+                      <Mail className="w-3.5 h-3.5" />
+                      <span>פתח ב-Gmail</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
                     {workspace?.driveFileId && !workspace.driveFileId.startsWith("drive-") && (
                       <a
                         href={`https://drive.google.com/file/d/${workspace.driveFileId}/view`}

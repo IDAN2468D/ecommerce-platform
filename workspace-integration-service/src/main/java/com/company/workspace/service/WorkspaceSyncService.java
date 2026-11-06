@@ -19,6 +19,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -105,6 +106,88 @@ public class WorkspaceSyncService {
         link.setUpdatedAt(Instant.now());
         linkRepository.save(link);
         log.info("Successfully archived invoice to Google Drive: orderId={}, fileId={}", orderId, fileId);
+
+        // Deliver receipt to Gmail directly or via Drive notification
+        sendReceiptNotification(orderId, customerId, pdfBytes, fileId);
+    }
+
+    /**
+     * Sends the official receipt and invoice to Gmail and shares Drive link.
+     */
+    public void sendReceiptNotification(UUID orderId, String customerId, byte[] pdfBytes, String fileId) {
+        String recipientEmail = (customerId != null && customerId.contains("@")) ? customerId : props.userEmail();
+        String shortOrderId = orderId.toString().substring(0, 8).toUpperCase();
+        String fileName = "INV-" + shortOrderId + ".pdf";
+        String base64Content = Base64.getEncoder().encodeToString(pdfBytes != null ? pdfBytes : new byte[0]);
+
+        String driveUrl = (fileId != null && !fileId.startsWith("drive-") && !fileId.endsWith("-drive-ref"))
+                ? "https://drive.google.com/file/d/" + fileId + "/view"
+                : "https://drive.google.com";
+
+        String htmlBody = """
+            <div dir="rtl" style="font-family: Arial, sans-serif; direction: rtl; text-align: right; color: #1e293b; padding: 20px; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px;">
+                <h2 style="color: #0f172a; margin-top: 0;">קבלה וחשבונית מס קבלה דיגיטלית</h2>
+                <p>שלום,</p>
+                <p>תודה על רכישתך! הזמנה <strong>#%s</strong> אושרה בהצלחה.</p>
+                <div style="background-color: #f8fafc; border-radius: 8px; padding: 15px; margin: 20px 0; border: 1px solid #cbd5e1;">
+                    <p style="margin: 5px 0;"><strong>מספר חשבונית:</strong> INV-%s</p>
+                    <p style="margin: 5px 0;"><strong>סטטוס:</strong> שולם במלואו (אושר ב-Payment Gateway)</p>
+                    <p style="margin: 5px 0;"><strong>קישור למסמך המקורי:</strong> <a href="%s" style="color: #2563eb; text-decoration: underline;">צפה בחשבונית ב-Google Drive</a></p>
+                </div>
+                <p>קובץ ה-PDF הרשמי של החשבונית מצורף להודעה זו לנוחיותך.</p>
+                <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
+                <p style="font-size: 12px; color: #64748b;">הופק אוטומטית על ידי מערכת המסחר האלקטרוני.</p>
+            </div>
+            """.formatted(shortOrderId, shortOrderId, driveUrl);
+
+        boolean emailSent = false;
+
+        // 1. Attempt direct email delivery via Gmail MCP tool
+        try {
+            Map<String, Object> emailArgs = new LinkedHashMap<>();
+            emailArgs.put("user_google_email", props.userEmail());
+            emailArgs.put("to", recipientEmail);
+            emailArgs.put("subject", "קבלה וחשבונית מס עבור הזמנה #" + shortOrderId);
+            emailArgs.put("body", htmlBody);
+            emailArgs.put("body_format", "html");
+            emailArgs.put("direction", "rtl");
+
+            Map<String, Object> attachment = new LinkedHashMap<>();
+            attachment.put("filename", fileName);
+            attachment.put("content", base64Content);
+            attachment.put("mime_type", "application/pdf");
+            emailArgs.put("attachments", List.of(attachment));
+
+            log.info("Sending receipt email via MCP tool '{}' to {} for orderId={}...",
+                    props.tools().gmailSendMessage(), recipientEmail, orderId);
+            mcp.call(props.tools().gmailSendMessage(), emailArgs);
+            log.info("Successfully dispatched receipt email via Gmail for orderId={}", orderId);
+            emailSent = true;
+        } catch (Exception ex) {
+            log.warn("Direct Gmail MCP delivery skipped or failed for orderId={}: {}. Falling back to Drive email notification.",
+                    orderId, ex.getMessage());
+        }
+
+        // 2. Drive file share with email notification (requires only drive scope which is already active)
+        if (!emailSent && fileId != null && !fileId.startsWith("drive-") && !fileId.endsWith("-drive-ref")) {
+            try {
+                Map<String, Object> shareArgs = new LinkedHashMap<>();
+                shareArgs.put("user_google_email", props.userEmail());
+                shareArgs.put("file_id", fileId);
+                shareArgs.put("action", "add");
+                shareArgs.put("share_with", recipientEmail);
+                shareArgs.put("role", "reader");
+                shareArgs.put("send_notification", true);
+                shareArgs.put("email_message", "מצורפת חשבונית מס קבלה עבור הזמנה #" + shortOrderId + ". תודה על קנייתך!");
+
+                log.info("Triggering Drive sharing email notification via MCP tool '{}' for fileId={} to {}...",
+                        props.tools().driveManageAccess(), fileId, recipientEmail);
+                mcp.call(props.tools().driveManageAccess(), shareArgs);
+                log.info("Successfully sent receipt notification via Drive share to {}", recipientEmail);
+            } catch (Exception ex) {
+                log.warn("Drive share notification failed for orderId={}: {}", orderId, ex.getMessage());
+            }
+        }
     }
 
     /**

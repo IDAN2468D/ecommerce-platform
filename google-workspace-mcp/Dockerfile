@@ -6,4 +6,4 @@ ENV FASTMCP_HOST=0.0.0.0
 ENV WORKSPACE_MCP_PORT=8000
 ENV FASTMCP_PORT=8000
 EXPOSE 8000
-CMD ["uvx", "workspace-mcp", "--transport", "streamable-http", "--tools", "drive", "calendar"]
+CMD ["uvx", "workspace-mcp", "--transport", "streamable-http", "--tools", "drive", "calendar", "gmail"]

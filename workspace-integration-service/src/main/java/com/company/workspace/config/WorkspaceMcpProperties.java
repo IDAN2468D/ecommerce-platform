@@ -23,7 +23,17 @@ public record WorkspaceMcpProperties(
 ) {
     public record Tools(@NotBlank String driveCreateFile,
                         @NotBlank String calendarCreateEvent,
-                        @NotBlank String calendarDeleteEvent) {
+                        @NotBlank String calendarDeleteEvent,
+                        String gmailSendMessage,
+                        String driveManageAccess) {
+        public String gmailSendMessage() {
+            return gmailSendMessage != null && !gmailSendMessage.isBlank() ? gmailSendMessage : "send_gmail_message";
+        }
+
+        public String driveManageAccess() {
+            return driveManageAccess != null && !driveManageAccess.isBlank() ? driveManageAccess : "manage_drive_access";
+        }
+
         public List<String> all() {
             return List.of(driveCreateFile, calendarCreateEvent, calendarDeleteEvent);
         }

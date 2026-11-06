@@ -46,7 +46,7 @@ class WorkspaceSyncServiceTest {
                 Duration.ofSeconds(20),
                 "test-token",
                 "ops@example.com",
-                new WorkspaceMcpProperties.Tools("create_drive_file", "create_event", "delete_event"),
+                new WorkspaceMcpProperties.Tools("create_drive_file", "create_event", "delete_event", "send_gmail_message", "manage_drive_access"),
                 new WorkspaceMcpProperties.Drive("folder-123", "http://order-service:8081/api/v1/orders/%s/invoice"),
                 new WorkspaceMcpProperties.Calendar("primary", "Asia/Jerusalem", Duration.ofHours(2))
         );
@@ -157,5 +157,28 @@ class WorkspaceSyncServiceTest {
         verify(mcp).call(eq("delete_event"), argThat(map -> "cal_event_777".equals(map.get("event_id"))));
         assertThat(existing.getCalendarEventId()).isNull();
         verify(linkRepository).save(existing);
+    }
+
+    @Test
+    @DisplayName("sendReceiptNotification falls back to driveManageAccess when gmailSendMessage fails")
+    void sendReceiptNotificationFallbackToDrive() {
+        UUID orderId = UUID.randomUUID();
+        when(mcp.call(eq("send_gmail_message"), any()))
+                .thenThrow(new RuntimeException("OAuth2 scope missing: https://www.googleapis.com/auth/gmail.send"));
+
+        var shareResult = McpSchema.CallToolResult.builder()
+                .content(List.of(new McpSchema.TextContent("Permission added")))
+                .isError(false)
+                .build();
+        when(mcp.call(eq("manage_drive_access"), any())).thenReturn(shareResult);
+
+        syncService.sendReceiptNotification(orderId, "customer@example.com", "fake-pdf".getBytes(), "drive_file_123");
+
+        verify(mcp).call(eq("send_gmail_message"), argThat(map -> "customer@example.com".equals(map.get("to"))));
+        verify(mcp).call(eq("manage_drive_access"), argThat(map ->
+                "drive_file_123".equals(map.get("file_id")) &&
+                "customer@example.com".equals(map.get("share_with")) &&
+                Boolean.TRUE.equals(map.get("send_notification"))
+        ));
     }
 }
