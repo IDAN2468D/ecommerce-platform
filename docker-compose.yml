@@ -63,11 +63,12 @@ services:
       KAFKA_LISTENERS: 'PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:29093,PLAINTEXT_HOST://0.0.0.0:29092'
       KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
       KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
-      KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
+      KAFKA_LOG_DIRS: '/var/lib/kafka/data'
       CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
+      KAFKA_HEAP_OPTS: '-Xms256m -Xmx256m'
     volumes:
-      - kafka_platform_data:/tmp/kraft-combined-logs
-    mem_limit: 384m
+      - kafka_platform_data:/var/lib/kafka/data
+    mem_limit: 512m
     networks:
       - platform-network
 
@@ -86,6 +87,24 @@ services:
     networks:
       - platform-network
 
+  outbox-relay:
+    image: python:3.11-alpine
+    container_name: platform-outbox-relay
+    restart: always
+    volumes:
+      - ./scripts:/app/scripts
+    working_dir: /app
+    environment:
+      PYTHONUNBUFFERED: "1"
+      MONGODB_URI: ${ORDER_MONGODB_URI:-mongodb+srv://idankzm:idankzm2468@cluster0.purdk.mongodb.net/ecommerce_db?retryWrites=true&w=majority}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    command: sh -c "pip install --no-cache-dir pymongo kafka-python-ng && python -u scripts/outbox_relay_daemon.py"
+    mem_limit: 128m
+    depends_on:
+      - kafka
+    networks:
+      - platform-network
+
   inventory-service:
     build:
       context: ./inventory-service
@@ -99,7 +118,7 @@ services:
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       REDIS_HOST: redis
       REDIS_PORT: 6379
-    mem_limit: 256m
+    mem_limit: 384m
     depends_on:
       redis:
         condition: service_healthy
@@ -156,7 +175,7 @@ services:
       INVENTORY_SERVICE_URL: http://inventory-service:8082
       PAYMENT_SERVICE_URL: http://payment-service:8083
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-    mem_limit: 256m
+    mem_limit: 384m
     depends_on:
       kafka:
         condition: service_started
