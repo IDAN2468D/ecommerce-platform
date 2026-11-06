@@ -5,7 +5,7 @@ services:
     ports:
       - "27017:27017"
     command: mongod --wiredTigerCacheSizeGB 0.25
-    mem_limit: 512m
+    mem_limit: 256m
     volumes:
       - mongodb_platform_data:/data/db
     healthcheck:
@@ -32,6 +32,7 @@ services:
       - platform-network
 
   zipkin:
+    profiles: ["monitoring"]
     image: openzipkin/zipkin:latest
     container_name: platform-zipkin
     ports:
@@ -49,7 +50,7 @@ services:
       - "9092:9092"
       - "29092:29092"
     environment:
-      KAFKA_JVM_PERFORMANCE_OPTS: "-Xms256m -Xmx512m"
+      KAFKA_JVM_PERFORMANCE_OPTS: "-Xms64m -Xmx256m"
       KAFKA_NODE_ID: 1
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
       KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092'
@@ -64,7 +65,7 @@ services:
       KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
       KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
       CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
-    mem_limit: 768m
+    mem_limit: 384m
     networks:
       - platform-network
 
@@ -91,12 +92,12 @@ services:
     ports:
       - "8082:8082"
     environment:
-      JAVA_OPTS: "-XX:+UseG1GC -Xms64m -Xmx384m -Dspring.threads.virtual.enabled=true"
+      JAVA_OPTS: "-XX:+UseG1GC -Xms32m -Xmx180m -XX:MaxMetaspaceSize=96m -Dspring.threads.virtual.enabled=true"
       MONGODB_URI: ${INVENTORY_MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=50&minPoolSize=10&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       REDIS_HOST: redis
       REDIS_PORT: 6379
-    mem_limit: 512m
+    mem_limit: 256m
     depends_on:
       redis:
         condition: service_healthy
@@ -113,10 +114,10 @@ services:
     ports:
       - "8083:8083"
     environment:
-      JAVA_OPTS: "-XX:+UseG1GC -Xms64m -Xmx384m -Dspring.threads.virtual.enabled=true"
+      JAVA_OPTS: "-XX:+UseG1GC -Xms32m -Xmx180m -XX:MaxMetaspaceSize=96m -Dspring.threads.virtual.enabled=true"
       MONGODB_URI: ${PAYMENT_MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=50&minPoolSize=10&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-    mem_limit: 512m
+    mem_limit: 256m
     depends_on:
       kafka:
         condition: service_started
@@ -131,9 +132,9 @@ services:
     ports:
       - "8085:8085"
     environment:
-      JAVA_OPTS: "-XX:+UseG1GC -Xms64m -Xmx384m -Dspring.threads.virtual.enabled=true"
+      JAVA_OPTS: "-XX:+UseG1GC -Xms32m -Xmx180m -XX:MaxMetaspaceSize=96m -Dspring.threads.virtual.enabled=true"
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-    mem_limit: 512m
+    mem_limit: 256m
     depends_on:
       kafka:
         condition: service_started
@@ -148,12 +149,12 @@ services:
     ports:
       - "8081:8081"
     environment:
-      JAVA_OPTS: "-XX:+UseG1GC -Xms64m -Xmx384m -Dspring.threads.virtual.enabled=true"
+      JAVA_OPTS: "-XX:+UseG1GC -Xms32m -Xmx180m -XX:MaxMetaspaceSize=96m -Dspring.threads.virtual.enabled=true"
       MONGODB_URI: ${ORDER_MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=50&minPoolSize=10&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
       INVENTORY_SERVICE_URL: http://inventory-service:8082
       PAYMENT_SERVICE_URL: http://payment-service:8083
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-    mem_limit: 512m
+    mem_limit: 256m
     depends_on:
       kafka:
         condition: service_started
@@ -175,7 +176,7 @@ services:
       JAVA_TOOL_OPTIONS: "-Xms64m -Xmx384m"
       MONGODB_URI: ${AUTH_MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=50&minPoolSize=10&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-    mem_limit: 512m
+    mem_limit: 256m
     depends_on:
       kafka:
         condition: service_started
@@ -193,7 +194,7 @@ services:
       JAVA_TOOL_OPTIONS: "-Xms64m -Xmx384m"
       MONGODB_URI: ${SHIPPING_MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=50&minPoolSize=10&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-    mem_limit: 512m
+    mem_limit: 256m
     depends_on:
       kafka:
         condition: service_started
@@ -215,7 +216,7 @@ services:
       REDIS_PORT: 6379
       GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.5-flash-lite}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-demo_key}
-    mem_limit: 512m
+    mem_limit: 256m
     depends_on:
       redis:
         condition: service_healthy
@@ -237,7 +238,7 @@ services:
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       REDIS_HOST: redis
       REDIS_PORT: 6379
-    mem_limit: 512m
+    mem_limit: 256m
     depends_on:
       redis:
         condition: service_healthy
@@ -260,7 +261,7 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       RAG_SERVICE_URL: http://rag-service:8092
-    mem_limit: 512m
+    mem_limit: 256m
     depends_on:
       mongodb:
         condition: service_healthy
@@ -288,7 +289,7 @@ services:
       ORDER_SERVICE_URL: http://order-service:8081
       GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.5-flash-lite}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-demo_key}
-    mem_limit: 512m
+    mem_limit: 256m
     depends_on:
       mongodb:
         condition: service_healthy
@@ -338,7 +339,7 @@ services:
       DRIVE_INVOICES_FOLDER_ID: ${DRIVE_INVOICES_FOLDER_ID:-18Dinq5x46OWcqmTEljaXytGHd4jJ-aRw}
       CALENDAR_ID: ${CALENDAR_ID:-primary}
       INVOICE_SOURCE_URL_TEMPLATE: http://order-service:8081/api/v1/orders/%s/invoice
-    mem_limit: 512m
+    mem_limit: 256m
     depends_on:
       mongodb:
         condition: service_healthy
@@ -357,7 +358,7 @@ services:
     ports:
       - "8080:8080"
     environment:
-      JAVA_OPTS: "-XX:+UseG1GC -Xms64m -Xmx384m"
+      JAVA_OPTS: "-XX:+UseG1GC -Xms32m -Xmx180m -XX:MaxMetaspaceSize=96m -Dspring.threads.virtual.enabled=true"
       REDIS_HOST: redis
       REDIS_PORT: 6379
       ZIPKIN_ENDPOINT: http://zipkin:9411/api/v2/spans
@@ -379,7 +380,7 @@ services:
       ANALYTICS_SERVICE_URL: http://merchant-analytics-service:8097
       SUBSCRIPTION_SERVICE_URL: http://subscription-billing-service:8098
       MARKETPLACE_SERVICE_URL: http://marketplace-vendor-service:8099
-    mem_limit: 512m
+    mem_limit: 256m
     depends_on:
       - order-service
       - inventory-service
@@ -448,7 +449,7 @@ services:
       JAVA_TOOL_OPTIONS: "-Xms64m -Xmx384m -Dspring.threads.virtual.enabled=true"
       MONGODB_URI: ${MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=50&minPoolSize=10&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-    mem_limit: 512m
+    mem_limit: 256m
     depends_on:
       mongodb:
         condition: service_healthy
@@ -470,7 +471,7 @@ services:
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       REDIS_HOST: redis
       REDIS_PORT: 6379
-    mem_limit: 512m
+    mem_limit: 256m
     depends_on:
       mongodb:
         condition: service_healthy
@@ -494,7 +495,7 @@ services:
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       REDIS_HOST: redis
       REDIS_PORT: 6379
-    mem_limit: 512m
+    mem_limit: 256m
     depends_on:
       mongodb:
         condition: service_healthy
@@ -518,7 +519,7 @@ services:
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       REDIS_HOST: redis
       REDIS_PORT: 6379
-    mem_limit: 512m
+    mem_limit: 256m
     depends_on:
       mongodb:
         condition: service_healthy
@@ -540,7 +541,7 @@ services:
       JAVA_TOOL_OPTIONS: "-Xms64m -Xmx384m -Dspring.threads.virtual.enabled=true"
       MONGODB_URI: ${MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=50&minPoolSize=10&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-    mem_limit: 512m
+    mem_limit: 256m
     depends_on:
       mongodb:
         condition: service_healthy
@@ -560,7 +561,7 @@ services:
       JAVA_TOOL_OPTIONS: "-Xms64m -Xmx384m -Dspring.threads.virtual.enabled=true"
       MONGODB_URI: ${MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=50&minPoolSize=10&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-    mem_limit: 512m
+    mem_limit: 256m
     depends_on:
       mongodb:
         condition: service_healthy
@@ -590,6 +591,7 @@ services:
       - platform-network
 
   prometheus:
+    profiles: ["monitoring"]
     image: prom/prometheus:latest
     container_name: platform-prometheus
     ports:
@@ -601,6 +603,7 @@ services:
       - platform-network
 
   grafana:
+    profiles: ["monitoring"]
     image: grafana/grafana:latest
     container_name: platform-grafana
     ports:
