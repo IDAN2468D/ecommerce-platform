@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateServiceJwt } from "../../../lib/auth";
 import { getGatewayUrl, safeParseJson, buildTraceHeaders } from "../../../lib/api-config";
+import { saveOrderToAtlas, saveOutboxEventToAtlas, getAtlasDb } from "../../../lib/mongodb-outbox";
 import crypto from "crypto";
 
 export const dynamic = "force-dynamic";
@@ -143,6 +144,30 @@ export async function GET(request: NextRequest) {
     console.warn("Backend Gateway offline for GET /api/orders, serving standalone orders:", error?.message);
   }
 
+  // Graceful standalone fallback: fetch from Atlas cloud if available
+  try {
+    const db = await getAtlasDb();
+    const atlasOrders = await db.collection("orders").find().sort({ createdAt: -1 }).limit(Number(size)).toArray();
+    if (atlasOrders && atlasOrders.length > 0) {
+      const formatted = atlasOrders.map((o: any) => ({
+        ...o,
+        orderId: o.orderId || o.id,
+      }));
+      return NextResponse.json({
+        content: formatted,
+        totalElements: formatted.length,
+        totalPages: 1,
+        size: Number(size),
+        number: Number(page),
+        first: true,
+        last: true,
+        empty: false,
+      });
+    }
+  } catch (err: any) {
+    console.warn("Could not read fallback orders from Atlas:", err?.message);
+  }
+
   // Graceful standalone fallback: return in-memory orders
   return NextResponse.json({
     content: standaloneOrders,
@@ -240,6 +265,19 @@ export async function POST(request: NextRequest) {
 
     const standalone = getStandaloneOrders();
     standalone.unshift(fallbackOrder);
+
+    // Persist order to MongoDB Atlas cloud database
+    saveOrderToAtlas(fallbackOrder).catch((err) => console.warn("saveOrderToAtlas error:", err));
+
+    // Save event to MongoDB Atlas Outbox queue for Kafka synchronization
+    saveOutboxEventToAtlas(
+      "order-events",
+      "OrderCreatedEvent",
+      "ORDER",
+      orderId,
+      fallbackOrder
+    ).catch((err) => console.warn("saveOutboxEvent error:", err));
+
     return fallbackOrder;
   };
 
