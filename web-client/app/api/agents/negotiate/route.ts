@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { negotiateProductPrice } from "@/lib/gemini-negotiator";
+import { negotiateProductPrice } from "../../../../lib/gemini-negotiator";
 
 export const dynamic = "force-dynamic";
 

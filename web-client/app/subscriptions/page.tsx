@@ -18,8 +18,8 @@ import {
   RefreshCw,
   TrendingDown
 } from "lucide-react";
-import { Button } from "@/components/ui/Button";
-import { useCurrency } from "@/context/CurrencyContext";
+import { Button } from "../../components/ui/Button";
+import { useCurrency } from "../../context/CurrencyContext";
 
 interface SubscriptionItem {
   skuCode: string;
