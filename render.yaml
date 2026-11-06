@@ -4,7 +4,7 @@ envVarGroups:
   - key: MONGODB_URI
     sync: false
   - key: KAFKA_BOOTSTRAP_SERVERS
-    sync: false
+    value: platform-kafka:9092
   - key: JWT_SECRET
     generateValue: true
   - key: GEMINI_API_KEY
@@ -19,6 +19,60 @@ services:
   region: frankfurt
   plan: starter
   ipAllowList: []
+- type: pserv
+  name: platform-kafka
+  runtime: image
+  image:
+    url: docker.io/confluentinc/cp-kafka:7.6.0
+  region: frankfurt
+  plan: starter
+  envVars:
+  - key: KAFKA_NODE_ID
+    value: '1'
+  - key: KAFKA_PROCESS_ROLES
+    value: 'broker,controller'
+  - key: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
+    value: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT'
+  - key: KAFKA_LISTENERS
+    value: 'PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:29093'
+  - key: KAFKA_ADVERTISED_LISTENERS
+    value: 'PLAINTEXT://platform-kafka:9092'
+  - key: KAFKA_INTER_BROKER_LISTENER_NAME
+    value: 'PLAINTEXT'
+  - key: KAFKA_CONTROLLER_LISTENER_NAMES
+    value: 'CONTROLLER'
+  - key: KAFKA_CONTROLLER_QUORUM_VOTERS
+    value: '1@platform-kafka:29093'
+  - key: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
+    value: '1'
+  - key: KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS
+    value: '0'
+  - key: KAFKA_TRANSACTION_STATE_LOG_MIN_ISR
+    value: '1'
+  - key: KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR
+    value: '1'
+  - key: KAFKA_LOG_DIRS
+    value: '/tmp/kraft-combined-logs'
+  - key: CLUSTER_ID
+    value: 'MkU3OEVBNTcwNTJENDM2Qk'
+  - key: KAFKA_JVM_PERFORMANCE_OPTS
+    value: '-Xms128m -Xmx384m'
+
+- type: web
+  name: platform-kafka-ui
+  runtime: image
+  image:
+    url: docker.io/provectuslabs/kafka-ui:latest
+  region: frankfurt
+  plan: starter
+  envVars:
+  - key: KAFKA_CLUSTERS_0_NAME
+    value: render-cluster
+  - key: KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS
+    value: platform-kafka:9092
+  - key: JAVA_OPTS
+    value: '-Xms64m -Xmx256m -XX:+UseG1GC'
+
 - type: web
   name: web-client
   runtime: docker
