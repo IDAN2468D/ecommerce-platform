@@ -64,3 +64,5 @@ Thumbs.db
 
 # Maven wrapper jar if desired, but keep wrapper script
 !.mvn/wrapper/maven-wrapper.jar
+
+scratch/
