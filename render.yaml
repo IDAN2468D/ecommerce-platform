@@ -6,8 +6,10 @@ services:
     plan: free
     rootDir: web-client
     buildCommand: npm install && npm run build
-    startCommand: npx next start -p $PORT
+    startCommand: npm run start
     envVars:
+      - key: NODE_VERSION
+        value: 20.18.0
       - key: NODE_ENV
         value: production
       - key: NEXT_PUBLIC_GATEWAY_URL
