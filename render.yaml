@@ -89,6 +89,10 @@ services:
     value: http://fraud-risk-service:8096
   - key: ANALYTICS_SERVICE_URL
     value: http://merchant-analytics-service:8097
+  - key: SUBSCRIPTION_SERVICE_URL
+    value: http://subscription-billing-service:8098
+  - key: MARKETPLACE_SERVICE_URL
+    value: http://marketplace-vendor-service:8099
 - type: pserv
   name: agent-swarm-service
   runtime: docker
@@ -414,6 +418,48 @@ services:
   plan: starter
   dockerContext: .
   dockerfilePath: merchant-analytics-service/Dockerfile.render
+  healthCheckPath: /actuator/health
+  envVars:
+  - fromGroup: platform-shared-secrets
+  - key: REDIS_HOST
+    fromService:
+      type: keyvalue
+      name: platform-redis
+      property: host
+  - key: REDIS_PORT
+    fromService:
+      type: keyvalue
+      name: platform-redis
+      property: port
+
+- type: pserv
+  name: subscription-billing-service
+  runtime: docker
+  region: frankfurt
+  plan: starter
+  dockerContext: .
+  dockerfilePath: subscription-billing-service/Dockerfile.render
+  healthCheckPath: /actuator/health
+  envVars:
+  - fromGroup: platform-shared-secrets
+  - key: REDIS_HOST
+    fromService:
+      type: keyvalue
+      name: platform-redis
+      property: host
+  - key: REDIS_PORT
+    fromService:
+      type: keyvalue
+      name: platform-redis
+      property: port
+
+- type: pserv
+  name: marketplace-vendor-service
+  runtime: docker
+  region: frankfurt
+  plan: starter
+  dockerContext: .
+  dockerfilePath: marketplace-vendor-service/Dockerfile.render
   healthCheckPath: /actuator/health
   envVars:
   - fromGroup: platform-shared-secrets

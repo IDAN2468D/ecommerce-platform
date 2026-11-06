@@ -123,6 +123,18 @@ spring:
           predicates:
             - Path=/api/v1/analytics/**
 
+        # 17. Subscription & Recurring Billing Service Route
+        - id: subscription-billing-service-route
+          uri: ${SUBSCRIPTION_SERVICE_URL:http://localhost:8098}
+          predicates:
+            - Path=/api/v1/subscriptions/**
+
+        # 18. Multi-Vendor Marketplace Route
+        - id: marketplace-vendor-service-route
+          uri: ${MARKETPLACE_SERVICE_URL:http://localhost:8099}
+          predicates:
+            - Path=/api/v1/marketplace/**
+
 jwt:
   secret: ${JWT_SECRET:order-service-default-secret-key-32-bytes!!}
 

@@ -44,6 +44,8 @@
 		<module>dynamic-pricing-service</module>
 		<module>fraud-risk-service</module>
 		<module>merchant-analytics-service</module>
+		<module>subscription-billing-service</module>
+		<module>marketplace-vendor-service</module>
 	</modules>
 
 	<dependencyManagement>

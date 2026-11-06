@@ -377,6 +377,8 @@ services:
       PRICING_SERVICE_URL: http://dynamic-pricing-service:8095
       FRAUD_SERVICE_URL: http://fraud-risk-service:8096
       ANALYTICS_SERVICE_URL: http://merchant-analytics-service:8097
+      SUBSCRIPTION_SERVICE_URL: http://subscription-billing-service:8098
+      MARKETPLACE_SERVICE_URL: http://marketplace-vendor-service:8099
     mem_limit: 512m
     depends_on:
       - order-service
@@ -395,6 +397,8 @@ services:
       - dynamic-pricing-service
       - fraud-risk-service
       - merchant-analytics-service
+      - subscription-billing-service
+      - marketplace-vendor-service
     networks:
       - platform-network
 
@@ -519,6 +523,46 @@ services:
       mongodb:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    networks:
+      - platform-network
+
+  subscription-billing-service:
+    build:
+      context: ./subscription-billing-service
+      dockerfile: Dockerfile
+    container_name: subscription-billing-service
+    ports:
+      - "8098:8098"
+    environment:
+      JAVA_TOOL_OPTIONS: "-Xms64m -Xmx384m -Dspring.threads.virtual.enabled=true"
+      MONGODB_URI: ${MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=50&minPoolSize=10&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    mem_limit: 512m
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    networks:
+      - platform-network
+
+  marketplace-vendor-service:
+    build:
+      context: ./marketplace-vendor-service
+      dockerfile: Dockerfile
+    container_name: marketplace-vendor-service
+    ports:
+      - "8099:8099"
+    environment:
+      JAVA_TOOL_OPTIONS: "-Xms64m -Xmx384m -Dspring.threads.virtual.enabled=true"
+      MONGODB_URI: ${MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=50&minPoolSize=10&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    mem_limit: 512m
+    depends_on:
+      mongodb:
         condition: service_healthy
       kafka:
         condition: service_started
