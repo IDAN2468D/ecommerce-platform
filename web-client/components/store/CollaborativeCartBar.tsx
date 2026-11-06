@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Users, Share2, Copy, Check, Radio, LogOut, Activity, Sparkles, ChevronDown } from "lucide-react";
-import { SharedCartParticipant, SharedCartActivity } from "@/lib/shared-cart-store";
+import { SharedCartParticipant, SharedCartActivity } from "../../lib/shared-cart-store";
 
 interface CollaborativeCartBarProps {
   roomId: string;

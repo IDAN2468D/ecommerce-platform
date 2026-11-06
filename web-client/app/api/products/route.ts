@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getGatewayUrl } from "@/lib/api-config";
-import { FALLBACK_PRODUCTS, CatalogProduct } from "@/lib/fallback-catalog";
+import { getGatewayUrl } from "../../../lib/api-config";
+import { FALLBACK_PRODUCTS, CatalogProduct } from "../../../lib/fallback-catalog";
 
 export const dynamic = "force-dynamic";
 

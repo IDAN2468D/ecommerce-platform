@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getOrCreateRoom, getRoom, updateRoomCart, addParticipant, SharedCartItem } from "@/lib/shared-cart-store";
+import { getOrCreateRoom, getRoom, updateRoomCart, addParticipant, SharedCartItem } from "../../../../../lib/shared-cart-store";
 
 export const dynamic = "force-dynamic";
 

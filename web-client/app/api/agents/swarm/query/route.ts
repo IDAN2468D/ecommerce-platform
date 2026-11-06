@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAgentSwarmUrl, getGatewayUrl } from "@/lib/api-config";
-import { askGeminiAssistant } from "@/lib/gemini-assistant";
+import { getAgentSwarmUrl, getGatewayUrl } from "../../../../../lib/api-config";
+import { askGeminiAssistant } from "../../../../../lib/gemini-assistant";
 
 export const dynamic = "force-dynamic";
 

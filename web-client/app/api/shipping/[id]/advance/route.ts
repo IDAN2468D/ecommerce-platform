@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getGatewayUrl, safeParseJson } from "@/lib/api-config";
+import { getGatewayUrl, safeParseJson } from "../../../../../lib/api-config";
 
 export async function POST(
   request: NextRequest,

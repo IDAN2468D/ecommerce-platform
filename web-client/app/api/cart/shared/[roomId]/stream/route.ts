@@ -4,7 +4,7 @@ import {
   addParticipant,
   removeParticipant,
   subscribeToRoom,
-} from "@/lib/shared-cart-store";
+} from "../../../../../../lib/shared-cart-store";
 
 export const dynamic = "force-dynamic";
 

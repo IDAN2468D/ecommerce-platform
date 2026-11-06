@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { processVoiceShoppingQuery } from "@/lib/gemini-voice-shopper";
+import { processVoiceShoppingQuery } from "../../../../lib/gemini-voice-shopper";
 
 export const dynamic = "force-dynamic";
 

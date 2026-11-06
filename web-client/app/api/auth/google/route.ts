@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { generateServiceJwt } from "@/lib/auth";
-import { getGatewayUrl } from "@/lib/api-config";
+import { generateServiceJwt } from "../../../../lib/auth";
+import { getGatewayUrl } from "../../../../lib/api-config";
 import crypto from "crypto";
 
 export const dynamic = "force-dynamic";

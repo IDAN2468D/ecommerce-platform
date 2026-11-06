@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getGatewayUrl } from "@/lib/api-config";
+import { getGatewayUrl } from "../../../../lib/api-config";
 
 export const dynamic = "force-dynamic";
 

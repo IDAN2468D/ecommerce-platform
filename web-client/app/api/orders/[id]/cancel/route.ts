@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { generateServiceJwt } from "@/lib/auth";
-import { getGatewayUrl, safeParseJson } from "@/lib/api-config";
+import { generateServiceJwt } from "../../../../../lib/auth";
+import { getGatewayUrl, safeParseJson } from "../../../../../lib/api-config";
 
 export const dynamic = "force-dynamic";
 

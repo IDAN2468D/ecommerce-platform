@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { getGatewayUrl } from "@/lib/api-config";
+import { getGatewayUrl } from "../../../../lib/api-config";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);

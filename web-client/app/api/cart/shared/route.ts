@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getOrCreateRoom, updateRoomCart, SharedCartItem } from "@/lib/shared-cart-store";
+import { getOrCreateRoom, updateRoomCart, SharedCartItem } from "../../../../lib/shared-cart-store";
 import crypto from "crypto";
 
 export const dynamic = "force-dynamic";
