@@ -105,6 +105,25 @@ export const CheckoutSummaryCard: React.FC<CheckoutSummaryCardProps> = ({
           <span>סה״כ לתשלום:</span>
           <span className="text-amber-600 dark:text-amber-400 font-mono text-xl">{formatPrice(finalTotal)}</span>
         </div>
+
+        {/* Interactive BNPL 4-Pay 0% APR & AI Trade-In Preview Box */}
+        <div className="mt-2 p-3 rounded-2xl bg-gradient-to-r from-indigo-500/10 via-amber-500/10 to-emerald-500/10 border border-amber-500/30 space-y-1.5">
+          <div className="flex items-center justify-between text-[11px] font-bold">
+            <span className="text-amber-600 dark:text-amber-400 flex items-center gap-1">
+              <Sparkles className="w-3.5 h-3.5" /> פריסת BNPL חכמה (0% ריבית):
+            </span>
+            <span className="font-mono text-emerald-600 dark:text-emerald-400">
+              4 × {formatPrice(finalTotal / 4)}
+            </span>
+          </div>
+          <div className="flex items-center justify-between text-[10px] text-slate-600 dark:text-slate-300">
+            <span>♻️ שמירת ערך טרייד-אין מובטחת (24 חודשים):</span>
+            <strong className="font-mono text-cyan-500">{formatPrice(finalTotal * 0.72)} (72%)</strong>
+          </div>
+          <p className="text-[10px] text-slate-500 dark:text-slate-400">
+            כולל תעודת אחריות דיגיטלית חתומה (`SHA-256`) והגנת `Smart Escrow` מלאה עד אישור המסירה.
+          </p>
+        </div>
       </div>
 
       {/* Payment Selection */}
@@ -113,6 +132,7 @@ export const CheckoutSummaryCard: React.FC<CheckoutSummaryCardProps> = ({
         <div className="grid grid-cols-1 gap-1.5">
           {[
             { id: "pm_card_visa_ok", label: "💳 Visa Platinum (•••• 4242)", sub: "כרטיס ראשי" },
+            { id: "pm_bnpl_4_installments", label: `⚡ BNPL Split-Pay (4 × ${formatPrice(finalTotal / 4)})`, sub: "0% ריבית מיידי" },
             { id: "pm_card_mastercard_ok", label: "💳 Mastercard World Elite (•••• 8899)", sub: "מועדון VIP" },
             { id: "pm_apple_pay_ok", label: "🍎 Apple Pay / Google Pay", sub: "תשלום מהיר" },
             { id: "pm_bit_paybox_ok", label: "📱 Bit / PayBox", sub: "ארנק דיגיטלי" },

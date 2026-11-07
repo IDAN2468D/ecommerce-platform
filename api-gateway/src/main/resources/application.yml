@@ -135,6 +135,48 @@ spring:
           predicates:
             - Path=/api/v1/marketplace/**
 
+        # 19. Flash Sale & Live Auction Service Route
+        - id: flash-sale-auction-service-route
+          uri: ${FLASH_SALE_SERVICE_URL:http://localhost:8100}
+          predicates:
+            - Path=/api/v1/flash-sales/**
+
+        # 20. BNPL & Instant Split Credit Service Route
+        - id: bnpl-credit-service-route
+          uri: ${BNPL_SERVICE_URL:http://localhost:8101}
+          predicates:
+            - Path=/api/v1/bnpl/**
+
+        # 21. Social Group Buy & Referral Service Route
+        - id: group-buy-referral-service-route
+          uri: ${GROUP_BUY_SERVICE_URL:http://localhost:8102}
+          predicates:
+            - Path=/api/v1/group-buy/**
+
+        # 22. Digital Warranty & Smart Escrow Service Route
+        - id: warranty-escrow-service-route
+          uri: ${WARRANTY_ESCROW_SERVICE_URL:http://localhost:8103}
+          predicates:
+            - Path=/api/v1/warranties/**
+
+        # 23. AI Trade-In & Circular Commerce Service Route
+        - id: trade-in-circular-service-route
+          uri: ${TRADE_IN_SERVICE_URL:http://localhost:8104}
+          predicates:
+            - Path=/api/v1/trade-in/**
+
+        # 24. Social Gifting & Multi-Payer Split Service Route
+        - id: gift-registry-splitpay-service-route
+          uri: ${GIFTING_SERVICE_URL:http://localhost:8105}
+          predicates:
+            - Path=/api/v1/gifting/**
+
+        # 25. B2B Corporate Wholesale Quote Service Route
+        - id: b2b-wholesale-quote-service-route
+          uri: ${B2B_QUOTE_SERVICE_URL:http://localhost:8106}
+          predicates:
+            - Path=/api/v1/b2b-quotes/**
+
 jwt:
   secret: ${JWT_SECRET:order-service-default-secret-key-32-bytes!!}
 

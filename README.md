@@ -11,7 +11,7 @@
 [![Google Gemini AI](https://img.shields.io/badge/Google%20Gemini-1.5%20Pro%20%26%20Flash-4285F4.svg)](https://ai.google.dev/)
 [![Docker Compose](https://img.shields.io/badge/Docker-Compose%20v2-2496ED.svg)](https://www.docker.com/)
 
-פלטפורמת מסחר אלקטרוני מבוזרת מתקדמת ברמת **Enterprise (v5.0)**, המשלבת **18 מיקרו-שירותים**, נחיל סוכני בינה מלאכותית אוטונומיים (**Multi-Agent AI Swarm**), מנוע **Agentic RAG** מבוסס **MongoDB Atlas Vector Search** ו-**Google Gemini**, ארכיטקטורת **SAGA 5-Step Orchestration** מונחית אירועים ב-**Apache Kafka (KRaft)**, מנגנון **Transactional Outbox Pattern** עם ממסר אוטומטי (Daemon), ואינטגרציית **Model Context Protocol (MCP)** ל-**Google Workspace**. ממשק משתמש מלא, מודרני ומהיר ב-**Next.js 14 App Router** בעברית מלאה (RTL).
+פלטפורמת מסחר אלקטרוני מבוזרת מתקדמת ברמת **Enterprise (v6.0)**, המשלבת **25 מיקרו-שירותים**, נחיל של **15 סוכני בינה מלאכותית אוטונומיים** (**Multi-Agent AI Swarm**), מנוע **Agentic RAG** מבוסס **MongoDB Atlas Vector Search** ו-**Google Gemini**, ארכיטקטורת **SAGA 5-Step Orchestration** מונחית אירועים ב-**Apache Kafka (KRaft)**, מנגנון **Transactional Outbox Pattern** עם ממסר אוטומטי (Daemon), ואינטגרציית **Model Context Protocol (MCP)** ל-**Google Workspace**. ממשק משתמש מלא, מודרני ומהיר ב-**Next.js 14 App Router** בעברית מלאה (RTL).
 
 ---
 

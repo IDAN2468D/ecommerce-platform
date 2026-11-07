@@ -53,6 +53,36 @@ const AGENT_META: Record<string, { label: string; desc: string; icon: string }> 
     desc: "בדיקת מהירות עסקאות SAGA ותחזית מלאי שבועי",
     icon: "🛡️",
   },
+  DynamicBargainingAgent: {
+    label: "סוכן מיקוח ומשא ומתן",
+    desc: "ניהול מו״מ בזמן אמת והנפקת שוברי הנחה אישיים",
+    icon: "🤝",
+  },
+  AuctionSniperFlashAgent: {
+    label: "סוכן צלף מכרזים ו-Flash",
+    desc: "צליפת מכרזים בשניות הסיום ונעילת מלאי אטומית",
+    icon: "⚡",
+  },
+  BnplFinancialAdvisorAgent: {
+    label: "סוכן אשראי ופריסת BNPL",
+    desc: "חיתום 4 תשלומים ב-0% ריבית ושילוב נקודות VIP",
+    icon: "💳",
+  },
+  GroupSquadMatchmakerAgent: {
+    label: "סוכן שידוך קבוצות רכישה",
+    desc: "צירוף אוטומטי לחדרי רכישה קבוצתית להנחת 28%",
+    icon: "👥",
+  },
+  WarrantyEscrowArbitratorAgent: {
+    label: "סוכן בוררות נאמנות ואחריות",
+    desc: "אימות חתימות SHA-256 והגנת כספי Smart Escrow",
+    icon: "🔐",
+  },
+  TradeInValuationAgent: {
+    label: "סוכן שמאות טרייד-אין (Vision)",
+    desc: "הערכת שווי מכשיר ישן והנפקת שובר קיזוז מיידי",
+    icon: "♻️",
+  },
 };
 
 export const SwarmAgentBadges: React.FC<SwarmAgentBadgesProps> = ({ agentsInvolved }) => {

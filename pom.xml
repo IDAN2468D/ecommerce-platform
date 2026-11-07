@@ -46,6 +46,13 @@
 		<module>merchant-analytics-service</module>
 		<module>subscription-billing-service</module>
 		<module>marketplace-vendor-service</module>
+		<module>flash-sale-auction-service</module>
+		<module>bnpl-credit-service</module>
+		<module>group-buy-referral-service</module>
+		<module>warranty-escrow-service</module>
+		<module>trade-in-circular-service</module>
+		<module>gift-registry-splitpay-service</module>
+		<module>b2b-wholesale-quote-service</module>
 	</modules>
 
 	<dependencyManagement>
