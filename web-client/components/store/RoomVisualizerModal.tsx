@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Sparkles, X, Upload, CheckCircle2, Layers, Sun, Maximize2 } from "lucide-react";
 import { Button } from "../ui/Button";
 
@@ -16,6 +16,12 @@ export const RoomVisualizerModal: React.FC<RoomVisualizerModalProps> = ({
   defaultProductName = "Apple MacBook Pro 16 M3 Max / Sony WH-1000XM5",
 }) => {
   const [productName, setProductName] = useState(defaultProductName);
+
+  useEffect(() => {
+    if (defaultProductName) {
+      setProductName(defaultProductName);
+    }
+  }, [defaultProductName]);
   const [roomType, setRoomType] = useState("חדר עבודה ושולחן הייטק");
   const [lightingStyle, setLightingStyle] = useState<"daylight" | "warm">("daylight");
   const [previewImage, setPreviewImage] = useState<string>(

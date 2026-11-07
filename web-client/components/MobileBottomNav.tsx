@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Store, Package, Search, ShoppingBag, User, LogOut } from "lucide-react";
+import { Store, Gavel, Gift, Bot, ShoppingBag, User } from "lucide-react";
 
 export const MobileBottomNav: React.FC = () => {
   const pathname = usePathname();
@@ -41,12 +41,13 @@ export const MobileBottomNav: React.FC = () => {
   }, []);
 
   const isCatalog = pathname === "/";
-  const isOrders = pathname === "/orders";
+  const isArena = pathname === "/arena";
+  const isGifting = pathname === "/gifting";
   const isCart = pathname === "/cart";
   const isProfile = pathname === "/profile";
 
-  const handleOpenSearch = () => {
-    window.dispatchEvent(new Event("open-command-palette"));
+  const handleOpenSwarm = () => {
+    window.dispatchEvent(new Event("open-rag-drawer"));
   };
 
   const handleOpenCart = () => {
@@ -55,10 +56,10 @@ export const MobileBottomNav: React.FC = () => {
 
   return (
     <nav
-      className="fixed bottom-0 inset-x-0 z-40 md:hidden bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl border-t border-slate-200/90 dark:border-amber-500/20 shadow-2xl transition-all pb-safe"
+      className="fixed bottom-0 inset-x-0 z-40 md:hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border-t border-slate-200/90 dark:border-amber-500/20 shadow-2xl transition-all pb-safe"
       dir="rtl"
     >
-      <div className="max-w-md mx-auto grid grid-cols-5 h-16 items-center px-1">
+      <div className="max-w-md mx-auto grid grid-cols-6 h-16 items-center px-1">
         {/* 1. Catalog */}
         <Link
           href="/"
@@ -77,38 +78,56 @@ export const MobileBottomNav: React.FC = () => {
           <span className="text-[10px] tracking-tight">קטלוג</span>
         </Link>
 
-        {/* 2. Orders */}
+        {/* 2. Arena (Flash Drops, Live Auctions & Group Buy) */}
         <Link
-          href="/orders"
+          href="/arena"
           className={`flex flex-col items-center justify-center gap-1 h-full py-1 active:scale-95 transition-transform ${
-            isOrders
-              ? "text-brand-600 dark:text-amber-400 font-bold"
+            isArena
+              ? "text-rose-600 dark:text-rose-400 font-bold"
               : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
           }`}
         >
           <div className="relative">
-            <Package className="w-5 h-5" />
-            {isOrders && (
-              <span className="absolute -bottom-1 inset-x-0 mx-auto w-1.5 h-1.5 rounded-full bg-brand-600 dark:bg-amber-400" />
+            <Gavel className="w-5 h-5" />
+            {isArena && (
+              <span className="absolute -bottom-1 inset-x-0 mx-auto w-1.5 h-1.5 rounded-full bg-rose-500" />
             )}
           </div>
-          <span className="text-[10px] tracking-tight">הזמנות</span>
+          <span className="text-[10px] tracking-tight">זירה חיה</span>
         </Link>
 
-        {/* 3. Search (Command Palette) */}
+        {/* 3. Gifting, Trade-In & B2B */}
+        <Link
+          href="/gifting"
+          className={`flex flex-col items-center justify-center gap-1 h-full py-1 active:scale-95 transition-transform ${
+            isGifting
+              ? "text-emerald-600 dark:text-emerald-400 font-bold"
+              : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
+          }`}
+        >
+          <div className="relative">
+            <Gift className="w-5 h-5" />
+            {isGifting && (
+              <span className="absolute -bottom-1 inset-x-0 mx-auto w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            )}
+          </div>
+          <span className="text-[10px] tracking-tight">טרייד/מתנה</span>
+        </Link>
+
+        {/* 4. 15-Agent AI Swarm Command */}
         <button
           type="button"
-          onClick={handleOpenSearch}
-          className="flex flex-col items-center justify-center gap-1 h-full py-1 text-slate-500 dark:text-slate-400 hover:text-brand-600 dark:hover:text-amber-400 active:scale-95 transition-transform"
-          title="חיפוש מהיר"
+          onClick={handleOpenSwarm}
+          className="flex flex-col items-center justify-center gap-1 h-full py-1 text-indigo-600 dark:text-indigo-400 active:scale-95 transition-transform"
+          title="נחיל 15 סוכני AI"
         >
-          <div className="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center shadow-sm">
-            <Search className="w-4 h-4 text-slate-700 dark:text-slate-200" />
+          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-500/20 to-indigo-500/20 border border-indigo-500/40 flex items-center justify-center shadow-sm">
+            <Bot className="w-4 h-4 text-indigo-600 dark:text-amber-400" />
           </div>
-          <span className="text-[10px] tracking-tight">חיפוש</span>
+          <span className="text-[10px] font-bold tracking-tight">15 סוכנים</span>
         </button>
 
-        {/* 4. Cart Drawer Trigger */}
+        {/* 5. Cart Drawer Trigger */}
         <button
           type="button"
           onClick={handleOpenCart}
@@ -129,7 +148,7 @@ export const MobileBottomNav: React.FC = () => {
           <span className="text-[10px] tracking-tight">עגלה</span>
         </button>
 
-        {/* 5. Account / User Profile & MCPs */}
+        {/* 6. Account / User Profile & Warranties */}
         <Link
           href="/profile"
           className={`flex flex-col items-center justify-center gap-1 h-full py-1 active:scale-95 transition-transform ${
@@ -137,7 +156,7 @@ export const MobileBottomNav: React.FC = () => {
               ? "text-brand-600 dark:text-amber-400 font-bold"
               : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
           }`}
-          title="פרופיל אישי וחיבורי MCP"
+          title="פרופיל אישי ותעודות אחריות"
         >
           <div className="relative">
             {user ? (
@@ -151,7 +170,7 @@ export const MobileBottomNav: React.FC = () => {
               <span className="absolute -bottom-1 inset-x-0 mx-auto w-1.5 h-1.5 rounded-full bg-brand-600 dark:bg-amber-400" />
             )}
           </div>
-          <span className="text-[10px] tracking-tight truncate max-w-[48px]">
+          <span className="text-[10px] tracking-tight truncate max-w-[44px]">
             {user?.fullName ? user.fullName.split(" ")[0] : "פרופיל"}
           </span>
         </Link>

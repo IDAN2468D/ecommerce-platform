@@ -10,6 +10,7 @@ import { FloatingAiButton } from "./FloatingAiButton";
 import { MobileBottomNav } from "./MobileBottomNav";
 import { VoiceShoppingModal } from "./store/VoiceShoppingModal";
 import { DealNegotiatorModal } from "./store/DealNegotiatorModal";
+import { RoomVisualizerModal } from "./store/RoomVisualizerModal";
 import { Loader2, Lock } from "lucide-react";
 
 export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -18,6 +19,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [isVoiceOpen, setIsVoiceOpen] = useState(false);
   const [negotiateProduct, setNegotiateProduct] = useState<any | null>(null);
+  const [visualizerProduct, setVisualizerProduct] = useState<string | null>(null);
 
   const checkAuth = () => {
     if (typeof window === "undefined") return;
@@ -30,16 +32,20 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
     const handleAuthChange = () => checkAuth();
     const handleOpenVoice = () => setIsVoiceOpen(true);
     const handleOpenNegotiate = (e: any) => setNegotiateProduct(e?.detail?.product || null);
+    const handleOpenVisualizer = (e: any) =>
+      setVisualizerProduct(e?.detail?.productName || "Apple MacBook Pro 16 M3 Max");
 
     window.addEventListener("auth-changed", handleAuthChange);
     window.addEventListener("storage", handleAuthChange);
     window.addEventListener("open-voice-modal", handleOpenVoice);
     window.addEventListener("open-negotiate-modal", handleOpenNegotiate);
+    window.addEventListener("open-room-visualizer", handleOpenVisualizer);
     return () => {
       window.removeEventListener("auth-changed", handleAuthChange);
       window.removeEventListener("storage", handleAuthChange);
       window.removeEventListener("open-voice-modal", handleOpenVoice);
       window.removeEventListener("open-negotiate-modal", handleOpenNegotiate);
+      window.removeEventListener("open-room-visualizer", handleOpenVisualizer);
     };
   }, []);
 
@@ -118,6 +124,11 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
         isOpen={!!negotiateProduct}
         product={negotiateProduct}
         onClose={() => setNegotiateProduct(null)}
+      />
+      <RoomVisualizerModal
+        isOpen={!!visualizerProduct}
+        defaultProductName={visualizerProduct || undefined}
+        onClose={() => setVisualizerProduct(null)}
       />
     </div>
   );

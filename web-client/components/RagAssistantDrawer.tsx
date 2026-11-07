@@ -96,24 +96,24 @@ const SKU_IMAGE_MAP: Record<string, string> = {
 
 const PRESET_TOPICS = [
   {
-    icon: "🎧",
-    title: "אוזניות ביטול רעשים",
-    prompt: "תוסיף לי לסל את האוזניות של סוני עם ביטול רעשים ותבדוק הנחת VIP",
+    icon: "⚡",
+    title: "צלף מכרזים ו-Flash",
+    prompt: "תפעיל את סוכן צלף המכרזים על MacBook Pro ותנעל לי מלאי ב-Flash Sale",
   },
   {
-    icon: "💻",
-    title: "מחשב נייד מקצועי",
-    prompt: "איזה מחשב נייד הכי מתאים לעריכת וידאו וגרפיקה עם מסך OLED?",
+    icon: "💳",
+    title: "פריסת BNPL ב-0% ריבית",
+    prompt: "תבדוק לי זכאות לפריסת BNPL ב-4 תשלומים ללא ריבית ושילוב קופון VIP",
   },
   {
-    icon: "🎁",
-    title: "הנחת VIP וקופון",
-    prompt: "מה הקופון הכי משתלם והנחת מועדון VIP לסל של 3,500 ש״ח?",
+    icon: "♻️",
+    title: "טרייד-אין וקבוצת רכישה",
+    prompt: "כמה שווה המקבוק הישן שלי בטרייד-אין והאם יש קבוצת רכישה פתוחה להנחת 28%?",
   },
   {
-    icon: "📦",
-    title: "מעקב הזמנה ומשלוח",
-    prompt: "מה סטטוס המשלוח וההזמנה האחרונה שלי במערכת?",
+    icon: "🛡️",
+    title: "תעודת אחריות ונאמנות SHA-256",
+    prompt: "תאמת לי את תעודת האחריות הקריפטוגרפית וסטטוס חשבון הנאמנות Smart Escrow",
   },
 ];
 
@@ -184,9 +184,9 @@ export const RagAssistantDrawer: React.FC = () => {
       {
         id: "msg_welcome_reset",
         sender: "assistant",
-        text: "השיחה אופסה בהצלחה. כל 5 סוכני ה-Swarm ממתינים לבקשה שלך. מה תרצה שנבדוק כעת?",
+        text: "השיחה אופסה בהצלחה. כל 15 סוכני ה-Swarm האוטונומיים ממתינים לבקשה שלך. מה תרצה שנבדוק כעת?",
         timestamp: "עכשיו",
-        model: "Google Gemini 2.5 Flash Swarm",
+        model: "Google Gemini 2.5 Flash • 15-Agent Swarm",
       },
     ]);
   };
@@ -473,17 +473,17 @@ export const RagAssistantDrawer: React.FC = () => {
               <div className="text-right">
                 <div className="flex items-center gap-2">
                   <h3 className="font-black text-base text-slate-900 dark:text-white tracking-tight">
-                    צוות סוכני AI אוטונומי
+                    חדר פיקוד נחיל 15 סוכני AI
                   </h3>
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-gradient-to-r from-amber-500/20 to-indigo-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30">
-                    VIP Swarm
+                    Swarm v7.0
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 font-mono mt-0.5">
                   <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                  <span>5 סוכנים פעילים</span>
+                  <span>15 סוכנים אוטונומיים פעילים</span>
                   <span>•</span>
-                  <span>Google Gemini 2.5 Flash</span>
+                  <span>25 מיקרו-שירותים</span>
                 </div>
               </div>
             </div>
@@ -526,6 +526,50 @@ export const RagAssistantDrawer: React.FC = () => {
                 <X className="w-5 h-5" />
               </button>
             </div>
+          </div>
+
+          {/* Quick-Jump Microservice Hubs Bar */}
+          <div className="px-4 py-2 border-b border-slate-200/80 dark:border-slate-800/80 bg-slate-100/70 dark:bg-slate-950/80 flex items-center gap-1.5 overflow-x-auto no-scrollbar text-[11px]">
+            <button
+              type="button"
+              onClick={() => {
+                setIsOpen(false);
+                router.push("/arena");
+              }}
+              className="px-2.5 py-1 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-600 dark:text-rose-300 border border-rose-500/30 font-bold shrink-0 transition"
+            >
+              ⚡ זירת מכרזים וקבוצות
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setIsOpen(false);
+                router.push("/gifting");
+              }}
+              className="px-2.5 py-1 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30 font-bold shrink-0 transition"
+            >
+              🎁 מתנות, טרייד-אין ו-B2B
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setIsOpen(false);
+                window.dispatchEvent(new CustomEvent("open-room-visualizer"));
+              }}
+              className="px-2.5 py-1 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-600 dark:text-cyan-300 border border-cyan-500/30 font-bold shrink-0 transition"
+            >
+              🛋️ הדמיה בחדר (AR)
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setIsOpen(false);
+                router.push("/admin");
+              }}
+              className="px-2.5 py-1 rounded-xl bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-600 dark:text-indigo-300 border border-indigo-500/30 font-bold shrink-0 transition"
+            >
+              🎛️ חדר בקרה (26 שירותים)
+            </button>
           </div>
 
           {/* Collapsible Category & Search Filters Panel */}
@@ -1030,11 +1074,11 @@ export const RagAssistantDrawer: React.FC = () => {
             <div className="mt-2.5 flex items-center justify-between text-[10px] text-slate-400 font-mono px-1">
               <span className="flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span>Multi-Agent Swarm • 5 Autonomous Agents</span>
+                <span>Multi-Agent Swarm • 15 Autonomous Agents</span>
               </span>
               <span className="flex items-center gap-1 text-slate-500 dark:text-slate-400">
                 <ShieldCheck className="w-3 h-3 text-emerald-500" />
-                <span>Google Gemini • GitHub Secrets Secured</span>
+                <span>25 Microservices • SHA-256 Escrow</span>
               </span>
             </div>
           </div>

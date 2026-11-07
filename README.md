@@ -36,19 +36,26 @@ flowchart TD
     end
 
     subgraph AISwarm ["AI & Agentic Intelligence Layer"]
-        SwarmSvc["🤖 Agent Swarm Service<br>Port 8093 (Python / FastAPI)<br>10 Autonomous Specialized Agents"]
+        SwarmSvc["🤖 Agent Swarm Service<br>Port 8093 (Python / FastAPI)<br>15 Autonomous Specialized Agents"]
         RagSvc["🧠 RAG & Vector Search<br>Port 8092 (Gemini + Atlas Search)"]
         PricingSvc["📈 Dynamic Pricing & Auto-Buy<br>Port 8095 (30-Day Ledger & Synergy)"]
         FraudSvc["🛡️ Fraud & Risk Guard<br>Port 8096 (Pre-Capture Velocity)"]
         RmaSvc["📦 RMA & Returns Service<br>Port 8094 (Gemini Vision Inspection)"]
     end
 
-    subgraph BusinessTier ["Business & Marketplace Ecosystem"]
+    subgraph BusinessTier ["Business, FinTech & Social Commerce Ecosystem"]
         LoyaltySvc["⭐ Loyalty & Recommendations<br>Port 8089 (VIP Cashback 5%)"]
         ReviewSvc["⭐ Review & Rating<br>Port 8087 (AI Pros & Cons)"]
         MarketSvc["🏬 Multi-Vendor Marketplace<br>Port 8099 (Merchant Split Payouts)"]
         AnalyticsSvc["📊 Merchant Analytics & AI Copilot<br>Port 8097 (CQRS Stock-Out Forecast)"]
         SubSvc["🔄 Subscription Billing<br>Port 8098 (Recurring SAGA Engine)"]
+        FlashSvc["⚡ Flash Sale & Live Auctions<br>Port 8100 (Atomic Snipe & Bidding)"]
+        BnplSvc["💳 BNPL 4-Pay Credit Engine<br>Port 8101 (0% APR Installments)"]
+        GroupBuySvc["👥 Social Group Buy & Squads<br>Port 8102 (-28% Squad Deals)"]
+        WarrantySvc["🛡️ Digital Warranty & Escrow<br>Port 8103 (SHA-256 Smart Escrow)"]
+        TradeInSvc["♻️ AI Trade-In & Circular<br>Port 8104 (Vision Device Valuation)"]
+        GiftSplitSvc["🎁 Social Gifting & Split-Pay<br>Port 8105 (Multi-Friend Pool)"]
+        B2bQuoteSvc["🏢 B2B Wholesale Quotes<br>Port 8106 (Net-30 / Net-60 RFQ)"]
         WorkspaceSvc["📁 Workspace Integration Service<br>Port 8091 (Drive & Calendar MCP)"]
         McpSidecar["🔌 Google Workspace MCP Sidecar<br>Port 8000 (Streamable HTTP)"]
     end
@@ -120,8 +127,8 @@ flowchart TD
 - **Offline Order Buffering**: גם בעת נפילת Kafka או ניתוק רשת מקומי, שירות ההזמנות כותב באופן אטומי לקולקציית `outbox_orders` ב-MongoDB Atlas עם סטטוס `PENDING`.
 - **Automatic Relay Daemon**: דמון ייעודי (`outbox-relay`) בסביבת Python/Alpine מנטר את מסד הנתונים, מזהה הזמנות ממתינות, ומשדר אותן מיידית ל-Kafka כאשר הברוקר חוזר לפעילות תקינה ללא אובדן שום הזמנה.
 
-### 4. נחיל סוכני בינה מלאכותית אוטונומיים (Multi-Agent Swarm Service)
-מודול בינה מלאכותית מבוסס Python/FastAPI (פורט 8093) המפעיל 10 סוכנים מתמחים הפועלים בתיאום תחת `SupervisorRouterAgent`:
+### 4. נחיל 15 סוכני בינה מלאכותית אוטונומיים (15-Agent Multi-Agent Swarm Service)
+מודול בינה מלאכותית מבוסס Python/FastAPI (פורט 8093) המפעיל 15 סוכנים מתמחים הפועלים בתיאום תחת `SupervisorRouterAgent`:
 1. **CatalogDiscoveryAgent**: איתור מוצרים סמנטי והתאמת קטלוג חכמה לפי צרכי המשתמש.
 2. **CartPricingLoyaltyAgent**: ניהול סלי קניות, בדיקת זכאות לקופונים והחלת הטבות מועדון VIP.
 3. **OrderLogisticsWorkspaceAgent**: מעקב שילוחים, עדכון סטטוסים ותיאום פגישות אספקה.
@@ -132,6 +139,11 @@ flowchart TD
 8. **FraudRiskGuardAgent**: הערכת סיכוני הונאה טרם סליקה ובדיקת מהירות עסקאות (Velocity).
 9. **DynamicBargainingAgent**: סוכן משא ומתן אינטראקטיבי המציע הנחות מותאמות אישית בזמן אמת.
 10. **SupervisorRouterAgent**: מנתב-על המפענח כוונות משתמש (Intent Classification) ומפעיל את הסוכנים הרלוונטיים במקביל.
+11. **AuctionSniperFlashAgent**: סוכן צליפת מכרזים חיים ונעילת מלאי אטומית בשניות הסיום מול `flash-sale-auction-service`.
+12. **BnplFinancialAdvisorAgent**: יועץ אשראי אוטונומי לחיתום 4 תשלומים ב-0% ריבית ושילוב אופטימלי של נקודות VIP וקופונים.
+13. **GroupSquadMatchmakerAgent**: שדכן קבוצות רכישה המאתר חדרים פעילים עם הנחת קבוצה (עד 28%-) ומצרף אליהם רוכשים.
+14. **WarrantyEscrowArbitratorAgent**: בורר נאמנות אוטונומי המאמת תעודות אחריות חתומות ב-`SHA-256` ומנהל שחרור כספי `Smart Escrow`.
+15. **TradeInValuationAgent**: שמאי טרייד-אין ויזואלי המעריך מכשירים ישנים ומנפיק שוברי זיכוי לקיזוז מיידי בקופה.
 
 ### 5. מנוע Agentic RAG וחיפוש מולטי-מודאלי (`rag-service`)
 - **MongoDB Atlas Vector Search**: אינדוקס וקטורי מלא של כל קטלוג המוצרים עם Embeddings של Google Gemini.
@@ -153,10 +165,18 @@ flowchart TD
 - **תיאום מועדי משלוח ב-Google Calendar**: בעת תזמון אספקה, אירוע מסודר נוצר אוטומטית ביומן הלקוח (`create_event`) כולל מועד ההגעה ומספר המעקב. ביטול משלוח מוחק את האירוע ומעדכן את הלקוח.
 
 ### 8. ניטור וטלמטריה מלאה (Full Observability Stack)
-- **Prometheus** (פורט 9090): איסוף מדדים בזמן אמת מכל 18 המיקרו-שירותים דרך Spring Boot Actuator ו-FastAPI Metrics.
+- **Prometheus** (פורט 9090): איסוף מדדים בזמן אמת מכל 25 המיקרו-שירותים דרך Spring Boot Actuator ו-FastAPI Metrics.
 - **Grafana** (פורט 3001): דשבורדים ויזואליים מוכנים עם גרפים של Throughput, Latency, שגיאות HTTP, ניצולת זיכרון JVM ו-Virtual Threads.
 - **OpenZipkin** (פורט 9411): מעקב מבוזר (Distributed Tracing) אחר כל קריאת רשת מקצה לקצה עם Trace ID ו-Span ID מוטמעים בכל לוג.
 - **Kafka UI** (פורט 8090): ניהול ויזואלי של כל ה-Topics, הודעות ה-JSON, צרכנים (Consumer Groups) ומחיצות (Partitions).
+
+### 9. ממשק משתמש (Storefront UI v7.0) וזירות מסחר חכמות ב-Next.js 14
+- **Interactive Bento Grid Hero (`HeroBanner.tsx`)**: לוח פתיחה אינטראקטיבי עם שעון עצר חי לזירת המכרזים, מד התקדמות לקבוצות רכישה, כפתורי הפעלה מהירה לנחיל 15 הסוכנים וטלמטריה חיה.
+- **Smart FinTech & AI Product Card (`ProductCard.tsx`)**: כרטיס מוצר חכם המציג תגית `BNPL 4-Pay (0% ריבית)`, חותמת אחריות קריפטוגרפית `SHA-256`, מדד שמירת ערך לטרייד-אין (74%) וסרגל פעולות מרחף להדמיית חדר (`AI Room Visualizer`), מיקוח מחיר או פיצול תשלום.
+- **זירת מכרזים, Flash Drops ורכישה קבוצתית (`/arena`)**: מסך מסחר חי המחובר ל-`flash-sale-auction-service` ול-`group-buy-referral-service`.
+- **מרכז מתנות משותפות, טרייד-אין ורכש ארגוני (`/gifting`)**: פיצול תשלום מתנה בין חברים (`Split-Pay`), שמאות טרייד-אין חכמה והפקת הצעות מחיר כמותיות `B2B (Net-30 / Net-60)`.
+- **קופת FinTech מאוחדת (`CheckoutSummaryCard.tsx`)**: מעבר חלק בין מסלולי תשלום (`BNPL`, אשראי, `Split-Pay`, `B2B`), קיזוז שובר טרייד-אין בלחיצה אחת וחתימת `Smart Escrow`.
+- **חדר בקרה וטלמטריה ל-26 שירותים (`/admin`)**: ניטור חי של כל 25 מיקרו-שירותי הבקאנד + ה-Storefront, זרמי ה-SAGA ומדדי הסוכנים.
 
 ---
 
@@ -164,17 +184,22 @@ flowchart TD
 
 ```
 .
-├── .github/workflows/ci.yml           # תהליך CI/CD אוטומטי לבדיקות ובנייה ב-GitHub Actions
-├── agent-swarm-service/               # נחיל סוכני AI מתמחים ב-Python / FastAPI (Port 8093)
-├── api-gateway/                       # Spring Cloud Gateway עם JWT ו-Rate Limiting (Port 8080)
+├── .github/workflows/ci.yml           # תהליך CI/CD אוטומטי לבנייה ובדיקות ב-GitHub Actions
+├── agent-swarm-service/               # נחיל 15 סוכני AI אוטונומיים ב-Python / FastAPI (Port 8093)
+├── api-gateway/                       # Spring Cloud Gateway עם JWT ו-Rate Limiting ל-25 שירותים (Port 8080)
 ├── auth-service/                      # אימות והרשמה עם JWT ו-BCrypt (Port 8084)
+├── b2b-wholesale-quote-service/       # הצעות מחיר כמותיות ואשראי Net-30/60 לעסקים (Port 8106)
+├── bnpl-credit-service/               # מנוע אשראי ופריסת 4 תשלומי BNPL ב-0% ריבית (Port 8101)
 ├── cart-wishlist-service/             # סל קניות ו-Wishlist מהירים ב-Redis ו-MongoDB (Port 8088)
 ├── common-events/                     # מודול אירועים ו-DTOs משותף ל-Kafka SAGA
 ├── credentials/                       # תצורות גישה מאובטחות (מוחרגות מ-Git)
 ├── dynamic-pricing-service/           # תמחור דינמי, ספר מחירים 30 יום ו-Auto-Buy (Port 8095)
+├── flash-sale-auction-service/        # מכירות בזק, מכרזים חיים ונעילת מלאי אטומית (Port 8100)
 ├── fraud-risk-service/                # הגנת הונאות בזמן אמת ו-Velocity Checks (Port 8096)
+├── gift-registry-splitpay-service/    # מתנות משותפות ופיצול תשלום בין חברים (Port 8105)
 ├── google-workspace-mcp/              # קונטיינר Sidecar לשרת MCP (Streamable HTTP) (Port 8000)
 ├── grafana/                           # הגדרות פרוביז'נינג ודשבורדים מוכנים ל-Grafana
+├── group-buy-referral-service/        # חדרי רכישה קבוצתית חברתית עם הנחת קבוצה (Port 8102)
 ├── inventory-service/                 # שירות מלאי, נעילות פסימיות וקאש Redis (Port 8082)
 ├── marketplace-vendor-service/        # זירת מסחר מרובת סוחרים ופיצול תשלומים (Port 8099)
 ├── merchant-analytics-service/        # ניתוח נתונים, חיזוי מלאי ו-AI Copilot (Port 8097)
@@ -188,7 +213,9 @@ flowchart TD
 ├── scripts/                           # סקריפטי עזר: outbox_relay_daemon, import_products וניתוח קטלוג
 ├── shipping-delivery-service/         # שירות שילוח ואספקה (שלב 5 ב-SAGA) (Port 8086)
 ├── subscription-billing-service/      # ניהול מנויים וחיובים תקופתיים (Port 8098)
-├── web-client/                        # ממשק משתמש Next.js 14 App Router, עברית מלאה ו-Tailwind (Port 3000)
+├── trade-in-circular-service/         # שמאות טרייד-אין חכמה, שוברי זיכוי וכלכלה מעגלית (Port 8104)
+├── warranty-escrow-service/           # תעודות אחריות קריפטוגרפיות SHA-256 וחשבונות נאמנות (Port 8103)
+├── web-client/                        # ממשק משתמש Next.js 14 App Router (v7.0 Bento & FinTech UI) (Port 3000)
 ├── workspace-integration-service/     # אינטגרציית Model Context Protocol ל-Google Workspace (Port 8091)
 ├── docker-compose.yml                 # תזמור כלל השירותים והתשתיות בקונטיינרים
 ├── prometheus.yml                     # הגדרות סקרפר של Prometheus לכל המיקרו-שירותים
@@ -218,13 +245,20 @@ flowchart TD
 | **Loyalty & Recs** | `8089` | `/api/v1/loyalty/**`, `/recommendations/**` | Spring Boot 3, MongoDB | מועדון לקוחות VIP, צבירת נקודות והמלצות קנייה |
 | **Workspace Integration** | `8091` | `/api/v1/workspace/**` | Spring Boot 3, MCP SDK | ארכוב חשבוניות ב-Drive ויומן פגישות ב-Calendar |
 | **RAG & Vector Search** | `8092` | `/api/v1/rag/**` | Spring Boot 3, Atlas Vector, Gemini | מנוע חיפוש סמנטי, פעולות סוכן וחיפוש ויזואלי |
-| **Agent Swarm Service** | `8093` | `/api/v1/agents/**` | Python 3.11, FastAPI | נחיל של 10 סוכני בינה מלאכותית אוטונומיים |
+| **Agent Swarm Service** | `8093` | `/api/v1/agents/**` | Python 3.11, FastAPI | נחיל של 15 סוכני בינה מלאכותית אוטונומיים |
 | **RMA & Returns** | `8094` | `/api/v1/returns/**` | Spring Boot 3, Gemini Vision | לוגיסטיקה הפוכה, ניתוח נזקים וזיכוי ארנק מיידי |
 | **Dynamic Pricing** | `8095` | `/api/v1/pricing/**` | Spring Boot 3, MongoDB | היסטוריית מחירי 30 יום, חבילות סינרגיה ו-Auto-Buy |
 | **Fraud & Risk Guard** | `8096` | `/api/v1/fraud/**` | Spring Boot 3, Redis | זיהוי הונאות בזמן אמת, חלונות מהירות וספי סיכון |
 | **Merchant Analytics** | `8097` | `/api/v1/analytics/**` | Spring Boot 3, CQRS | דוחות סוחרים, חיזוי אזילת מלאי ו-AI Copilot |
 | **Subscription Billing** | `8098` | `/api/v1/subscriptions/**` | Spring Boot 3, Scheduler | חידוש מינויים תקופתיים ומחזורי חיוב אוטומטיים |
 | **Marketplace Service** | `8099` | `/api/v1/marketplace/**` | Spring Boot 3, MongoDB | ניהול סוחרים, פרופילי חנות ופיצול תשלומים |
+| **Flash Sale & Auctions** | `8100` | `/api/v1/flash-sales/**` | Spring Boot 3, Java 21 | מכירות בזק, מכרזים חיים ונעילת מלאי אטומית |
+| **BNPL Credit Engine** | `8101` | `/api/v1/bnpl/**` | Spring Boot 3, Java 21 | חיתום אשראי מבוזר ופריסת 4 תשלומים ב-0% ריבית |
+| **Social Group Buy** | `8102` | `/api/v1/group-buy/**` | Spring Boot 3, Java 21 | חדרי רכישה קבוצתית חברתית עם הנחות מדורגות |
+| **Warranty & Smart Escrow** | `8103` | `/api/v1/warranties/**` | Spring Boot 3, SHA-256 | תעודות אחריות קריפטוגרפיות וחשבונות נאמנות |
+| **Trade-In & Circular** | `8104` | `/api/v1/trade-in/**` | Spring Boot 3, Vision AI | שמאות טרייד-אין, שוברי זיכוי וכלכלה מעגלית |
+| **Gift Registry Split-Pay** | `8105` | `/api/v1/gifting/**` | Spring Boot 3, Java 21 | מתנות משותפות ופיצול תשלום בין חברים |
+| **B2B Wholesale Quotes** | `8106` | `/api/v1/b2b-quotes/**` | Spring Boot 3, Java 21 | הצעות מחיר כמותיות ואשראי Net-30/60 לעסקים |
 | **Google Workspace MCP** | `8000` | ישיר | FastMCP, Python | שרת צד (Sidecar) לחשיפת כלי ענן Google |
 | **Transactional Outbox** | - | רקע (Docker) | Python 3.11 Daemon | ממסר הודעות מ-MongoDB ל-Kafka בעת חזרת קו |
 | **Apache Kafka (KRaft)** | `9092` / `29092` | פנימי / חיצוני | Confluent Kafka 7.6 | ערוץ אירועים אסינכרוני מבוזר ללא Zookeeper |
