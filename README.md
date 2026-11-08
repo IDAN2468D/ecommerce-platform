@@ -127,8 +127,8 @@ flowchart TD
 - **Offline Order Buffering**: גם בעת נפילת Kafka או ניתוק רשת מקומי, שירות ההזמנות כותב באופן אטומי לקולקציית `outbox_orders` ב-MongoDB Atlas עם סטטוס `PENDING`.
 - **Automatic Relay Daemon**: דמון ייעודי (`outbox-relay`) בסביבת Python/Alpine מנטר את מסד הנתונים, מזהה הזמנות ממתינות, ומשדר אותן מיידית ל-Kafka כאשר הברוקר חוזר לפעילות תקינה ללא אובדן שום הזמנה.
 
-### 4. נחיל 15 סוכני בינה מלאכותית אוטונומיים (15-Agent Multi-Agent Swarm Service)
-מודול בינה מלאכותית מבוסס Python/FastAPI (פורט 8093) המפעיל 15 סוכנים מתמחים הפועלים בתיאום תחת `SupervisorRouterAgent`:
+### 4. נחיל 17 סוכני בינה מלאכותית אוטונומיים (17-Agent Multi-Agent Swarm Service v8.0)
+מודול בינה מלאכותית מתקדם מבוסס Python/FastAPI (פורט 8093) המפעיל 17 סוכנים מתמחים הפועלים בתיאום תחת `SupervisorRouterAgent` עם תכנון `Structured Execution DAG`, לוח דיבייט `Agent-to-Agent (A2A)`, זיכרון שיחה רב-סבבי (`Episodic Memory Checkpoints`), דמון אירועים יזום (`Proactive Kafka Event Daemon`) ושער אישור אנושי (`Human-in-the-Loop Gate`):
 1. **CatalogDiscoveryAgent**: איתור מוצרים סמנטי והתאמת קטלוג חכמה לפי צרכי המשתמש.
 2. **CartPricingLoyaltyAgent**: ניהול סלי קניות, בדיקת זכאות לקופונים והחלת הטבות מועדון VIP.
 3. **OrderLogisticsWorkspaceAgent**: מעקב שילוחים, עדכון סטטוסים ותיאום פגישות אספקה.
@@ -138,12 +138,14 @@ flowchart TD
 7. **VisualBundleStylistAgent**: יצירת חבילות מוצרים משלימות (Bundle Synergy) בהנחה מיוחדת.
 8. **FraudRiskGuardAgent**: הערכת סיכוני הונאה טרם סליקה ובדיקת מהירות עסקאות (Velocity).
 9. **DynamicBargainingAgent**: סוכן משא ומתן אינטראקטיבי המציע הנחות מותאמות אישית בזמן אמת.
-10. **SupervisorRouterAgent**: מנתב-על המפענח כוונות משתמש (Intent Classification) ומפעיל את הסוכנים הרלוונטיים במקביל.
+10. **SupervisorRouterAgent**: מנתב-על הבונה גרף הרצה מובנה (`SwarmExecutionPlan`) ומפעיל סוכנים במקביל.
 11. **AuctionSniperFlashAgent**: סוכן צליפת מכרזים חיים ונעילת מלאי אטומית בשניות הסיום מול `flash-sale-auction-service`.
 12. **BnplFinancialAdvisorAgent**: יועץ אשראי אוטונומי לחיתום 4 תשלומים ב-0% ריבית ושילוב אופטימלי של נקודות VIP וקופונים.
 13. **GroupSquadMatchmakerAgent**: שדכן קבוצות רכישה המאתר חדרים פעילים עם הנחת קבוצה (עד 28%-) ומצרף אליהם רוכשים.
 14. **WarrantyEscrowArbitratorAgent**: בורר נאמנות אוטונומי המאמת תעודות אחריות חתומות ב-`SHA-256` ומנהל שחרור כספי `Smart Escrow`.
 15. **TradeInValuationAgent**: שמאי טרייד-אין ויזואלי המעריך מכשירים ישנים ומנפיק שוברי זיכוי לקיזוז מיידי בקופה.
+16. **A2AConsensusCriticAgent**: סוכן בוררות ודיבייט רב-סבבי (`A2A Blackboard`) המתאם בין סוכן המיקוח, סוכן הסיכונים וסוכן ה-`BNPL` להשגת קונצנזוס עסקה.
+17. **HitlApprovalGuardrailAgent**: שומר סף אנושי (`Human-in-the-Loop Gate`) ובקרת תקציב טוקנים (`TokenBudgetTelemetry`) העוצר עסקאות רגישות מעל ₪5,000 לאישור הלקוח בזמן אמת.
 
 ### 5. מנוע Agentic RAG וחיפוש מולטי-מודאלי (`rag-service`)
 - **MongoDB Atlas Vector Search**: אינדוקס וקטורי מלא של כל קטלוג המוצרים עם Embeddings של Google Gemini.

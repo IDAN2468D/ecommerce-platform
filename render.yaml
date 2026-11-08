@@ -16,3 +16,17 @@ services:
         value: https://colon-minolta-increased-buys.trycloudflare.com
       - key: GATEWAY_URL
         value: https://colon-minolta-increased-buys.trycloudflare.com
+
+  - type: web
+    name: ecommerce-agent-swarm
+    runtime: python
+    region: frankfurt
+    plan: free
+    rootDir: agent-swarm-service
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn ecommerce_agent_swarm:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.0
+      - key: GEMINI_MODEL
+        value: gemini-2.5-flash

@@ -66,6 +66,10 @@ export interface ChatMessage {
   timestamp: string;
   latencyMs?: number;
   model?: string;
+  a2aDebate?: Record<string, any>;
+  hitlGate?: Record<string, any>;
+  memoryCheckpoint?: Record<string, any>;
+  tokenTelemetry?: Record<string, any>;
 }
 
 const SKU_IMAGE_MAP: Record<string, string> = {
@@ -364,7 +368,11 @@ export const RagAssistantDrawer: React.FC = () => {
         agentsInvolved: data.agentsInvolved || (data.model?.includes("swarm") ? ["SupervisorRouterAgent", "CatalogDiscoveryAgent"] : undefined),
         timestamp: new Date().toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" }),
         latencyMs: data.latencyMs,
-        model: data.model || "Google Gemini 2.5 Flash Swarm",
+        model: data.model || "Google Gemini 2.5 Flash Swarm v8.0",
+        a2aDebate: data.a2aDebate,
+        hitlGate: data.hitlGate,
+        memoryCheckpoint: data.memoryCheckpoint,
+        tokenTelemetry: data.tokenTelemetry,
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
@@ -696,9 +704,81 @@ export const RagAssistantDrawer: React.FC = () => {
                       </div>
                     )}
 
-                    {/* Upgraded 9-Agent Swarm Badges (Track F V6.0) */}
+                    {/* Upgraded 16-Agent Swarm Badges (Swarm v8.0) */}
                     {isAssistant && msg.agentsInvolved && msg.agentsInvolved.length > 0 && (
                       <SwarmAgentBadges agentsInvolved={msg.agentsInvolved} />
+                    )}
+
+                    {/* A2A Multi-Agent Consensus Blackboard Card */}
+                    {isAssistant && msg.a2aDebate && (
+                      <div className="p-3 rounded-2xl border border-amber-300/60 dark:border-amber-800/60 bg-gradient-to-br from-amber-500/10 via-indigo-500/5 to-emerald-500/10 text-xs space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="font-black text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
+                            <span>🧠</span>
+                            <span>קונצנזוס דיבייט סוכן-לסוכן (A2A Blackboard)</span>
+                          </span>
+                          <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 font-mono text-[10px] font-bold">
+                            -{msg.a2aDebate.approvedDiscountPct}% • {msg.a2aDebate.consensusCouponCode}
+                          </span>
+                        </div>
+                        {Array.isArray(msg.a2aDebate.transcript) && (
+                          <div className="space-y-1 text-[11px] text-slate-700 dark:text-slate-300">
+                            {msg.a2aDebate.transcript.map((step: any, sIdx: number) => (
+                              <div key={sIdx} className="flex items-start gap-1.5 bg-white/70 dark:bg-slate-900/60 px-2.5 py-1.5 rounded-xl border border-slate-200/60 dark:border-slate-800/60">
+                                <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400 shrink-0">
+                                  [{step.senderAgent}]:
+                                </span>
+                                <span>{step.rationale}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Human-in-the-Loop (HITL) Approval Gate Card */}
+                    {isAssistant && msg.hitlGate && (
+                      <div className="p-3 rounded-2xl border border-rose-300/70 dark:border-rose-800/70 bg-gradient-to-r from-rose-500/10 to-amber-500/10 flex items-center justify-between gap-3 text-xs">
+                        <div className="space-y-0.5">
+                          <div className="font-black text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
+                            <span>🛑</span>
+                            <span>שער אישור אנושי (HITL Guardrail: {msg.hitlGate.status})</span>
+                          </div>
+                          <div className="text-[11px] text-slate-700 dark:text-slate-300">
+                            {msg.hitlGate.reasonHe}
+                          </div>
+                        </div>
+                        {msg.hitlGate.status === "PENDING_APPROVAL" && (
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              try {
+                                const res = await fetch("/api/agents/swarm/hitl", {
+                                  method: "POST",
+                                  headers: { "Content-Type": "application/json" },
+                                  body: JSON.stringify({
+                                    approvalId: msg.hitlGate?.approvalId,
+                                    decision: "APPROVED",
+                                  }),
+                                });
+                                if (res.ok) {
+                                  const updatedGate = await res.json();
+                                  setMessages((prev) =>
+                                    prev.map((m) =>
+                                      m.id === msg.id ? { ...m, hitlGate: updatedGate } : m
+                                    )
+                                  );
+                                }
+                              } catch {
+                                // ignore
+                              }
+                            }}
+                            className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shrink-0 transition shadow-sm"
+                          >
+                            אשר פעולה (Approve)
+                          </button>
+                        )}
+                      </div>
                     )}
 
                      {/* Autonomous Function Calling Actions */}
@@ -942,13 +1022,29 @@ export const RagAssistantDrawer: React.FC = () => {
                     )}
 
                     {/* Metadata Footer */}
-                    <div className="flex items-center gap-2 text-[10px] text-slate-400 px-1 font-mono">
+                    <div className="flex flex-wrap items-center gap-2 text-[10px] text-slate-400 px-1 font-mono">
                       <span>{msg.timestamp}</span>
                       {msg.latencyMs && (
                         <>
                           <span>•</span>
                           <span className="text-emerald-500 flex items-center gap-0.5">
                             <Zap className="w-2.5 h-2.5" /> {msg.latencyMs}ms
+                          </span>
+                        </>
+                      )}
+                      {msg.memoryCheckpoint && (
+                        <>
+                          <span>•</span>
+                          <span className="text-indigo-400">
+                            Memory: {msg.memoryCheckpoint.checkpointId} (Turn #{msg.memoryCheckpoint.turnCount})
+                          </span>
+                        </>
+                      )}
+                      {msg.tokenTelemetry && (
+                        <>
+                          <span>•</span>
+                          <span className="text-amber-500">
+                            Tokens: {msg.tokenTelemetry.totalTokens}/{msg.tokenTelemetry.tokenBudgetLimit}
                           </span>
                         </>
                       )}

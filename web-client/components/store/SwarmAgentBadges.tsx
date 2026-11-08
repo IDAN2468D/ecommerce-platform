@@ -98,6 +98,18 @@ const AGENT_META: Record<string, { label: string; desc: string; icon: string; ms
     icon: "♻️",
     ms: "14ms",
   },
+  A2AConsensusCriticAgent: {
+    label: "סוכן בוררות ודיבייט (A2A Critic)",
+    desc: "דיבייט 3 סוכנים (מיקוח + סיכונים + BNPL) לקונצנזוס עסקה",
+    icon: "🧠",
+    ms: "7ms",
+  },
+  HitlApprovalGuardrailAgent: {
+    label: "שומר סף ואישור אנושי (HITL Gate)",
+    desc: "בקרת תקציב טוקנים ואישור אנושי לעסקאות מעל ₪5,000",
+    icon: "🛑",
+    ms: "3ms",
+  },
 };
 
 export const SwarmAgentBadges: React.FC<SwarmAgentBadgesProps> = ({ agentsInvolved }) => {
