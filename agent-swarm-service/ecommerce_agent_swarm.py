@@ -27,7 +27,7 @@ if hasattr(sys.stdout, "reconfigure"):
 import httpx
 from fastapi import FastAPI, Request, Query, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse, JSONResponse
+from fastapi.responses import StreamingResponse, JSONResponse, HTMLResponse
 from pydantic import BaseModel, Field
 
 # Configure logging
@@ -2486,6 +2486,330 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+SWARM_COMMAND_CENTER_HTML = """<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Python Multi-Agent Swarm v8.0 • חדר פיקוד 17 סוכנים אוטונומיים</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&display=swap');
+    body { font-family: 'Heebo', sans-serif; background: radial-gradient(circle at top right, #1e1b4b, #090d16 55%, #020617); color: #f8fafc; min-height: 100vh; }
+    .glass { background: rgba(15, 23, 42, 0.78); backdrop-filter: blur(16px); border: 1px solid rgba(99, 102, 241, 0.25); }
+    .glow-border:hover { border-color: rgba(245, 158, 11, 0.65); box-shadow: 0 0 25px rgba(99, 102, 241, 0.22); }
+  </style>
+</head>
+<body class="p-4 sm:p-8">
+  <div class="max-w-7xl mx-auto space-y-6">
+    <!-- Top Header -->
+    <header class="glass rounded-3xl p-6 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 shadow-2xl">
+      <div class="flex items-center gap-4">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-500 via-indigo-600 to-cyan-500 flex items-center justify-center text-3xl shadow-lg">
+          🤖
+        </div>
+        <div>
+          <div class="flex items-center gap-2.5 flex-wrap">
+            <h1 class="text-2xl sm:text-3xl font-black tracking-tight text-white">
+              Python Multi-Agent Swarm v8.0
+            </h1>
+            <span class="px-3 py-0.5 rounded-full text-xs font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+              LIVE • 17 סוכנים פעילים
+            </span>
+          </div>
+          <p class="text-sm text-slate-300 mt-1">
+            מנוע תזמור סוכנים אוטונומי ב-FastAPI: תכנון <code class="text-amber-300">Structured DAG</code>, דיבייט <code class="text-amber-300">A2A Blackboard</code>, זיכרון <code class="text-amber-300">Episodic Checkpoints</code> ושער <code class="text-amber-300">HITL Guardrail</code>
+          </p>
+        </div>
+      </div>
+      <div class="flex flex-wrap items-center gap-2.5">
+        <a href="https://ecommerce-web-client.onrender.com" target="_blank" class="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-indigo-600 hover:opacity-95 text-white font-bold text-xs sm:text-sm shadow-lg transition">
+          🛍️ מעבר לחנות (Storefront UI)
+        </a>
+        <a href="/docs" target="_blank" class="px-4 py-2.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-indigo-500/30 font-bold text-xs sm:text-sm transition">
+          ⚡ Swagger OpenAPI (/docs)
+        </a>
+        <a href="/health" target="_blank" class="px-3.5 py-2.5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-emerald-400 border border-emerald-500/30 font-mono text-xs transition">
+          /health
+        </a>
+      </div>
+    </header>
+
+    <!-- Interactive Playground & Live Telemetry Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <!-- Left/Main Column: Interactive Multi-Agent Execution Console -->
+      <div class="lg:col-span-7 glass rounded-3xl p-6 space-y-5">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div>
+            <h2 class="text-lg font-black text-white flex items-center gap-2">
+              <span>🎯</span>
+              <span>קונסולת הרצה חיה לנחיל הסוכנים (Interactive Swarm Playground)</span>
+            </h2>
+            <p class="text-xs text-slate-400 mt-0.5">בחר תרחיש מוכן או הקלד פקודה בעברית להפעלת 17 הסוכנים בזמן אמת</p>
+          </div>
+          <span id="latencyBadge" class="px-2.5 py-1 rounded-xl bg-indigo-500/20 text-indigo-300 font-mono text-xs font-bold">
+            מוכן להרצה
+          </span>
+        </div>
+
+        <!-- Preset Scenario Buttons -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <button onclick="runPreset('אני רוצה לנהל משא ומתן על אוזניות סוני ב-1320 ש״ח, תוסיף לסל ותפעיל דיבייט סוכנים A2A')" class="text-right p-3 rounded-2xl bg-slate-900/90 hover:bg-indigo-950/60 border border-slate-800 glow-border transition">
+            <div class="font-bold text-xs text-amber-400">🤝 דיבייט 3 סוכנים (A2A Consensus + סל)</div>
+            <div class="text-[11px] text-slate-300 truncate mt-0.5">מו״מ על אוזניות סוני + בדיקת סיכונים + פריסת BNPL</div>
+          </button>
+          <button onclick="runPreset('תפעיל את סוכן צליפת המכרזים על מקבוק פרו ב-10750 ש״ח ותבדוק שער אישור HITL')" class="text-right p-3 rounded-2xl bg-slate-900/90 hover:bg-indigo-950/60 border border-slate-800 glow-border transition">
+            <div class="font-bold text-xs text-rose-400">🛑 צליפת מכרז + שער אישור אנושי (HITL Gate)</div>
+            <div class="text-[11px] text-slate-300 truncate mt-0.5">נעילת MacBook Pro עם עצירה לאישור לקוח חי</div>
+          </button>
+          <button onclick="runPreset('תבנה לי באנדל Pro Creator, תבדוק כמה שווה המקבוק הישן בטרייד-אין וקבוצת רכישה')" class="text-right p-3 rounded-2xl bg-slate-900/90 hover:bg-indigo-950/60 border border-slate-800 glow-border transition">
+            <div class="font-bold text-xs text-emerald-400">🎨 באנדל חכם + שמאות טרייד-אין + קבוצת רכישה</div>
+            <div class="text-[11px] text-slate-300 truncate mt-0.5">תיאום מקבילי של סוכני הבאנדלים, הטרייד-אין והקבוצות</div>
+          </button>
+          <button onclick="runPreset('איפה ההזמנה שלי ב-DHL, תאמת תעודת אחריות SHA-256 ותבדוק אירועי Kafka')" class="text-right p-3 rounded-2xl bg-slate-900/90 hover:bg-indigo-950/60 border border-slate-800 glow-border transition">
+            <div class="font-bold text-xs text-cyan-400">🚚 מעקב משלוח DHL + אחריות SHA-256 + Kafka</div>
+            <div class="text-[11px] text-slate-300 truncate mt-0.5">סוכן הלוגיסטיקה, בורר ה-Smart Escrow וסוכן ה-Kafka</div>
+          </button>
+        </div>
+
+        <!-- Custom Query Input -->
+        <div class="flex gap-2">
+          <input id="queryInput" type="text" value="אני רוצה לנהל משא ומתן על אוזניות סוני ב-1320 ש״ח, תוסיף לסל ותפעיל דיבייט סוכנים A2A" class="flex-1 bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500" placeholder="הקלד משימה לנחיל הסוכנים..." />
+          <button onclick="executeSwarm()" id="runBtn" class="px-6 py-3 rounded-2xl bg-gradient-to-r from-amber-500 via-indigo-600 to-indigo-700 hover:opacity-95 text-white font-black text-sm shadow-lg transition shrink-0">
+            הפעל נחיל 🚀
+          </button>
+        </div>
+
+        <!-- Dynamic Output Area -->
+        <div id="outputContainer" class="space-y-4 pt-2">
+          <!-- Execution DAG & Telemetry Strip -->
+          <div id="telemetryStrip" class="hidden grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
+            <div class="p-3 rounded-2xl bg-slate-900/90 border border-slate-800">
+              <div class="text-slate-400">סוכנים שהופעלו</div>
+              <div id="statAgents" class="text-base font-black text-emerald-400 mt-0.5">-</div>
+            </div>
+            <div class="p-3 rounded-2xl bg-slate-900/90 border border-slate-800">
+              <div class="text-slate-400">זיכרון שיחה (Memory)</div>
+              <div id="statMemory" class="text-xs font-mono font-bold text-indigo-300 mt-1">-</div>
+            </div>
+            <div class="p-3 rounded-2xl bg-slate-900/90 border border-slate-800">
+              <div class="text-slate-400">תקציב טוקנים (Budget)</div>
+              <div id="statTokens" class="text-xs font-mono font-bold text-amber-400 mt-1">-</div>
+            </div>
+            <div class="p-3 rounded-2xl bg-slate-900/90 border border-slate-800">
+              <div class="text-slate-400">עומק תתי-סוכנים</div>
+              <div id="statDepth" class="text-base font-black text-cyan-400 mt-0.5">-</div>
+            </div>
+          </div>
+
+          <!-- Active Agents Badges -->
+          <div id="agentsBadges" class="flex flex-wrap gap-1.5"></div>
+
+          <!-- A2A Consensus Debate Box -->
+          <div id="a2aBox" class="hidden p-4 rounded-2xl bg-amber-500/10 border border-amber-500/40 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="font-black text-sm text-amber-300">🧠 פרוטוקול דיבייט סוכן-לסוכן (A2A Consensus Blackboard)</span>
+              <span id="a2aCoupon" class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono text-xs font-bold"></span>
+            </div>
+            <div id="a2aTranscript" class="space-y-1.5 text-xs"></div>
+          </div>
+
+          <!-- HITL Gate Box -->
+          <div id="hitlBox" class="hidden p-4 rounded-2xl bg-rose-500/15 border border-rose-500/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div>
+              <div class="font-black text-sm text-rose-300 flex items-center gap-1.5">
+                <span>🛑</span>
+                <span id="hitlTitle">שער אישור אנושי בלולאה (HITL Approval Gate)</span>
+              </div>
+              <p id="hitlReason" class="text-xs text-slate-200 mt-1"></p>
+            </div>
+            <button id="hitlApproveBtn" onclick="approveHitlGate()" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shrink-0 shadow-md transition">
+              אשר פעולה אוטונומית (Approve) ✓
+            </button>
+          </div>
+
+          <!-- Synthesized Hebrew Answer -->
+          <div class="p-5 rounded-2xl bg-slate-950/90 border border-slate-800 space-y-2">
+            <div class="text-xs font-bold text-indigo-400 font-mono">תשובת ה-Supervisor המאוחדת:</div>
+            <div id="answerText" class="text-sm leading-relaxed text-slate-100 whitespace-pre-wrap">לחץ על "הפעל נחיל 🚀" כדי לראות את פלט הסוכנים בזמן אמת...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: 17 Active Agents Directory & Proactive Kafka Daemon -->
+      <div class="lg:col-span-5 space-y-6">
+        <div class="glass rounded-3xl p-6 space-y-4">
+          <div class="flex items-center justify-between">
+            <h2 class="text-base font-black text-white">🤖 מטריצת 17 הסוכנים האוטונומיים</h2>
+            <span class="text-xs font-mono text-emerald-400">Swarm v8.0</span>
+          </div>
+          <div id="agentGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-96 overflow-y-auto pr-1 text-xs"></div>
+        </div>
+
+        <div class="glass rounded-3xl p-6 space-y-3">
+          <div class="flex items-center justify-between">
+            <h2 class="text-base font-black text-white">⚡ אירועי Kafka יזומים (Proactive Daemon)</h2>
+            <button onclick="loadProactiveEvents()" class="text-xs text-indigo-400 hover:underline font-mono">רענן</button>
+          </div>
+          <div id="proactiveEventsList" class="space-y-2 text-xs"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const AGENTS_INFO = [
+      { id: "SupervisorRouterAgent", icon: "🎯", label: "Supervisor Router", role: "תכנון DAG וניתוב סמנטי" },
+      { id: "CatalogDiscoveryAgent", icon: "🔍", label: "Catalog Discovery", role: "חיפוש וקטורי ובדיקת מלאי" },
+      { id: "CartPricingLoyaltyAgent", icon: "🛒", label: "Cart & VIP Loyalty", role: "הוספה לסל וקופונים אוטונומיים" },
+      { id: "OrderLogisticsWorkspaceAgent", icon: "🚚", label: "Order & Logistics", role: "מעקב DHL ו-Google Workspace" },
+      { id: "KafkaAutonomousOpsAgent", icon: "⚡", label: "Kafka Ops Agent", role: "ניטור זרמי אירועים בזמן אמת" },
+      { id: "ReturnsDisputeAgent", icon: "🔄", label: "Returns & RMA", role: "זיכוי VIP מיידי (+10%) ואיסוף" },
+      { id: "PriceWatchAutoBuyAgent", icon: "📈", label: "Price Watch Auto-Buy", role: "היסטוריית 30 יום ורכישה ב-SAGA" },
+      { id: "VisualBundleStylistAgent", icon: "🎨", label: "Visual Bundle Stylist", role: "הרכבת חבילות בהנחת 12%" },
+      { id: "FraudRiskGuardAgent", icon: "🛡️", label: "Fraud & Risk Guard", role: "בדיקות מהירות עסקאות ותחזית מלאי" },
+      { id: "DynamicBargainingAgent", icon: "🤝", label: "Dynamic Bargaining", role: "מו״מ מחירים והנפקת שוברים" },
+      { id: "AuctionSniperFlashAgent", icon: "⏱️", label: "Auction Sniper", role: "צליפת מכרזים ונעילת Flash Sale" },
+      { id: "BnplFinancialAdvisorAgent", icon: "💳", label: "BNPL Credit Advisor", role: "חיתום 4 תשלומים ב-0% ריבית" },
+      { id: "GroupSquadMatchmakerAgent", icon: "👥", label: "Group Squad Match", role: "שידוך קבוצות רכישה (-28%)" },
+      { id: "WarrantyEscrowArbitratorAgent", icon: "🔐", label: "Warranty & Escrow", role: "אימות SHA-256 ונאמנות כספית" },
+      { id: "TradeInValuationAgent", icon: "♻️", label: "Trade-In Appraiser", role: "שמאות מכשירים ישנים ושוברים" },
+      { id: "A2AConsensusCriticAgent", icon: "🧠", label: "A2A Consensus Critic", role: "דיבייט 3 סוכנים לקונצנזוס" },
+      { id: "HitlApprovalGuardrailAgent", icon: "🛑", label: "HITL Guardrail Gate", role: "אישור אנושי ובקרת תקציב טוקנים" }
+    ];
+
+    let currentApprovalId = null;
+
+    function renderAgentGrid(activeList = []) {
+      const grid = document.getElementById("agentGrid");
+      grid.innerHTML = AGENTS_INFO.map(a => {
+        const isActive = activeList.includes(a.id);
+        return `<div class="p-2.5 rounded-xl border ${isActive ? 'bg-indigo-950/80 border-amber-400/70 shadow-md' : 'bg-slate-900/70 border-slate-800'} flex items-start gap-2">
+          <span class="text-base">${a.icon}</span>
+          <div class="min-w-0 flex-1">
+            <div class="font-bold text-white truncate flex items-center justify-between">
+              <span>${a.label}</span>
+              ${isActive ? '<span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>' : ''}
+            </div>
+            <div class="text-[11px] text-slate-400 truncate">${a.role}</div>
+          </div>
+        </div>`;
+      }).join("");
+    }
+
+    async function loadProactiveEvents() {
+      try {
+        const res = await fetch("/api/v1/agents/swarm/proactive-events");
+        const data = await res.json();
+        const container = document.getElementById("proactiveEventsList");
+        container.innerHTML = (data.events || []).map(ev => `
+          <div class="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between gap-2">
+            <div>
+              <div class="font-bold text-amber-300 font-mono">${ev.eventType} (${ev.skuCode})</div>
+              <div class="text-slate-300 mt-0.5">${ev.proactiveAgentTriggered} → <span class="text-emerald-400 font-mono">${ev.autonomousOutcome}</span></div>
+            </div>
+            <span class="px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 font-mono text-[10px]">${ev.topic}</span>
+          </div>
+        `).join("");
+      } catch (e) {}
+    }
+
+    function runPreset(text) {
+      document.getElementById("queryInput").value = text;
+      executeSwarm();
+    }
+
+    async function executeSwarm() {
+      const query = document.getElementById("queryInput").value.trim();
+      if (!query) return;
+      const btn = document.getElementById("runBtn");
+      const badge = document.getElementById("latencyBadge");
+      btn.disabled = true;
+      btn.textContent = "מעבד נחיל...";
+      badge.textContent = "מריץ DAG מקבילי...";
+
+      try {
+        const res = await fetch("/api/v1/agents/swarm/query", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query, conversationId: "conv_web_dashboard", customerId: "usr_demo" })
+        });
+        const data = await res.json();
+
+        badge.textContent = `⚡ ${data.latencyMs}ms • ${data.agentsInvolved.length} סוכנים`;
+        document.getElementById("answerText").textContent = data.answer;
+
+        // Telemetry
+        document.getElementById("telemetryStrip").classList.remove("hidden");
+        document.getElementById("statAgents").textContent = `${data.agentsInvolved.length} / 17`;
+        document.getElementById("statMemory").textContent = data.memoryCheckpoint ? `${data.memoryCheckpoint.checkpointId} (תור #${data.memoryCheckpoint.turnCount})` : "פעיל";
+        document.getElementById("statTokens").textContent = data.tokenTelemetry ? `${data.tokenTelemetry.totalTokens} / ${data.tokenTelemetry.tokenBudgetLimit}` : "תקין";
+        document.getElementById("statDepth").textContent = data.executionPlan ? `רמה ${data.executionPlan.maxSubagentDepth}` : "רמה 2";
+
+        // Badges
+        document.getElementById("agentsBadges").innerHTML = (data.agentsInvolved || []).map(ag =>
+          `<span class="px-2.5 py-1 rounded-xl bg-indigo-500/20 border border-indigo-500/40 text-indigo-200 text-xs font-mono font-bold">${ag}</span>`
+        ).join(" ← ");
+
+        renderAgentGrid(data.agentsInvolved || []);
+
+        // A2A Debate
+        const a2aBox = document.getElementById("a2aBox");
+        if (data.a2aDebate) {
+          a2aBox.classList.remove("hidden");
+          document.getElementById("a2aCoupon").textContent = `-${data.a2aDebate.approvedDiscountPct}% • ${data.a2aDebate.consensusCouponCode}`;
+          document.getElementById("a2aTranscript").innerHTML = (data.a2aDebate.transcript || []).map(t =>
+            `<div class="p-2 rounded-xl bg-slate-950/80 border border-slate-800"><span class="text-indigo-400 font-mono font-bold">[סבב ${t.roundNum} - ${t.senderAgent}]:</span> <span class="text-slate-200">${t.rationale}</span></div>`
+          ).join("");
+        } else {
+          a2aBox.classList.add("hidden");
+        }
+
+        // HITL Gate
+        const hitlBox = document.getElementById("hitlBox");
+        if (data.hitlGate) {
+          hitlBox.classList.remove("hidden");
+          currentApprovalId = data.hitlGate.approvalId;
+          document.getElementById("hitlTitle").textContent = `שער אישור אנושי (${data.hitlGate.approvalId} • ${data.hitlGate.status})`;
+          document.getElementById("hitlReason").textContent = data.hitlGate.reasonHe;
+          const approveBtn = document.getElementById("hitlApproveBtn");
+          approveBtn.style.display = data.hitlGate.status === "PENDING_APPROVAL" ? "inline-block" : "none";
+        } else {
+          hitlBox.classList.add("hidden");
+        }
+      } catch (err) {
+        document.getElementById("answerText").textContent = "שגיאה בהרצת הנחיל: " + err.message;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "הפעל נחיל 🚀";
+      }
+    }
+
+    async function approveHitlGate() {
+      if (!currentApprovalId) return;
+      const res = await fetch("/api/v1/agents/swarm/hitl/resolve", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ approvalId: currentApprovalId, decision: "APPROVED", reviewerId: "usr_demo" })
+      });
+      const data = await res.json();
+      document.getElementById("hitlTitle").textContent = `שער אישור אנושי (${data.approvalId} • ${data.status} ✓)`;
+      document.getElementById("hitlReason").textContent = data.reasonHe;
+      document.getElementById("hitlApproveBtn").style.display = "none";
+    }
+
+    renderAgentGrid();
+    loadProactiveEvents();
+    executeSwarm();
+  </script>
+</body>
+</html>
+"""
+
+@app.get("/", response_class=HTMLResponse)
+async def swarm_command_center_ui():
+    return HTMLResponse(content=SWARM_COMMAND_CENTER_HTML)
 
 @app.get("/health")
 @app.get("/actuator/health")

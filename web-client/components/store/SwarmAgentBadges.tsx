@@ -10,7 +10,7 @@ export interface SwarmAgentBadgesProps {
 const AGENT_META: Record<string, { label: string; desc: string; icon: string; ms: string }> = {
   SupervisorRouterAgent: {
     label: "סוכן ניתוב ראשי",
-    desc: "מיפוי כוונות ופירוק מטרות מקביליות בין 15 סוכנים",
+    desc: "מיפוי כוונות ופירוק מטרות מקביליות (DAG) בין 17 סוכנים",
     icon: "🎯",
     ms: "4ms",
   },
@@ -129,7 +129,7 @@ export const SwarmAgentBadges: React.FC<SwarmAgentBadgesProps> = ({ agentsInvolv
       >
         <div className="flex items-center gap-2">
           <Layers className="w-4 h-4 text-amber-500" />
-          <span>גרף זרימת נחיל הסוכנים ({agentsInvolved.length} סוכנים מתוך 15 פעלו במקביל)</span>
+          <span>גרף זרימת נחיל הסוכנים ({agentsInvolved.length} סוכנים מתוך 17 פעלו במקביל • Swarm v8.0)</span>
         </div>
         {isOpen ? (
           <ChevronUp className="w-4 h-4 text-indigo-400" />

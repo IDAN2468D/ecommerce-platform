@@ -188,9 +188,9 @@ export const RagAssistantDrawer: React.FC = () => {
       {
         id: "msg_welcome_reset",
         sender: "assistant",
-        text: "השיחה אופסה בהצלחה. כל 15 סוכני ה-Swarm האוטונומיים ממתינים לבקשה שלך. מה תרצה שנבדוק כעת?",
+        text: "השיחה אופסה בהצלחה. כל 17 סוכני ה-Swarm v8.0 האוטונומיים (כולל דיבייט A2A ושער HITL) ממתינים לבקשה שלך. מה תרצה שנבדוק כעת?",
         timestamp: "עכשיו",
-        model: "Google Gemini 2.5 Flash • 15-Agent Swarm",
+        model: "Google Gemini 2.5 Flash • 17-Agent Swarm v8.0",
       },
     ]);
   };
@@ -481,17 +481,17 @@ export const RagAssistantDrawer: React.FC = () => {
               <div className="text-right">
                 <div className="flex items-center gap-2">
                   <h3 className="font-black text-base text-slate-900 dark:text-white tracking-tight">
-                    חדר פיקוד נחיל 15 סוכני AI
+                    חדר פיקוד נחיל 17 סוכני AI
                   </h3>
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-gradient-to-r from-amber-500/20 to-indigo-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30">
-                    Swarm v7.0
+                    Swarm v8.0
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 font-mono mt-0.5">
                   <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                  <span>15 סוכנים אוטונומיים פעילים</span>
+                  <span>17 סוכנים אוטונומיים (A2A + HITL)</span>
                   <span>•</span>
-                  <span>25 מיקרו-שירותים</span>
+                  <span>26 מיקרו-שירותים</span>
                 </div>
               </div>
             </div>
@@ -1170,11 +1170,11 @@ export const RagAssistantDrawer: React.FC = () => {
             <div className="mt-2.5 flex items-center justify-between text-[10px] text-slate-400 font-mono px-1">
               <span className="flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span>Multi-Agent Swarm • 15 Autonomous Agents</span>
+                <span>Multi-Agent Swarm v8.0 • 17 Autonomous Agents</span>
               </span>
               <span className="flex items-center gap-1 text-slate-500 dark:text-slate-400">
                 <ShieldCheck className="w-3 h-3 text-emerald-500" />
-                <span>25 Microservices • SHA-256 Escrow</span>
+                <span>A2A Consensus • HITL Gate • SHA-256 Escrow</span>
               </span>
             </div>
           </div>

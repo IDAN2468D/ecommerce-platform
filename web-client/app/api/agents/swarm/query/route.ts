@@ -11,6 +11,7 @@ export async function POST(request: NextRequest) {
       request.headers.get("x-customer-id") || body.customerId || "usr_demo";
     const query = body.query || body.message || body.prompt || "";
     const history = body.history || [];
+    const conversationId = body.conversationId || "conv_client_session";
 
     const swarmUrl = getAgentSwarmUrl();
     const gatewayUrl = getGatewayUrl();
@@ -45,16 +46,15 @@ export async function POST(request: NextRequest) {
           return NextResponse.json(data);
         }
       } catch {
-        // Continue to next endpoint or direct Gemini fallback
+        // Continue to next endpoint or embedded Swarm v8.0 engine
       }
     }
 
-    // Direct Gemini AI Fallback using Render GEMINI_API_KEY
-    const aiResponse = await askGeminiAssistant(query, history);
+    const aiResponse = await askGeminiAssistant(query, history, conversationId);
     return NextResponse.json(aiResponse);
   } catch (error: any) {
     console.error("Agent Swarm Query Error:", error);
-    const aiResponse = await askGeminiAssistant("עזרה", []);
+    const aiResponse = await askGeminiAssistant("עזרה", [], "conv_client_session");
     return NextResponse.json(aiResponse);
   }
 }
