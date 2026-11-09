@@ -383,7 +383,7 @@ export default function CartPage() {
       .padStart(2, "0")}:${(s % 60).toString().padStart(2, "0")}`;
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 pb-16" dir="rtl">
+    <div className="max-w-6xl mx-auto space-y-8 pb-16" dir="rtl">
       {/* Live Collaboration Toast */}
       {liveToast && (
         <div className="fixed bottom-6 left-6 z-50 animate-bounce shadow-2xl">
@@ -522,82 +522,95 @@ export default function CartPage() {
           </Link>
         </div>
       ) : (
-        /* Cart Items & Summary Grid */
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="md:col-span-2 space-y-4">
-            {cart.map((item) => {
-              const isHighlighted = highlightedSku === item.skuCode;
-              return (
-                <div
-                  key={item.skuCode}
-                  className={`p-4 rounded-2xl bg-white dark:bg-slate-900 border transition-all duration-300 flex items-center justify-between gap-4 shadow-sm ${
-                    isHighlighted
-                      ? "border-emerald-500 ring-2 ring-emerald-500/20 bg-emerald-50/20 dark:bg-emerald-950/20"
-                      : "border-slate-200 dark:border-slate-800"
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-16 h-16 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-2xl overflow-hidden shrink-0">
-                      {item.image && (item.image.startsWith("http") || item.image.startsWith("/")) ? (
-                        <img
-                          src={item.image}
-                          alt={item.name || item.skuCode}
-                          className="w-full h-full object-contain"
-                        />
-                      ) : (
-                        item.image || "📦"
-                      )}
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100">
-                        {item.productName || item.name}
-                      </h4>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-xs text-slate-400 font-mono">{item.skuCode}</span>
-                        {item.lastUpdatedBy && sharedRoomId && (
-                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-medium">
-                            עודכן ע״י {item.lastUpdatedBy}
-                          </span>
+        /* Cart Items & Wide Horizontal FinTech Center */
+        <div className="space-y-8">
+          {/* Cart Items List */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                <span>מוצרים שנבחרו לרכישה</span>
+                <span className="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 font-mono font-bold">
+                  {cart.length} פריטים
+                </span>
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {cart.map((item) => {
+                const isHighlighted = highlightedSku === item.skuCode;
+                return (
+                  <div
+                    key={item.skuCode}
+                    className={`p-4 rounded-2xl bg-white dark:bg-slate-900 border transition-all duration-300 flex items-center justify-between gap-4 shadow-sm ${
+                      isHighlighted
+                        ? "border-emerald-500 ring-2 ring-emerald-500/20 bg-emerald-50/20 dark:bg-emerald-950/20"
+                        : "border-slate-200 dark:border-slate-800"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-14 h-14 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-2xl overflow-hidden shrink-0">
+                        {item.image && (item.image.startsWith("http") || item.image.startsWith("/")) ? (
+                          <img
+                            src={item.image}
+                            alt={item.name || item.skuCode}
+                            className="w-full h-full object-contain"
+                          />
+                        ) : (
+                          item.image || "📦"
                         )}
                       </div>
-                      <div className="text-xs font-black text-amber-600 dark:text-amber-400 font-mono mt-1">
-                        {formatPrice(item.price || item.unitPrice || 0)}
+                      <div className="min-w-0">
+                        <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100 truncate">
+                          {item.productName || item.name}
+                        </h4>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-[11px] text-slate-400 font-mono">{item.skuCode}</span>
+                          {item.lastUpdatedBy && sharedRoomId && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-medium truncate">
+                              עודכן ע״י {item.lastUpdatedBy}
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-xs font-black text-amber-600 dark:text-amber-400 font-mono mt-1">
+                          {formatPrice(item.price || item.unitPrice || 0)}
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 h-9 px-1">
+                    <div className="flex items-center gap-2 shrink-0">
+                      <div className="flex items-center border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 h-8 px-1">
+                        <button
+                          onClick={() => updateQuantity(item.skuCode, -1)}
+                          className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white"
+                          title="הפחת כמות"
+                        >
+                          <Minus className="w-3.5 h-3.5" />
+                        </button>
+                        <span className="w-6 text-center font-mono font-bold text-xs">{item.quantity}</span>
+                        <button
+                          onClick={() => updateQuantity(item.skuCode, 1)}
+                          className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white"
+                          title="הגדל כמות"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                       <button
-                        onClick={() => updateQuantity(item.skuCode, -1)}
-                        className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white"
-                        title="הפחת כמות"
+                        onClick={() => removeItem(item.skuCode)}
+                        className="p-1.5 text-slate-400 hover:text-rose-500 transition"
+                        title="הסר מהסל"
                       >
-                        <Minus className="w-3.5 h-3.5" />
-                      </button>
-                      <span className="w-7 text-center font-mono font-bold text-xs">{item.quantity}</span>
-                      <button
-                        onClick={() => updateQuantity(item.skuCode, 1)}
-                        className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white"
-                        title="הגדל כמות"
-                      >
-                        <Plus className="w-3.5 h-3.5" />
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
-                    <button
-                      onClick={() => removeItem(item.skuCode)}
-                      className="p-2 text-slate-400 hover:text-rose-500 transition"
-                      title="הסר מהסל"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
 
-          <div className="md:col-span-1">
+          {/* Wide Horizontal FinTech Center (לרוחב) */}
+          <div className="w-full">
             <CheckoutSummaryCard
               subtotal={subtotal}
               discountAmount={discountAmount}
