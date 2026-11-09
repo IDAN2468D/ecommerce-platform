@@ -265,7 +265,7 @@ def main():
 
         gmail_service = build("gmail", "v1", credentials=creds)
 
-        subject = f"🛒 אישור הזמנה וסיכום סימולציה מקצה לקצה - הזמנה #{order_id[:8]}"
+        subject = f"💎 אישור הזמנה וקופת FinTech מאוחדת - הזמנה #{order_id[:8]}"
         
         html_body = f"""
         <!DOCTYPE html>
@@ -273,76 +273,116 @@ def main():
         <head>
           <meta charset="utf-8">
           <style>
-            body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; direction: rtl; text-align: right; background-color: #f8fafc; color: #1e293b; padding: 20px; }}
-            .container {{ max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; padding: 32px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }}
-            .header {{ border-bottom: 2px solid #3b82f6; padding-bottom: 16px; margin-bottom: 24px; }}
-            .title {{ font-size: 24px; font-weight: bold; color: #1e3a8a; margin: 0; }}
-            .subtitle {{ color: #64748b; font-size: 14px; margin-top: 4px; }}
-            .card {{ background: #f1f5f9; border-radius: 8px; padding: 16px; margin-bottom: 20px; }}
-            .item-table {{ width: 100%; border-collapse: collapse; margin-top: 12px; }}
-            .item-table th, .item-table td {{ padding: 10px; border-bottom: 1px solid #cbd5e1; text-align: right; }}
-            .status-badge {{ display: inline-block; background: #10b981; color: white; padding: 4px 12px; border-radius: 9999px; font-size: 13px; font-weight: 600; }}
-            .timeline {{ margin-top: 20px; border-right: 3px solid #3b82f6; padding-right: 16px; }}
-            .timeline-step {{ margin-bottom: 12px; }}
-            .timeline-title {{ font-weight: bold; color: #1e293b; }}
-            .timeline-desc {{ font-size: 13px; color: #64748b; }}
-            .footer {{ margin-top: 32px; text-align: center; font-size: 12px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 16px; }}
+            body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; direction: rtl; text-align: right; background-color: #0f172a; color: #f8fafc; padding: 24px; margin: 0; }}
+            .container {{ max-width: 620px; margin: 0 auto; background: #1e293b; border-radius: 20px; border: 1px solid #334155; padding: 32px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); }}
+            .card-visual {{ background: linear-gradient(135deg, #090d16 0%, #1e293b 50%, #0f172a 100%); border-radius: 16px; padding: 24px; border: 1px solid #f59e0b; margin-bottom: 24px; box-shadow: 0 10px 15px -3px rgba(245, 158, 11, 0.15); }}
+            .chip {{ display: inline-block; width: 36px; height: 26px; background: linear-gradient(to right, #fbbf24, #f59e0b); border-radius: 4px; margin-bottom: 12px; }}
+            .badge-gold {{ background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); padding: 4px 12px; border-radius: 9999px; font-size: 11px; font-family: monospace; font-weight: bold; }}
+            .badge-escrow {{ background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); padding: 4px 12px; border-radius: 9999px; font-size: 11px; font-family: monospace; font-weight: bold; }}
+            .item-table {{ width: 100%; border-collapse: collapse; margin-top: 16px; background: #0f172a; border-radius: 12px; overflow: hidden; }}
+            .item-table th, .item-table td {{ padding: 12px 16px; border-bottom: 1px solid #334155; text-align: right; }}
+            .timeline {{ margin-top: 24px; border-right: 3px solid #f59e0b; padding-right: 18px; }}
+            .timeline-step {{ margin-bottom: 14px; }}
+            .timeline-title {{ font-weight: bold; color: #fbbf24; font-size: 14px; }}
+            .timeline-desc {{ font-size: 12px; color: #94a3b8; margin-top: 2px; }}
+            .btn-cta {{ display: inline-block; background: linear-gradient(to right, #f59e0b, #d97706); color: #090d16; font-weight: 900; font-size: 15px; padding: 14px 28px; border-radius: 12px; text-decoration: none; margin-top: 20px; text-align: center; }}
+            .footer {{ margin-top: 32px; text-align: center; font-size: 12px; color: #64748b; border-top: 1px solid #334155; padding-top: 18px; }}
           </style>
         </head>
         <body>
           <div class="container">
-            <div class="header">
-              <h1 class="title">🎉 ההזמנה שלך אושרה בהצלחה!</h1>
-              <p class="subtitle">סימולציית זרימת נתונים מלאה באמצעות סווארם סוכני המסחר האוטונומיים</p>
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; padding-bottom: 16px; margin-bottom: 24px;">
+              <div>
+                <h1 style="font-size: 22px; font-weight: 900; color: #f8fafc; margin: 0;">⚡ קופת FinTech מאוחדת</h1>
+                <p style="color: #94a3b8; font-size: 13px; margin: 4px 0 0 0;">אישור תשלום דיגיטלי ונאמנות Smart Escrow</p>
+              </div>
+              <span class="badge-escrow">SHA-256 VERIFIED</span>
             </div>
 
-            <div class="card">
-              <table style="width: 100%;">
-                <tr>
-                  <td><strong>מספר הזמנה:</strong> {order_id}</td>
-                  <td style="text-align: left;"><span class="status-badge">אושר ושוריין</span></td>
-                </tr>
-                <tr>
-                  <td><strong>תאריך ושעה:</strong> {now_utc.strftime('%d/%m/%Y %H:%M:%S')} UTC</td>
-                  <td style="text-align: left;"><strong>מזהה עסקה:</strong> {payment_tx_id}</td>
-                </tr>
-                <tr>
-                  <td colspan="2"><strong>מספר מעקב דואר ישראל:</strong> {tracking_number}</td>
-                </tr>
-              </table>
+            <!-- Virtual Card Visual -->
+            <div class="card-visual">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div class="chip"></div>
+                <span class="badge-gold">FINTECH BLACK VIP</span>
+              </div>
+              <div style="font-size: 12px; color: #94a3b8; margin-top: 8px;">סה״כ שולם בעסקה:</div>
+              <div style="font-size: 32px; font-weight: 900; color: #fbbf24; font-family: monospace;">₪{final_amount:,.2f} ILS</div>
+              <div style="display: flex; justify-content: space-between; margin-top: 16px; font-size: 12px; color: #cbd5e1; border-top: 1px solid #334155; padding-top: 10px;">
+                <span><strong>מספר הזמנה:</strong> {order_id}</span>
+                <span><strong>אסמכתא:</strong> {payment_tx_id}</span>
+              </div>
             </div>
 
-            <h3>📦 פרטי המוצר שהוזמן</h3>
+            <h3 style="color: #f8fafc; margin-top: 24px;">📦 פירוט הרכישה וההטבות</h3>
             <table class="item-table">
               <thead>
-                <tr style="background: #e2e8f0;">
-                  <th>שם המוצר</th>
-                  <th>מק"ט</th>
+                <tr style="background: #1e293b; color: #94a3b8; font-size: 12px;">
+                  <th>מוצר</th>
+                  <th>מק״ט</th>
                   <th>כמות</th>
                   <th>מחיר</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td><strong>{product_name}</strong></td>
-                  <td><code>{sku_code}</code></td>
+                  <td style="color: #f8fafc; font-weight: bold;">{product_name}</td>
+                  <td><code style="color: #fbbf24;">{sku_code}</code></td>
                   <td>1</td>
-                  <td>₪{unit_price:,.2f}</td>
+                  <td style="font-family: monospace;">₪{unit_price:,.2f}</td>
                 </tr>
               </tbody>
             </table>
 
-            <div style="margin-top: 16px; text-align: left;">
-              <p style="margin: 4px 0;">מחיר מקורי: ₪{unit_price:,.2f}</p>
-              <p style="margin: 4px 0; color: #16a34a;">הנחת סוכן VIP (קוד: SWARM-VIP10): -₪{discount_amount:,.2f}</p>
-              <h3 style="margin: 8px 0; color: #1e3a8a;">סה"כ שולם: ₪{final_amount:,.2f} ILS</h3>
+            <div style="margin-top: 16px; padding: 14px; background: #0f172a; border-radius: 12px; font-size: 13px;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                <span style="color: #94a3b8;">מחיר מחירון מקורי:</span>
+                <span style="font-family: monospace;">₪{unit_price:,.2f}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 6px; color: #34d399; font-weight: bold;">
+                <span>הנחת מועדון סוכנים VIP (קוד: SWARM-VIP10):</span>
+                <span style="font-family: monospace;">-₪{discount_amount:,.2f}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 6px; color: #38bdf8;">
+                <span>משלוח דואר ישראל אקספרס:</span>
+                <span>חינם (0 ₪) | מעקב: {tracking_number}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; border-top: 1px solid #334155; padding-top: 8px; font-size: 15px; font-weight: 900; color: #fbbf24;">
+                <span>סה״כ נטו לחיוב:</span>
+                <span style="font-family: monospace;">₪{final_amount:,.2f} ILS</span>
+              </div>
             </div>
 
-            <h3>⚡ מסלול אירועי ה-Kafka שעברו במערכת</h3>
+            <!-- BNPL Breakdown -->
+            <div style="margin-top: 20px; padding: 14px; background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 12px;">
+              <div style="font-weight: bold; color: #fbbf24; font-size: 13px; margin-bottom: 8px;">
+                ⚡ פריסת 4 תשלומים חכמה ב-0% ריבית:
+              </div>
+              <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; text-align: center; font-size: 11px;">
+                <div style="background: #1e293b; padding: 8px; border-radius: 8px;">
+                  <div style="color: #94a3b8;">היום</div>
+                  <div style="color: #fbbf24; font-weight: bold; font-family: monospace; margin-top: 2px;">₪{final_amount/4:,.2f}</div>
+                </div>
+                <div style="background: #1e293b; padding: 8px; border-radius: 8px;">
+                  <div style="color: #94a3b8;">30 יום</div>
+                  <div style="color: #fbbf24; font-weight: bold; font-family: monospace; margin-top: 2px;">₪{final_amount/4:,.2f}</div>
+                </div>
+                <div style="background: #1e293b; padding: 8px; border-radius: 8px;">
+                  <div style="color: #94a3b8;">60 יום</div>
+                  <div style="color: #fbbf24; font-weight: bold; font-family: monospace; margin-top: 2px;">₪{final_amount/4:,.2f}</div>
+                </div>
+                <div style="background: #1e293b; padding: 8px; border-radius: 8px;">
+                  <div style="color: #94a3b8;">90 יום</div>
+                  <div style="color: #fbbf24; font-weight: bold; font-family: monospace; margin-top: 2px;">₪{final_amount/4:,.2f}</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Kafka Event Trail -->
+            <h3 style="color: #f8fafc; margin-top: 24px;">⚡ תחנות SAGA ואפיק האירועים Kafka</h3>
             <div class="timeline">
               <div class="timeline-step">
                 <div class="timeline-title">1. order-events ➔ OrderCreatedEvent</div>
-                <div class="timeline-desc">ההזמנה נקלטה במסד MongoDB Atlas והופצה באפיק האירועים.</div>
+                <div class="timeline-desc">ההזמנה נקלטה במסד MongoDB Atlas והופצה לכלל המיקרו-סרוויסים.</div>
               </div>
               <div class="timeline-step">
                 <div class="timeline-title">2. inventory-events ➔ StockReservedEvent</div>
@@ -350,21 +390,27 @@ def main():
               </div>
               <div class="timeline-step">
                 <div class="timeline-title">3. payment-events ➔ PaymentCapturedEvent</div>
-                <div class="timeline-desc">שירות התשלומים אישר את עסקת הסליקה והפיק מזהה תשלום.</div>
+                <div class="timeline-desc">שירות התשלומים ביצע סליקת FinTech מאובטחת והנפיק אסמכתא דיגיטלית.</div>
               </div>
               <div class="timeline-step">
                 <div class="timeline-title">4. shipping-events ➔ ShipmentScheduledEvent</div>
-                <div class="timeline-desc">הוקצה משלוח אקספרס ונוצר מעקב לוגיסטי.</div>
+                <div class="timeline-desc">הוקצה משלוח אקספרס ונוצר מעקב לוגיסטי בדואר ישראל.</div>
               </div>
               <div class="timeline-step">
                 <div class="timeline-title">5. notification-events ➔ NotificationSentEvent</div>
-                <div class="timeline-desc">נשלח עדכון דוא"ל רשמי זה ישירות לתיבת הדואר שלך.</div>
+                <div class="timeline-desc">הודעת דוא״ל רשמית זו נשלחה לתיבת הג׳ימייל שלך דרך ה-API.</div>
               </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 28px;">
+              <a href="https://colon-minolta-increased-buys.trycloudflare.com/orders" class="btn-cta">
+                צפה בהזמנה זו באתר שלך (/orders) →
+              </a>
             </div>
 
             <div class="footer">
               <p>מערכת מסחר אלקטרוני מבוזרת | Google Antigravity & Agent Swarm v8.0</p>
-              <p>הזמנה זו זמינה כעת לצפייה בעמוד היסטוריית ההזמנות באתר שלך: <strong>/orders</strong></p>
+              <p>כל הזכויות שמורות לפלטפורמת המסחר החכמה. תעודת אחריות דיגיטלית מוגנת בהצפנת SHA-256.</p>
             </div>
           </div>
         </body>
