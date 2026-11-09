@@ -365,6 +365,32 @@ export default function CartPage() {
     }
   };
 
+  const handleAddSampleCart = () => {
+    const demoItems: CartItem[] = [
+      {
+        skuCode: "IPHONE-16-PRO-TITANIUM",
+        productName: "Apple iPhone 16 Pro 256GB Desert Titanium",
+        name: "Apple iPhone 16 Pro 256GB Desert Titanium",
+        price: 4899,
+        unitPrice: 4899,
+        quantity: 1,
+        image: "https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-16-pro-finish-select-202409-6-3inch-deserttitanium?wid=5120&hei=2880&fmt=p-jpg",
+      },
+      {
+        skuCode: "AIRPODS-MAX-USB-C",
+        productName: "Apple AirPods Max (USB-C) Midnight",
+        name: "Apple AirPods Max (USB-C) Midnight",
+        price: 2490,
+        unitPrice: 2490,
+        quantity: 1,
+        image: "https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/airpods-max-select-202409-midnight?wid=940&hei=1112&fmt=png-alpha",
+      },
+    ];
+    setCart(demoItems);
+    localStorage.setItem("cart", JSON.stringify(demoItems));
+    window.dispatchEvent(new Event("cart-updated"));
+  };
+
   const receiptData: DigitalReceiptData | null = orderResult
     ? {
         orderId: orderResult.orderId,
@@ -515,11 +541,20 @@ export default function CartPage() {
           <p className="text-xs text-slate-400">
             גלה את מוצרי הפרימיום שלנו ותיהנה ממשלוח חינם ו-5% Cashback בכל קנייה
           </p>
-          <Link href="/">
-            <Button variant="primary" className="bg-amber-500 text-slate-950 font-bold">
-              התחל לקנות
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+            <Link href="/">
+              <Button variant="primary" className="bg-amber-500 text-slate-950 font-bold">
+                התחל לקנות בקטלוג
+              </Button>
+            </Link>
+            <Button
+              onClick={handleAddSampleCart}
+              variant="outline"
+              className="text-amber-500 border-amber-500/30 hover:bg-amber-500/10 font-bold text-xs"
+            >
+              הטען עגלת הדגמה לבדיקת קופה ⚡
             </Button>
-          </Link>
+          </div>
         </div>
       ) : (
         /* Cart Items & Wide Horizontal FinTech Center */
