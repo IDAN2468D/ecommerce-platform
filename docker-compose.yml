@@ -21,8 +21,8 @@ services:
     container_name: platform-redis
     ports:
       - "6379:6379"
-    command: redis-server --appendonly yes --maxmemory 128mb --maxmemory-policy allkeys-lru
-    mem_limit: 256m
+    command: redis-server --appendonly yes --maxmemory 64mb --maxmemory-policy allkeys-lru
+    mem_limit: 128m
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -38,19 +38,20 @@ services:
     ports:
       - "9411:9411"
     environment:
-      JAVA_OPTS: "-Xms64m -Xmx256m -XX:+UseG1GC"
-    mem_limit: 384m
+      JAVA_OPTS: "-Xms32m -Xmx160m -XX:+UseSerialGC"
+    mem_limit: 256m
     networks:
       - platform-network
 
   kafka:
     image: confluentinc/cp-kafka:7.6.0
     container_name: platform-kafka
+    restart: unless-stopped
     ports:
       - "9092:9092"
       - "29092:29092"
     environment:
-      KAFKA_JVM_PERFORMANCE_OPTS: "-Xms64m -Xmx256m"
+      KAFKA_JVM_PERFORMANCE_OPTS: "-XX:+UseSerialGC"
       KAFKA_NODE_ID: 1
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
       KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092'
@@ -64,24 +65,26 @@ services:
       KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
       KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
       KAFKA_LOG_DIRS: '/var/lib/kafka/data'
+      KAFKA_LOG_CLEANER_DEDUPE_BUFFER_SIZE: 16777216
       CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
-      KAFKA_HEAP_OPTS: '-Xms256m -Xmx256m'
+      KAFKA_HEAP_OPTS: '-Xms128m -Xmx256m'
     volumes:
       - kafka_platform_data:/var/lib/kafka/data
-    mem_limit: 512m
+    mem_limit: 384m
     networks:
       - platform-network
 
   kafka-ui:
+    profiles: ["monitoring"]
     image: provectuslabs/kafka-ui:latest
     container_name: platform-kafka-ui
     ports:
       - "8090:8080"
     environment:
-      JAVA_OPTS: "-Xms64m -Xmx256m -XX:+UseG1GC"
+      JAVA_OPTS: "-Xms32m -Xmx160m -XX:+UseSerialGC"
       KAFKA_CLUSTERS_0_NAME: platform-cluster
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
-    mem_limit: 384m
+    mem_limit: 256m
     depends_on:
       - kafka
     networks:
@@ -99,7 +102,7 @@ services:
       MONGODB_URI: ${ORDER_MONGODB_URI:-mongodb+srv://idankzm:idankzm2468@cluster0.purdk.mongodb.net/ecommerce_db?retryWrites=true&w=majority}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
     command: sh -c "pip install --no-cache-dir pymongo kafka-python-ng && python -u scripts/outbox_relay_daemon.py"
-    mem_limit: 128m
+    mem_limit: 96m
     depends_on:
       - kafka
     networks:
@@ -110,15 +113,16 @@ services:
       context: ./inventory-service
       dockerfile: Dockerfile
     container_name: inventory-service
+    restart: unless-stopped
     ports:
       - "8082:8082"
     environment:
-      JAVA_OPTS: "-XX:+UseG1GC -Xms32m -Xmx180m -XX:MaxMetaspaceSize=96m -Dspring.threads.virtual.enabled=true"
-      MONGODB_URI: ${INVENTORY_MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=50&minPoolSize=10&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
+      JAVA_OPTS: "-XX:+UseSerialGC -Xms32m -Xmx128m -XX:MaxMetaspaceSize=80m -XX:ReservedCodeCacheSize=32m -Dspring.threads.virtual.enabled=true"
+      MONGODB_URI: ${INVENTORY_MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=10&minPoolSize=1&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       REDIS_HOST: redis
       REDIS_PORT: 6379
-    mem_limit: 384m
+    mem_limit: 224m
     depends_on:
       redis:
         condition: service_healthy
@@ -132,13 +136,14 @@ services:
       context: ./payment-service
       dockerfile: Dockerfile
     container_name: payment-service
+    restart: unless-stopped
     ports:
       - "8083:8083"
     environment:
-      JAVA_OPTS: "-XX:+UseG1GC -Xms32m -Xmx180m -XX:MaxMetaspaceSize=96m -Dspring.threads.virtual.enabled=true"
-      MONGODB_URI: ${PAYMENT_MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=50&minPoolSize=10&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
+      JAVA_OPTS: "-XX:+UseSerialGC -Xms24m -Xmx112m -XX:MaxMetaspaceSize=72m -XX:ReservedCodeCacheSize=24m -Dspring.threads.virtual.enabled=true"
+      MONGODB_URI: ${PAYMENT_MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=10&minPoolSize=1&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-    mem_limit: 256m
+    mem_limit: 192m
     depends_on:
       kafka:
         condition: service_started
@@ -150,12 +155,13 @@ services:
       context: ./notification-service
       dockerfile: Dockerfile
     container_name: notification-service
+    restart: unless-stopped
     ports:
       - "8085:8085"
     environment:
-      JAVA_OPTS: "-XX:+UseG1GC -Xms32m -Xmx180m -XX:MaxMetaspaceSize=96m -Dspring.threads.virtual.enabled=true"
+      JAVA_OPTS: "-XX:+UseSerialGC -Xms24m -Xmx112m -XX:MaxMetaspaceSize=72m -XX:ReservedCodeCacheSize=24m -Dspring.threads.virtual.enabled=true"
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-    mem_limit: 256m
+    mem_limit: 192m
     depends_on:
       kafka:
         condition: service_started
@@ -167,15 +173,16 @@ services:
       context: ./order-service
       dockerfile: Dockerfile
     container_name: order-service
+    restart: unless-stopped
     ports:
       - "8081:8081"
     environment:
-      JAVA_OPTS: "-XX:+UseG1GC -Xms32m -Xmx180m -XX:MaxMetaspaceSize=96m -Dspring.threads.virtual.enabled=true"
-      MONGODB_URI: ${ORDER_MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=50&minPoolSize=10&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
+      JAVA_OPTS: "-XX:+UseSerialGC -Xms32m -Xmx128m -XX:MaxMetaspaceSize=80m -XX:ReservedCodeCacheSize=32m -Dspring.threads.virtual.enabled=true"
+      MONGODB_URI: ${ORDER_MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=10&minPoolSize=1&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
       INVENTORY_SERVICE_URL: http://inventory-service:8082
       PAYMENT_SERVICE_URL: http://payment-service:8083
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-    mem_limit: 384m
+    mem_limit: 224m
     depends_on:
       kafka:
         condition: service_started
@@ -191,13 +198,14 @@ services:
       context: ./auth-service
       dockerfile: Dockerfile
     container_name: auth-service
+    restart: unless-stopped
     ports:
       - "8084:8084"
     environment:
-      JAVA_TOOL_OPTIONS: "-Xms64m -Xmx384m"
-      MONGODB_URI: ${AUTH_MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=50&minPoolSize=10&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
+      JAVA_TOOL_OPTIONS: "-XX:+UseSerialGC -Xms32m -Xmx128m -XX:MaxMetaspaceSize=80m -XX:ReservedCodeCacheSize=32m -Dspring.threads.virtual.enabled=true"
+      MONGODB_URI: ${AUTH_MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=10&minPoolSize=1&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-    mem_limit: 256m
+    mem_limit: 224m
     depends_on:
       kafka:
         condition: service_started
@@ -209,13 +217,14 @@ services:
       context: ./shipping-delivery-service
       dockerfile: Dockerfile
     container_name: shipping-delivery-service
+    restart: unless-stopped
     ports:
       - "8086:8086"
     environment:
-      JAVA_TOOL_OPTIONS: "-Xms64m -Xmx384m"
-      MONGODB_URI: ${SHIPPING_MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=50&minPoolSize=10&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
+      JAVA_TOOL_OPTIONS: "-XX:+UseSerialGC -Xms24m -Xmx112m -XX:MaxMetaspaceSize=72m -XX:ReservedCodeCacheSize=24m -Dspring.threads.virtual.enabled=true"
+      MONGODB_URI: ${SHIPPING_MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=10&minPoolSize=1&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-    mem_limit: 256m
+    mem_limit: 192m
     depends_on:
       kafka:
         condition: service_started
@@ -227,17 +236,18 @@ services:
       context: ./review-rating-service
       dockerfile: Dockerfile
     container_name: review-rating-service
+    restart: unless-stopped
     ports:
       - "8087:8087"
     environment:
-      JAVA_TOOL_OPTIONS: "-Xms64m -Xmx384m"
-      MONGODB_URI: ${REVIEW_MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=50&minPoolSize=10&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
+      JAVA_TOOL_OPTIONS: "-XX:+UseSerialGC -Xms24m -Xmx112m -XX:MaxMetaspaceSize=72m -XX:ReservedCodeCacheSize=24m -Dspring.threads.virtual.enabled=true"
+      MONGODB_URI: ${REVIEW_MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=10&minPoolSize=1&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       REDIS_HOST: redis
       REDIS_PORT: 6379
       GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.5-flash-lite}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-demo_key}
-    mem_limit: 256m
+    mem_limit: 192m
     depends_on:
       redis:
         condition: service_healthy
@@ -251,15 +261,16 @@ services:
       context: ./cart-wishlist-service
       dockerfile: Dockerfile
     container_name: cart-wishlist-service
+    restart: unless-stopped
     ports:
       - "8088:8088"
     environment:
-      JAVA_TOOL_OPTIONS: "-Xms64m -Xmx384m"
-      MONGODB_URI: ${CART_MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=50&minPoolSize=10&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
+      JAVA_TOOL_OPTIONS: "-XX:+UseSerialGC -Xms24m -Xmx112m -XX:MaxMetaspaceSize=72m -XX:ReservedCodeCacheSize=24m -Dspring.threads.virtual.enabled=true"
+      MONGODB_URI: ${CART_MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=10&minPoolSize=1&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       REDIS_HOST: redis
       REDIS_PORT: 6379
-    mem_limit: 256m
+    mem_limit: 192m
     depends_on:
       redis:
         condition: service_healthy
@@ -273,16 +284,17 @@ services:
       context: ./recommendation-loyalty-service
       dockerfile: Dockerfile
     container_name: recommendation-loyalty-service
+    restart: unless-stopped
     ports:
       - "8089:8089"
     environment:
-      JAVA_TOOL_OPTIONS: "-Xms64m -Xmx384m -Dspring.threads.virtual.enabled=true"
-      MONGODB_URI: ${LOYALTY_MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=50&minPoolSize=10&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
+      JAVA_TOOL_OPTIONS: "-XX:+UseSerialGC -Xms24m -Xmx112m -XX:MaxMetaspaceSize=72m -XX:ReservedCodeCacheSize=24m -Dspring.threads.virtual.enabled=true"
+      MONGODB_URI: ${LOYALTY_MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=10&minPoolSize=1&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       REDIS_HOST: redis
       REDIS_PORT: 6379
       RAG_SERVICE_URL: http://rag-service:8092
-    mem_limit: 256m
+    mem_limit: 192m
     depends_on:
       mongodb:
         condition: service_healthy
@@ -298,11 +310,12 @@ services:
       context: ./rag-service
       dockerfile: Dockerfile
     container_name: rag-service
+    restart: unless-stopped
     ports:
       - "8092:8092"
     environment:
-      JAVA_TOOL_OPTIONS: "-Xms64m -Xmx384m -Dspring.threads.virtual.enabled=true"
-      MONGODB_URI: ${RAG_MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=50&minPoolSize=10&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
+      JAVA_TOOL_OPTIONS: "-XX:+UseSerialGC -Xms32m -Xmx128m -XX:MaxMetaspaceSize=80m -XX:ReservedCodeCacheSize=32m -Dspring.threads.virtual.enabled=true"
+      MONGODB_URI: ${RAG_MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=10&minPoolSize=1&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       REDIS_HOST: redis
       REDIS_PORT: 6379
@@ -310,7 +323,7 @@ services:
       ORDER_SERVICE_URL: http://order-service:8081
       GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.5-flash-lite}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-demo_key}
-    mem_limit: 256m
+    mem_limit: 224m
     depends_on:
       mongodb:
         condition: service_healthy
@@ -326,6 +339,7 @@ services:
       context: ./google-workspace-mcp
       dockerfile: Dockerfile
     container_name: google-workspace-mcp
+    restart: unless-stopped
     ports:
       - "8000:8000"
     environment:
@@ -338,7 +352,7 @@ services:
       WORKSPACE_MCP_CREDENTIALS_DIR: /app/credentials/tokens
       GOOGLE_APPLICATION_CREDENTIALS: /app/credentials/credentials.json
       WORKSPACE_USER_EMAIL: ${WORKSPACE_USER_EMAIL:-idankzm@gmail.com}
-    mem_limit: 256m
+    mem_limit: 192m
     volumes:
       - ./credentials:/app/credentials
     networks:
@@ -349,18 +363,19 @@ services:
       context: ./workspace-integration-service
       dockerfile: Dockerfile
     container_name: workspace-integration-service
+    restart: unless-stopped
     ports:
       - "8091:8091"
     environment:
-      JAVA_TOOL_OPTIONS: "-Xms64m -Xmx384m"
-      MONGODB_URI: ${WORKSPACE_MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=50&minPoolSize=10&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
+      JAVA_OPTS: "-XX:+UseSerialGC -Xms24m -Xmx112m -XX:MaxMetaspaceSize=72m -XX:ReservedCodeCacheSize=24m -Dspring.threads.virtual.enabled=true"
+      MONGODB_URI: ${WORKSPACE_MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=10&minPoolSize=1&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       WORKSPACE_MCP_URL: http://google-workspace-mcp:8000
       WORKSPACE_USER_EMAIL: ${WORKSPACE_USER_EMAIL:-idankzm@gmail.com}
       DRIVE_INVOICES_FOLDER_ID: ${DRIVE_INVOICES_FOLDER_ID:-18Dinq5x46OWcqmTEljaXytGHd4jJ-aRw}
       CALENDAR_ID: ${CALENDAR_ID:-primary}
       INVOICE_SOURCE_URL_TEMPLATE: http://order-service:8081/api/v1/orders/%s/invoice
-    mem_limit: 256m
+    mem_limit: 192m
     depends_on:
       mongodb:
         condition: service_healthy
@@ -376,10 +391,11 @@ services:
       context: ./api-gateway
       dockerfile: Dockerfile
     container_name: api-gateway
+    restart: unless-stopped
     ports:
-      - "8080:8080"
+      - "8005:8080"
     environment:
-      JAVA_OPTS: "-XX:+UseG1GC -Xms32m -Xmx180m -XX:MaxMetaspaceSize=96m -Dspring.threads.virtual.enabled=true"
+      JAVA_OPTS: "-XX:+UseSerialGC -Xms32m -Xmx128m -XX:MaxMetaspaceSize=80m -XX:ReservedCodeCacheSize=32m -Dspring.threads.virtual.enabled=true"
       REDIS_HOST: redis
       REDIS_PORT: 6379
       ZIPKIN_ENDPOINT: http://zipkin:9411/api/v2/spans
@@ -401,7 +417,7 @@ services:
       ANALYTICS_SERVICE_URL: http://merchant-analytics-service:8097
       SUBSCRIPTION_SERVICE_URL: http://subscription-billing-service:8098
       MARKETPLACE_SERVICE_URL: http://marketplace-vendor-service:8099
-    mem_limit: 256m
+    mem_limit: 224m
     depends_on:
       - order-service
       - inventory-service
@@ -429,6 +445,7 @@ services:
       context: ./agent-swarm-service
       dockerfile: Dockerfile
     container_name: agent-swarm-service
+    restart: unless-stopped
     ports:
       - "8093:8093"
     environment:
@@ -450,7 +467,7 @@ services:
       JWT_SECRET: ${JWT_SECRET:-order-service-default-secret-key-32-bytes!!}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-demo_key}
       GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash}
-    mem_limit: 256m
+    mem_limit: 192m
     depends_on:
       - rag-service
       - order-service
@@ -464,13 +481,14 @@ services:
       context: ./rma-returns-service
       dockerfile: Dockerfile
     container_name: rma-returns-service
+    restart: unless-stopped
     ports:
       - "8094:8094"
     environment:
-      JAVA_TOOL_OPTIONS: "-Xms64m -Xmx384m -Dspring.threads.virtual.enabled=true"
-      MONGODB_URI: ${MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=50&minPoolSize=10&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
+      JAVA_TOOL_OPTIONS: "-XX:+UseSerialGC -Xms24m -Xmx112m -XX:MaxMetaspaceSize=72m -XX:ReservedCodeCacheSize=24m -Dspring.threads.virtual.enabled=true"
+      MONGODB_URI: ${MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=10&minPoolSize=1&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-    mem_limit: 256m
+    mem_limit: 192m
     depends_on:
       mongodb:
         condition: service_healthy
@@ -484,15 +502,16 @@ services:
       context: ./dynamic-pricing-service
       dockerfile: Dockerfile
     container_name: dynamic-pricing-service
+    restart: unless-stopped
     ports:
       - "8095:8095"
     environment:
-      JAVA_TOOL_OPTIONS: "-Xms64m -Xmx384m -Dspring.threads.virtual.enabled=true"
-      MONGODB_URI: ${MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=50&minPoolSize=10&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
+      JAVA_TOOL_OPTIONS: "-XX:+UseSerialGC -Xms24m -Xmx112m -XX:MaxMetaspaceSize=72m -XX:ReservedCodeCacheSize=24m -Dspring.threads.virtual.enabled=true"
+      MONGODB_URI: ${MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=10&minPoolSize=1&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       REDIS_HOST: redis
       REDIS_PORT: 6379
-    mem_limit: 256m
+    mem_limit: 192m
     depends_on:
       mongodb:
         condition: service_healthy
@@ -508,15 +527,16 @@ services:
       context: ./fraud-risk-service
       dockerfile: Dockerfile
     container_name: fraud-risk-service
+    restart: unless-stopped
     ports:
       - "8096:8096"
     environment:
-      JAVA_TOOL_OPTIONS: "-Xms64m -Xmx384m -Dspring.threads.virtual.enabled=true"
-      MONGODB_URI: ${MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=50&minPoolSize=10&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
+      JAVA_TOOL_OPTIONS: "-XX:+UseSerialGC -Xms24m -Xmx112m -XX:MaxMetaspaceSize=72m -XX:ReservedCodeCacheSize=24m -Dspring.threads.virtual.enabled=true"
+      MONGODB_URI: ${MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=10&minPoolSize=1&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       REDIS_HOST: redis
       REDIS_PORT: 6379
-    mem_limit: 256m
+    mem_limit: 192m
     depends_on:
       mongodb:
         condition: service_healthy
@@ -532,15 +552,16 @@ services:
       context: ./merchant-analytics-service
       dockerfile: Dockerfile
     container_name: merchant-analytics-service
+    restart: unless-stopped
     ports:
       - "8097:8097"
     environment:
-      JAVA_TOOL_OPTIONS: "-Xms64m -Xmx384m -Dspring.threads.virtual.enabled=true"
-      MONGODB_URI: ${MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=50&minPoolSize=10&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
+      JAVA_TOOL_OPTIONS: "-XX:+UseSerialGC -Xms24m -Xmx112m -XX:MaxMetaspaceSize=72m -XX:ReservedCodeCacheSize=24m -Dspring.threads.virtual.enabled=true"
+      MONGODB_URI: ${MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=10&minPoolSize=1&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       REDIS_HOST: redis
       REDIS_PORT: 6379
-    mem_limit: 256m
+    mem_limit: 192m
     depends_on:
       mongodb:
         condition: service_healthy
@@ -556,13 +577,14 @@ services:
       context: ./subscription-billing-service
       dockerfile: Dockerfile
     container_name: subscription-billing-service
+    restart: unless-stopped
     ports:
       - "8098:8098"
     environment:
-      JAVA_TOOL_OPTIONS: "-Xms64m -Xmx384m -Dspring.threads.virtual.enabled=true"
-      MONGODB_URI: ${MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=50&minPoolSize=10&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
+      JAVA_TOOL_OPTIONS: "-XX:+UseSerialGC -Xms24m -Xmx112m -XX:MaxMetaspaceSize=72m -XX:ReservedCodeCacheSize=24m -Dspring.threads.virtual.enabled=true"
+      MONGODB_URI: ${MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=10&minPoolSize=1&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-    mem_limit: 256m
+    mem_limit: 192m
     depends_on:
       mongodb:
         condition: service_healthy
@@ -576,13 +598,14 @@ services:
       context: ./marketplace-vendor-service
       dockerfile: Dockerfile
     container_name: marketplace-vendor-service
+    restart: unless-stopped
     ports:
       - "8099:8099"
     environment:
-      JAVA_TOOL_OPTIONS: "-Xms64m -Xmx384m -Dspring.threads.virtual.enabled=true"
-      MONGODB_URI: ${MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=50&minPoolSize=10&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
+      JAVA_TOOL_OPTIONS: "-XX:+UseSerialGC -Xms24m -Xmx112m -XX:MaxMetaspaceSize=72m -XX:ReservedCodeCacheSize=24m -Dspring.threads.virtual.enabled=true"
+      MONGODB_URI: ${MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=10&minPoolSize=1&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-    mem_limit: 256m
+    mem_limit: 192m
     depends_on:
       mongodb:
         condition: service_healthy
@@ -598,14 +621,15 @@ services:
     container_name: web-client
     restart: always
     ports:
-      - "3000:3000"
+      - "3005:3000"
     environment:
       GATEWAY_URL: http://api-gateway:8080
-      NEXT_PUBLIC_GATEWAY_URL: http://localhost:8080
+      NEXT_PUBLIC_GATEWAY_URL: http://localhost:8005
       AGENT_SWARM_SERVICE_URL: http://agent-swarm-service:8093
+      NODE_OPTIONS: "--max-old-space-size=192"
       PORT: 3000
       HOSTNAME: 0.0.0.0
-    mem_limit: 384m
+    mem_limit: 256m
     depends_on:
       - api-gateway
     networks:
