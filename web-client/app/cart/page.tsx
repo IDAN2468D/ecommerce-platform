@@ -452,11 +452,31 @@ export default function CartPage() {
 
           <Link
             href="/"
-            className="text-xs sm:text-sm font-bold text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1"
+            className="text-xs sm:text-sm font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
           >
             <span>המשך בקניות</span>
             <ArrowRight className="w-4 h-4 rotate-180" />
           </Link>
+        </div>
+      </div>
+
+      {/* TechNova 3-Step Stepper Bar */}
+      <div className="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div className="flex items-center justify-between max-w-xl mx-auto text-xs font-bold">
+          <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
+            <span className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-mono">1</span>
+            <span>עגלה ומשלוח</span>
+          </div>
+          <div className="h-0.5 flex-1 mx-3 bg-blue-500/40" />
+          <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
+            <span className="w-6 h-6 rounded-full bg-blue-600/20 text-blue-600 dark:text-blue-400 border border-blue-500/40 flex items-center justify-center text-xs font-mono">2</span>
+            <span>אמצעי תשלום</span>
+          </div>
+          <div className="h-0.5 flex-1 mx-3 bg-slate-200 dark:bg-slate-800" />
+          <div className="flex items-center gap-2 text-slate-400">
+            <span className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 flex items-center justify-center text-xs font-mono">3</span>
+            <span>אישור הזמנה</span>
+          </div>
         </div>
       </div>
 

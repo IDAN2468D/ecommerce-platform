@@ -411,12 +411,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             type="button"
             onClick={handleAdd}
             disabled={isOutOfStock}
-            className={`flex-1 h-12 rounded-2xl font-black text-sm sm:text-base flex items-center justify-center gap-2.5 transition-all shadow-lg active:scale-95 cursor-pointer ${
+            className={`flex-1 h-12 rounded-2xl font-bold text-sm sm:text-base flex items-center justify-center gap-2.5 transition-all shadow-md active:scale-95 cursor-pointer ${
               isAdded
-                ? "bg-emerald-500 text-slate-950"
+                ? "bg-emerald-500 text-white"
                 : isOutOfStock
                 ? "bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed"
-                : "bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 text-slate-950 shadow-amber-500/25"
+                : "bg-blue-600 hover:bg-blue-500 text-white shadow-blue-600/25"
             }`}
           >
             {isAdded ? (

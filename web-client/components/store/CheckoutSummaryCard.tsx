@@ -464,7 +464,7 @@ export const CheckoutSummaryCard: React.FC<CheckoutSummaryCardProps> = ({
               onClick={onCheckout}
               loading={loading}
               size="lg"
-              className="w-full h-13 text-sm sm:text-base font-black bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-500 text-slate-950 shadow-xl shadow-amber-500/25 rounded-2xl transition-all transform active:scale-[0.99] cursor-pointer flex items-center justify-center gap-2"
+              className="w-full h-13 text-sm sm:text-base font-black bg-gradient-to-r from-blue-600 via-blue-500 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white shadow-xl shadow-blue-600/30 rounded-2xl transition-all transform active:scale-[0.99] cursor-pointer flex items-center justify-center gap-2"
               icon={<ShieldCheck className="w-5 h-5 stroke-[2.5]" />}
             >
               {loading

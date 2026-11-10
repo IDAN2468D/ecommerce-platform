@@ -227,6 +227,101 @@ export default function CatalogPage() {
         )}
       </div>
 
+      {/* TechNova Promotional Banner (Up to 30% Off) */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-900 via-slate-900 to-indigo-950 text-white p-8 sm:p-12 border border-blue-500/30 shadow-2xl">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center relative z-10">
+          <div className="space-y-4 text-right">
+            <span className="px-3.5 py-1.5 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-300 text-xs font-mono font-bold">
+              מבצע לזמן מוגבל • LIMITED TIME OFFER
+            </span>
+            <h3 className="text-3xl sm:text-4xl font-black tracking-tight">
+              עד 30% הנחה על סמארטפונים נבחרים
+            </h3>
+            <p className="text-sm text-slate-300 max-w-md">
+              שדרגו לדגמי הדגל המובילים בעולם במחירים חסרי תקדים, פריסה ל-4 תשלומים ללא ריבית ומשלוח אקספרס עד פתח הבית חינם.
+            </p>
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedCategory("סמארטפונים");
+                  window.scrollTo({ top: 700, behavior: "smooth" });
+                }}
+                className="px-8 py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm shadow-xl shadow-blue-600/30 transition transform active:scale-95 cursor-pointer"
+              >
+                צפה במבצעים עכשיו ←
+              </button>
+            </div>
+          </div>
+          <div className="flex items-center justify-center">
+            <div className="text-center space-y-2">
+              <span className="text-4xl sm:text-6xl">📱✨</span>
+              <div className="text-lg font-bold text-blue-200">Better. Faster. Smarter. ♡</div>
+              <p className="text-xs text-slate-400">אחריות יבואן רשמי ל-24 חודשים בכל רכישה</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Shop by Brand Section */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-800">
+          <h3 className="text-xl font-black text-slate-900 dark:text-slate-100">קנה לפי מותג מוביל</h3>
+          <span className="text-xs text-blue-600 dark:text-blue-400 font-bold hover:underline cursor-pointer">
+            צפה בכל המותגים ←
+          </span>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+          {[
+            { name: "Apple", logo: "🍎", count: "12 דגמים" },
+            { name: "Samsung", logo: "🪐", count: "18 דגמים" },
+            { name: "Google", logo: "🌐", count: "8 דגמים" },
+            { name: "OnePlus", logo: "⚡", count: "6 דגמים" },
+            { name: "Xiaomi", logo: "🟧", count: "14 דגמים" },
+            { name: "Sony", logo: "🎧", count: "9 דגמים" },
+          ].map((brand) => (
+            <button
+              key={brand.name}
+              type="button"
+              onClick={() => {
+                setSearchQuery(brand.name);
+                window.scrollTo({ top: 700, behavior: "smooth" });
+              }}
+              className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-blue-500 transition-all text-center space-y-1 shadow-sm hover:shadow-md cursor-pointer group"
+            >
+              <div className="text-2xl group-hover:scale-110 transition-transform">{brand.logo}</div>
+              <div className="font-bold text-sm text-slate-900 dark:text-slate-100">{brand.name}</div>
+              <div className="text-[10px] text-slate-400 font-mono">{brand.count}</div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Stay Connected Newsletter Banner */}
+      <div className="relative overflow-hidden rounded-3xl bg-slate-900 text-white p-8 border border-slate-800 text-center space-y-4">
+        <div className="max-w-xl mx-auto space-y-2">
+          <span className="text-xs font-mono font-bold text-blue-400">NEWSLETTER & VIP OFFERS</span>
+          <h3 className="text-2xl sm:text-3xl font-black">הישאר מחובר להשקות והנחות בלעדיות</h3>
+          <p className="text-xs sm:text-sm text-slate-400">
+            הירשם לניוזלטר של TechNova וקבל שובר ₪100 לרכישה הראשונה והטבות VIP מוקדמות.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-2 max-w-md mx-auto pt-2">
+            <input
+              type="email"
+              placeholder="הזן כתובת דוא״ל..."
+              className="flex-1 px-4 py-3 rounded-xl bg-slate-800 border border-slate-700 text-sm text-white placeholder-slate-500 outline-none focus:border-blue-500 transition"
+            />
+            <button
+              type="button"
+              onClick={() => alert("תודה שנרשמת! שובר ההטבה נשלח לתיבת הדוא״ל שלך.")}
+              className="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm shadow-lg shadow-blue-600/30 transition cursor-pointer"
+            >
+              הרשמה
+            </button>
+          </div>
+        </div>
+      </div>
+
       {/* 5. Standalone Quick View & Reviews Modal (Single Instance) */}
       <ProductQuickViewModal
         product={quickViewProduct}
