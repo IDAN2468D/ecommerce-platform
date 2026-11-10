@@ -265,154 +265,284 @@ def main():
 
         gmail_service = build("gmail", "v1", credentials=creds)
 
-        subject = f"💎 אישור הזמנה וקופת FinTech מאוחדת - הזמנה #{order_id[:8]}"
+        subject = f"💎 אישור הזמנה רשמי וקופת FinTech מאוחדת - הזמנה #{order_id[:8]}"
         
+        # Bulletproof, luxury, Gmail-optimized HTML template
         html_body = f"""
-        <!DOCTYPE html>
-        <html dir="rtl" lang="he">
+        <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+        <html xmlns="http://www.w3.org/1999/xhtml" dir="rtl" lang="he">
         <head>
-          <meta charset="utf-8">
-          <style>
-            body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; direction: rtl; text-align: right; background-color: #0f172a; color: #f8fafc; padding: 24px; margin: 0; }}
-            .container {{ max-width: 620px; margin: 0 auto; background: #1e293b; border-radius: 20px; border: 1px solid #334155; padding: 32px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); }}
-            .card-visual {{ background: linear-gradient(135deg, #090d16 0%, #1e293b 50%, #0f172a 100%); border-radius: 16px; padding: 24px; border: 1px solid #f59e0b; margin-bottom: 24px; box-shadow: 0 10px 15px -3px rgba(245, 158, 11, 0.15); }}
-            .chip {{ display: inline-block; width: 36px; height: 26px; background: linear-gradient(to right, #fbbf24, #f59e0b); border-radius: 4px; margin-bottom: 12px; }}
-            .badge-gold {{ background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); padding: 4px 12px; border-radius: 9999px; font-size: 11px; font-family: monospace; font-weight: bold; }}
-            .badge-escrow {{ background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); padding: 4px 12px; border-radius: 9999px; font-size: 11px; font-family: monospace; font-weight: bold; }}
-            .item-table {{ width: 100%; border-collapse: collapse; margin-top: 16px; background: #0f172a; border-radius: 12px; overflow: hidden; }}
-            .item-table th, .item-table td {{ padding: 12px 16px; border-bottom: 1px solid #334155; text-align: right; }}
-            .timeline {{ margin-top: 24px; border-right: 3px solid #f59e0b; padding-right: 18px; }}
-            .timeline-step {{ margin-bottom: 14px; }}
-            .timeline-title {{ font-weight: bold; color: #fbbf24; font-size: 14px; }}
-            .timeline-desc {{ font-size: 12px; color: #94a3b8; margin-top: 2px; }}
-            .btn-cta {{ display: inline-block; background: linear-gradient(to right, #f59e0b, #d97706); color: #090d16; font-weight: 900; font-size: 15px; padding: 14px 28px; border-radius: 12px; text-decoration: none; margin-top: 20px; text-align: center; }}
-            .footer {{ margin-top: 32px; text-align: center; font-size: 12px; color: #64748b; border-top: 1px solid #334155; padding-top: 18px; }}
-          </style>
+          <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+          <title>{subject}</title>
         </head>
-        <body>
-          <div class="container">
-            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; padding-bottom: 16px; margin-bottom: 24px;">
-              <div>
-                <h1 style="font-size: 22px; font-weight: 900; color: #f8fafc; margin: 0;">⚡ קופת FinTech מאוחדת</h1>
-                <p style="color: #94a3b8; font-size: 13px; margin: 4px 0 0 0;">אישור תשלום דיגיטלי ונאמנות Smart Escrow</p>
-              </div>
-              <span class="badge-escrow">SHA-256 VERIFIED</span>
-            </div>
+        <body style="margin: 0; padding: 24px 0; background-color: #030712; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; direction: rtl; text-align: right; color: #f8fafc;">
+          
+          <!-- Outer Center Wrapper Table -->
+          <table border="0" cellpadding="0" cellspacing="0" width="100%" dir="rtl" style="background-color: #030712;">
+            <tr>
+              <td align="center" style="padding: 12px;">
+                
+                <!-- Main Email Card Container (640px) -->
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 640px; background-color: #0f172a; border-radius: 24px; border: 1px solid #1e293b; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.75);">
+                  
+                  <!-- Top Ambient Gradient Accent Line -->
+                  <tr>
+                    <td height="5" style="background: linear-gradient(90deg, #f59e0b 0%, #10b981 50%, #6366f1 100%); line-height: 5px; font-size: 1px;">&nbsp;</td>
+                  </tr>
 
-            <!-- Virtual Card Visual -->
-            <div class="card-visual">
-              <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div class="chip"></div>
-                <span class="badge-gold">FINTECH BLACK VIP</span>
-              </div>
-              <div style="font-size: 12px; color: #94a3b8; margin-top: 8px;">סה״כ שולם בעסקה:</div>
-              <div style="font-size: 32px; font-weight: 900; color: #fbbf24; font-family: monospace;">₪{final_amount:,.2f} ILS</div>
-              <div style="display: flex; justify-content: space-between; margin-top: 16px; font-size: 12px; color: #cbd5e1; border-top: 1px solid #334155; padding-top: 10px;">
-                <span><strong>מספר הזמנה:</strong> {order_id}</span>
-                <span><strong>אסמכתא:</strong> {payment_tx_id}</span>
-              </div>
-            </div>
+                  <!-- Header Area -->
+                  <tr>
+                    <td style="padding: 28px 32px 20px 32px; border-bottom: 1px solid #1e293b;">
+                      <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                        <tr>
+                          <td align="right" valign="middle">
+                            <table border="0" cellpadding="0" cellspacing="0">
+                              <tr>
+                                <td style="padding-left: 12px;">
+                                  <div style="width: 42px; height: 42px; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.35); border-radius: 12px; text-align: center; line-height: 42px; font-size: 20px;">⚡</div>
+                                </td>
+                                <td>
+                                  <h1 style="margin: 0; font-size: 22px; font-weight: 900; color: #ffffff; letter-spacing: -0.5px;">קופת FinTech מאוחדת</h1>
+                                  <p style="margin: 3px 0 0 0; font-size: 12px; color: #94a3b8;">אישור רכישה רשמי • פריסה 0% • נאמנות דיגיטלית</p>
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                          <td align="left" valign="middle">
+                            <span style="display: inline-block; padding: 6px 14px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 9999px; font-size: 11px; font-family: monospace; font-weight: bold; color: #34d399;">
+                              ● SHA-256 ESCROW
+                            </span>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
 
-            <h3 style="color: #f8fafc; margin-top: 24px;">📦 פירוט הרכישה וההטבות</h3>
-            <table class="item-table">
-              <thead>
-                <tr style="background: #1e293b; color: #94a3b8; font-size: 12px;">
-                  <th>מוצר</th>
-                  <th>מק״ט</th>
-                  <th>כמות</th>
-                  <th>מחיר</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td style="color: #f8fafc; font-weight: bold;">{product_name}</td>
-                  <td><code style="color: #fbbf24;">{sku_code}</code></td>
-                  <td>1</td>
-                  <td style="font-family: monospace;">₪{unit_price:,.2f}</td>
-                </tr>
-              </tbody>
-            </table>
+                  <!-- Main Content Body -->
+                  <tr>
+                    <td style="padding: 28px 32px;">
 
-            <div style="margin-top: 16px; padding: 14px; background: #0f172a; border-radius: 12px; font-size: 13px;">
-              <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
-                <span style="color: #94a3b8;">מחיר מחירון מקורי:</span>
-                <span style="font-family: monospace;">₪{unit_price:,.2f}</span>
-              </div>
-              <div style="display: flex; justify-content: space-between; margin-bottom: 6px; color: #34d399; font-weight: bold;">
-                <span>הנחת מועדון סוכנים VIP (קוד: SWARM-VIP10):</span>
-                <span style="font-family: monospace;">-₪{discount_amount:,.2f}</span>
-              </div>
-              <div style="display: flex; justify-content: space-between; margin-bottom: 6px; color: #38bdf8;">
-                <span>משלוח דואר ישראל אקספרס:</span>
-                <span>חינם (0 ₪) | מעקב: {tracking_number}</span>
-              </div>
-              <div style="display: flex; justify-content: space-between; border-top: 1px solid #334155; padding-top: 8px; font-size: 15px; font-weight: 900; color: #fbbf24;">
-                <span>סה״כ נטו לחיוב:</span>
-                <span style="font-family: monospace;">₪{final_amount:,.2f} ILS</span>
-              </div>
-            </div>
+                      <!-- Virtual FinTech Black VIP Card -->
+                      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background: linear-gradient(135deg, #020617 0%, #0f172a 60%, #1e1b4b 100%); border: 1px solid rgba(245, 158, 11, 0.5); border-radius: 20px; overflow: hidden; margin-bottom: 24px; box-shadow: 0 12px 24px -6px rgba(0, 0, 0, 0.6);">
+                        <tr>
+                          <td style="padding: 24px;">
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                              <tr>
+                                <td align="right">
+                                  <table border="0" cellpadding="0" cellspacing="0">
+                                    <tr>
+                                      <td width="36" height="26" style="background: linear-gradient(135deg, #fde68a 0%, #f59e0b 100%); border-radius: 6px; text-align: center; font-size: 9px; font-weight: 900; color: #020617; line-height: 26px;">CHIP</td>
+                                      <td style="padding-right: 10px; font-size: 10px; font-family: monospace; color: #94a3b8; letter-spacing: 1px;">NFC CONTACTLESS</td>
+                                    </tr>
+                                  </table>
+                                </td>
+                                <td align="left">
+                                  <span style="font-size: 11px; font-weight: 900; font-family: monospace; color: #fbbf24; letter-spacing: 2px;">FINTECH BLACK VIP</span>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td colspan="2" style="padding-top: 18px;">
+                                  <span style="font-size: 11px; color: #94a3b8; font-family: monospace;">סה״כ שולם בעסקה:</span>
+                                  <div style="font-size: 34px; font-weight: 900; color: #fbbf24; font-family: -apple-system, BlinkMacSystemFont, monospace; margin-top: 4px; letter-spacing: -1px;">
+                                    ₪{final_amount:,.2f}
+                                  </div>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td colspan="2" style="padding-top: 18px; border-top: 1px solid rgba(51, 65, 85, 0.7);">
+                                  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="font-size: 11px; font-family: monospace;">
+                                    <tr>
+                                      <td align="right" style="color: #cbd5e1;">
+                                        <span style="color: #64748b; display: block; font-size: 9px;">לקוח VIP</span>
+                                        <strong style="color: #ffffff;">עידן קזם (idankzm@gmail.com)</strong>
+                                      </td>
+                                      <td align="left" style="color: #cbd5e1;">
+                                        <span style="color: #64748b; display: block; font-size: 9px;">מספר הזמנה</span>
+                                        <strong style="color: #38bdf8;">#{order_id[:8]}</strong>
+                                      </td>
+                                    </tr>
+                                  </table>
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                      </table>
 
-            <!-- BNPL Breakdown -->
-            <div style="margin-top: 20px; padding: 14px; background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 12px;">
-              <div style="font-weight: bold; color: #fbbf24; font-size: 13px; margin-bottom: 8px;">
-                ⚡ פריסת 4 תשלומים חכמה ב-0% ריבית:
-              </div>
-              <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; text-align: center; font-size: 11px;">
-                <div style="background: #1e293b; padding: 8px; border-radius: 8px;">
-                  <div style="color: #94a3b8;">היום</div>
-                  <div style="color: #fbbf24; font-weight: bold; font-family: monospace; margin-top: 2px;">₪{final_amount/4:,.2f}</div>
-                </div>
-                <div style="background: #1e293b; padding: 8px; border-radius: 8px;">
-                  <div style="color: #94a3b8;">30 יום</div>
-                  <div style="color: #fbbf24; font-weight: bold; font-family: monospace; margin-top: 2px;">₪{final_amount/4:,.2f}</div>
-                </div>
-                <div style="background: #1e293b; padding: 8px; border-radius: 8px;">
-                  <div style="color: #94a3b8;">60 יום</div>
-                  <div style="color: #fbbf24; font-weight: bold; font-family: monospace; margin-top: 2px;">₪{final_amount/4:,.2f}</div>
-                </div>
-                <div style="background: #1e293b; padding: 8px; border-radius: 8px;">
-                  <div style="color: #94a3b8;">90 יום</div>
-                  <div style="color: #fbbf24; font-weight: bold; font-family: monospace; margin-top: 2px;">₪{final_amount/4:,.2f}</div>
-                </div>
-              </div>
-            </div>
+                      <!-- Product Showcase Table -->
+                      <h3 style="margin: 0 0 12px 0; font-size: 15px; font-weight: 800; color: #ffffff;">📦 פירוט פריטי הרכישה</h3>
+                      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #020617; border: 1px solid #1e293b; border-radius: 16px; overflow: hidden; margin-bottom: 20px;">
+                        <tr style="background-color: #1e293b; color: #94a3b8; font-size: 11px; font-weight: bold;">
+                          <td style="padding: 12px 16px;" align="right">מוצר</td>
+                          <td style="padding: 12px 16px;" align="center">מק״ט</td>
+                          <td style="padding: 12px 16px;" align="center">כמות</td>
+                          <td style="padding: 12px 16px;" align="left">מחיר</td>
+                        </tr>
+                        <tr>
+                          <td style="padding: 16px; border-top: 1px solid #1e293b;" align="right">
+                            <table border="0" cellpadding="0" cellspacing="0">
+                              <tr>
+                                <td style="padding-left: 12px;">
+                                  <div style="width: 48px; height: 48px; background: #0f172a; border: 1px solid #334155; border-radius: 12px; text-align: center; line-height: 48px; font-size: 24px;">📱</div>
+                                </td>
+                                <td>
+                                  <strong style="color: #ffffff; font-size: 13px; display: block;">{product_name}</strong>
+                                  <span style="font-size: 11px; color: #94a3b8;">אחריות יבואן רשמי 24 חודשים</span>
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                          <td style="padding: 16px; border-top: 1px solid #1e293b; font-family: monospace; color: #fbbf24; font-size: 12px;" align="center">{sku_code}</td>
+                          <td style="padding: 16px; border-top: 1px solid #1e293b; color: #ffffff; font-weight: bold; font-size: 13px;" align="center">1</td>
+                          <td style="padding: 16px; border-top: 1px solid #1e293b; font-family: monospace; color: #ffffff; font-weight: bold; font-size: 13px;" align="left">₪{unit_price:,.2f}</td>
+                        </tr>
+                      </table>
 
-            <!-- Kafka Event Trail -->
-            <h3 style="color: #f8fafc; margin-top: 24px;">⚡ תחנות SAGA ואפיק האירועים Kafka</h3>
-            <div class="timeline">
-              <div class="timeline-step">
-                <div class="timeline-title">1. order-events ➔ OrderCreatedEvent</div>
-                <div class="timeline-desc">ההזמנה נקלטה במסד MongoDB Atlas והופצה לכלל המיקרו-סרוויסים.</div>
-              </div>
-              <div class="timeline-step">
-                <div class="timeline-title">2. inventory-events ➔ StockReservedEvent</div>
-                <div class="timeline-desc">שירות המלאי שריין יחידה מקטלוג המוצרים ומנע מכירת יתר.</div>
-              </div>
-              <div class="timeline-step">
-                <div class="timeline-title">3. payment-events ➔ PaymentCapturedEvent</div>
-                <div class="timeline-desc">שירות התשלומים ביצע סליקת FinTech מאובטחת והנפיק אסמכתא דיגיטלית.</div>
-              </div>
-              <div class="timeline-step">
-                <div class="timeline-title">4. shipping-events ➔ ShipmentScheduledEvent</div>
-                <div class="timeline-desc">הוקצה משלוח אקספרס ונוצר מעקב לוגיסטי בדואר ישראל.</div>
-              </div>
-              <div class="timeline-step">
-                <div class="timeline-title">5. notification-events ➔ NotificationSentEvent</div>
-                <div class="timeline-desc">הודעת דוא״ל רשמית זו נשלחה לתיבת הג׳ימייל שלך דרך ה-API.</div>
-              </div>
-            </div>
+                      <!-- Financial Summary Box -->
+                      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #020617; border: 1px solid #1e293b; border-radius: 16px; padding: 16px; margin-bottom: 20px; font-size: 13px;">
+                        <tr>
+                          <td style="padding: 6px 16px; color: #94a3b8;" align="right">סכום ביניים קטלוג:</td>
+                          <td style="padding: 6px 16px; font-family: monospace; color: #ffffff;" align="left">₪{unit_price:,.2f}</td>
+                        </tr>
+                        <tr>
+                          <td style="padding: 6px 16px; color: #34d399; font-weight: bold;" align="right">הנחת מועדון VIP סוכנים (SWARM-VIP10):</td>
+                          <td style="padding: 6px 16px; font-family: monospace; color: #34d399; font-weight: bold;" align="left">-₪{discount_amount:,.2f}</td>
+                        </tr>
+                        <tr>
+                          <td style="padding: 6px 16px; color: #38bdf8;" align="right">משלוח אקספרס עד הבית (דואר ישראל):</td>
+                          <td style="padding: 6px 16px; color: #38bdf8; font-weight: bold;" align="left">חינם (0 ₪)</td>
+                        </tr>
+                        <tr>
+                          <td style="padding: 6px 16px; color: #94a3b8; font-size: 11px;" align="right">מספר מעקב לוגיסטי:</td>
+                          <td style="padding: 6px 16px; font-family: monospace; color: #e2e8f0; font-size: 11px;" align="left">{tracking_number}</td>
+                        </tr>
+                        <tr>
+                          <td colspan="2" style="padding: 12px 16px 4px 16px; border-top: 1px solid #1e293b;">
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                              <tr>
+                                <td align="right">
+                                  <strong style="color: #ffffff; font-size: 15px;">סה״כ נטו לחיוב:</strong>
+                                  <span style="display: block; font-size: 10px; color: #64748b;">כולל מע״מ מלא ואחריות Smart Escrow</span>
+                                </td>
+                                <td align="left">
+                                  <span style="font-size: 24px; font-weight: 900; color: #fbbf24; font-family: monospace;">₪{final_amount:,.2f}</span>
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                      </table>
 
-            <div style="text-align: center; margin-top: 28px;">
-              <a href="https://colon-minolta-increased-buys.trycloudflare.com/orders" class="btn-cta">
-                צפה בהזמנה זו באתר שלך (/orders) →
-              </a>
-            </div>
+                      <!-- BNPL 4-Payment Schedule (Bulletproof Table for Gmail) -->
+                      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 16px; padding: 16px; margin-bottom: 20px;">
+                        <tr>
+                          <td style="padding-bottom: 12px;" align="right">
+                            <strong style="color: #fbbf24; font-size: 13px;">⚡ פריסת 4 תשלומים חכמה ב-0% ריבית:</strong>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>
+                            <table border="0" cellpadding="0" cellspacing="4" width="100%" style="text-align: center; font-size: 11px;">
+                              <tr>
+                                <td width="25%" style="background-color: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 10px 4px;">
+                                  <span style="color: #94a3b8; font-size: 10px; display: block;">היום</span>
+                                  <strong style="color: #fbbf24; font-family: monospace; font-size: 12px; display: block; margin-top: 3px;">₪{final_amount/4:,.2f}</strong>
+                                  <span style="color: #34d399; font-size: 9px; display: block; margin-top: 2px;">מיידי</span>
+                                </td>
+                                <td width="25%" style="background-color: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 10px 4px;">
+                                  <span style="color: #94a3b8; font-size: 10px; display: block;">עוד 30 יום</span>
+                                  <strong style="color: #fbbf24; font-family: monospace; font-size: 12px; display: block; margin-top: 3px;">₪{final_amount/4:,.2f}</strong>
+                                  <span style="color: #34d399; font-size: 9px; display: block; margin-top: 2px;">0% ריבית</span>
+                                </td>
+                                <td width="25%" style="background-color: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 10px 4px;">
+                                  <span style="color: #94a3b8; font-size: 10px; display: block;">עוד 60 יום</span>
+                                  <strong style="color: #fbbf24; font-family: monospace; font-size: 12px; display: block; margin-top: 3px;">₪{final_amount/4:,.2f}</strong>
+                                  <span style="color: #34d399; font-size: 9px; display: block; margin-top: 2px;">0% ריבית</span>
+                                </td>
+                                <td width="25%" style="background-color: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 10px 4px;">
+                                  <span style="color: #94a3b8; font-size: 10px; display: block;">עוד 90 יום</span>
+                                  <strong style="color: #fbbf24; font-family: monospace; font-size: 12px; display: block; margin-top: 3px;">₪{final_amount/4:,.2f}</strong>
+                                  <span style="color: #34d399; font-size: 9px; display: block; margin-top: 2px;">תשלום סופי</span>
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                      </table>
 
-            <div class="footer">
-              <p>מערכת מסחר אלקטרוני מבוזרת | Google Antigravity & Agent Swarm v8.0</p>
-              <p>כל הזכויות שמורות לפלטפורמת המסחר החכמה. תעודת אחריות דיגיטלית מוגנת בהצפנת SHA-256.</p>
-            </div>
-          </div>
+                      <!-- Guaranteed Future Buyback Pledge Box -->
+                      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 14px; padding: 12px 16px; margin-bottom: 22px;">
+                        <tr>
+                          <td width="30" valign="middle" align="center" style="font-size: 18px;">🛡️</td>
+                          <td align="right" valign="middle" style="font-size: 12px; color: #e2e8f0; padding-right: 8px;">
+                            <strong style="color: #34d399;">התחייבות שמירת ערך עתידית (24 חודשים):</strong>
+                            <span style="display: block; color: #94a3b8; font-size: 11px; margin-top: 2px;">
+                              ערך של <strong>₪{final_amount*0.74:,.2f} (74%)</strong> מובטח בטרייד-אין הבא עבור מוצר זה.
+                            </span>
+                          </td>
+                        </tr>
+                      </table>
+
+                      <!-- Kafka SAGA Event Audit Trail -->
+                      <h3 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 800; color: #ffffff;">⚡ תחנות SAGA ואפיק האירועים ב-Kafka</h3>
+                      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-right: 3px solid #f59e0b; padding-right: 14px; margin-bottom: 24px; font-size: 12px;">
+                        <tr>
+                          <td style="padding: 4px 0;" align="right">
+                            <strong style="color: #fbbf24;">✓ order-events</strong> &nbsp;➔&nbsp; <span style="color: #cbd5e1;">OrderCreatedEvent נקלט ב-MongoDB</span>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style="padding: 4px 0;" align="right">
+                            <strong style="color: #fbbf24;">✓ inventory-events</strong> &nbsp;➔&nbsp; <span style="color: #cbd5e1;">StockReservedEvent שריין יחידה מקטלוג המוצרים</span>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style="padding: 4px 0;" align="right">
+                            <strong style="color: #fbbf24;">✓ payment-events</strong> &nbsp;➔&nbsp; <span style="color: #cbd5e1;">PaymentCapturedEvent ביצע סליקה והנפיק אסמכתא</span>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style="padding: 4px 0;" align="right">
+                            <strong style="color: #fbbf24;">✓ shipping-events</strong> &nbsp;➔&nbsp; <span style="color: #cbd5e1;">ShipmentScheduledEvent הפיק מספר מעקב {tracking_number}</span>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style="padding: 4px 0;" align="right">
+                            <strong style="color: #fbbf24;">✓ notification-events</strong> &nbsp;➔&nbsp; <span style="color: #cbd5e1;">NotificationSentEvent נשלח לג׳ימייל שלך ב-API</span>
+                          </td>
+                        </tr>
+                      </table>
+
+                      <!-- Bulletproof Action Button -->
+                      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin: 20px 0 10px 0;">
+                        <tr>
+                          <td align="center">
+                            <a href="https://colon-minolta-increased-buys.trycloudflare.com/orders" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #020617; font-weight: 900; font-size: 15px; padding: 15px 36px; border-radius: 14px; text-decoration: none; box-shadow: 0 10px 20px -5px rgba(245, 158, 11, 0.4); letter-spacing: -0.3px;">
+                              צפה בהזמנה זו במעקב הזמנות באתר ←
+                            </a>
+                          </td>
+                        </tr>
+                      </table>
+
+                    </td>
+                  </tr>
+
+                  <!-- Footer Area -->
+                  <tr>
+                    <td style="background-color: #020617; border-top: 1px solid #1e293b; padding: 24px 32px; text-align: center; font-size: 11px; color: #64748b;">
+                      <p style="margin: 0 0 6px 0; color: #94a3b8; font-weight: bold;">מערכת מסחר אלקטרוני מבוזרת • Google Antigravity & Agent Swarm v8.0</p>
+                      <p style="margin: 0; line-height: 1.5;">הזמנה מאובטחת בתקני SSL 256-Bit • PCI-DSS Level 1 • Smart Escrow קריפטוגרפי.</p>
+                      <p style="margin: 8px 0 0 0; font-family: monospace; font-size: 10px; color: #475569;">אסמכתת תשלום: {payment_tx_id}</p>
+                    </td>
+                  </tr>
+
+                </table>
+
+              </td>
+            </tr>
+          </table>
+
         </body>
         </html>
         """
