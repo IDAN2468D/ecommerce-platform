@@ -2,8 +2,8 @@
 
 - **Governance**: Spec-First (`.agents/specs/WEB_CLIENT_REDESIGN_SPEC.md`, `.agents/specs/RECOMMENDATION_RAG_INTEGRATION_SPEC.md`, `PRD-2026-UI-REDESIGN-V3`).
 - **Team Lead Approval**: Approved by Idan.
-- **Current Active Focus**: UI/UX Redesign V3 (Liquid Glass 4.0 Pro RTL & Modular Architecture).
-- **Last Updated**: 2026-11-01
+- **Current Active Focus**: Track F Verified (Full-Stack Enterprise Extensions via Native Swarm: Merchant Analytics, Fraud Guard, Marketplace Payouts & AI Gift Finder).
+- **Last Updated**: 2026-11-11
 
 ---
 
@@ -61,6 +61,26 @@
 - [x] E.3 חיווט נתיב 12 ב-`api-gateway/src/main/resources/application.yml` (`/api/v1/agents/**`) והוספת השירות ל-`docker-compose.yml`.
 - [x] E.4 אינטגרציה ב-Next.js: הוספת נתיבי פרוקסי `/api/agents/swarm/query` ו-`/api/agents/swarm/stream` ועידכון `RagAssistantDrawer.tsx` עם תגיות סוכנים פעילות.
 - [x] E.5 אימות מלא מקצה לקצה: בדיקת הרצה עצמית של 5 הסוכנים (`python agent-swarm-service/ecommerce_agent_swarm.py --self-test` 100% Green) ובניית `npm run build` ללא שגיאות.
+
+---
+
+## ⚡ Track F: Full-Stack Enterprise Extensions via Native Swarm (V6.0)
+- [x] F.1 טלמטריה עסקית וחיזוי התרוקנות מלאי AI (`merchant-analytics-service`):
+  - יצירת נתיבי פרוקסי Next.js: `/api/analytics/summary`, `/api/analytics/inventory-forecast`, `/api/analytics/ai-copilot`.
+  - רכיב `MerchantAnalyticsDashboard.tsx` בעיצוב Liquid Glass 4.0 Pro RTL עם כרטיסי KPI חיים (GMV, AOV, המרה, מניעת הונאות ו-VIP), טבלת שריפת מלאי עם התראות דחיפות (CRITICAL/URGENT/SAFE), והדמיית פקודת רכש (PO).
+  - סייען שיחה אינטראקטיבי `AI Merchant Copilot` עם תובנות תפעוליות בעברית ואנגלית ושאלות מובנות מראש.
+- [x] F.2 מרכז מודיעין ואבטחת עסקאות `SAGA Pre-Capture Fraud Guard` (`fraud-risk-service`):
+  - יצירת נתיבי פרוקסי Next.js: `/api/fraud/alerts`, `/api/fraud/assess`, `/api/fraud/order/[orderId]`.
+  - רכיב `FraudGuardDashboard.tsx` עם מד התפלגות סיכון (0-100), ניטור חריגות מהירות (Velocity Anomaly) מבוסס חלון זמן ב-Redis, סימולטור הערכת הונאות טרום-חיוב בזמן אמת, ופיד התראות אבטחה חי.
+- [x] F.3 ניהול משיכות כספי ספקים ומרכז ספקים מרובים (`marketplace-vendor-service`):
+  - יצירת נתיבי פרוקסי Next.js: `/api/marketplace/vendors`, `/api/marketplace/vendors/[id]/payout`.
+  - שדרוג `web-client/app/marketplace/page.tsx` לשימוש בנתיבים יחסיים, מנגנון משיכת רווחים מהיר עם פילוח בנקאי וקבלה דיגיטלית, וסולם עמלות שקוף.
+- [x] F.4 שאלון מותאם אישית לאיתור מתנות וסטיילינג `AI Gift Finder`:
+  - רכיב `AiGiftFinderModal.tsx` עם אשף 4 שלבים (נמען, תקציב, אירוע, סגנון), מנוע התאמה חכם, הנחות באנדל מיוחדות ויצירת קמפיין מימון חברתי בלחיצה אחת.
+  - שילוב ב-`web-client/app/gifting/page.tsx` בכפתור בולט ב-Hero Section.
+- [x] F.5 איחוד מרכז הבקרה הראשי (`web-client/app/admin/page.tsx`):
+  - שילוב מחליף טאבים ראשי (3 טאבים מלאים: בקרה ו-SAGA, אנליטיקה ותחזית מלאי AI, ומרכז הגנת הונאות).
+- [x] F.6 אימות מקצה לקצה: הרצת `npm run build` מלאה (29 נתיבים ירוקים 100% ללא שגיאות).
 
 ---
 

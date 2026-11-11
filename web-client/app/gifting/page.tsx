@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { Button } from "../../components/ui/Button";
 import { useCurrency } from "../../context/CurrencyContext";
+import { AiGiftFinderModal, GiftBundle } from "../../components/store/AiGiftFinderModal";
 
 interface GiftCampaign {
   id: string;
@@ -64,6 +65,7 @@ export default function GiftingTradeInB2bPage() {
   const [appraisals, setAppraisals] = useState<TradeInAppraisal[]>([]);
   const [quotes, setQuotes] = useState<B2bQuote[]>([]);
   const [toast, setToast] = useState<string | null>(null);
+  const [isGiftFinderOpen, setIsGiftFinderOpen] = useState<boolean>(false);
 
   // Trade-In Form state
   const [deviceModel, setDeviceModel] = useState("Apple iPad Pro 12.9 M2");
@@ -93,6 +95,10 @@ export default function GiftingTradeInB2bPage() {
   const showNotice = (msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(null), 4000);
+  };
+
+  const handleBundleSelected = (bundle: GiftBundle) => {
+    showNotice(`מארז המתנה "${bundle.title}" (${formatPrice(bundle.bundlePrice)}) נוסף לעגלת הקניות בהצלחה! חיסכון של ${bundle.discountPct}%.`);
   };
 
   const handleChipInGift = async (camp: GiftCampaign) => {
@@ -181,18 +187,40 @@ export default function GiftingTradeInB2bPage() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-10 pb-16" dir="rtl">
-      {/* Header */}
-      <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-slate-950 via-emerald-950/40 to-slate-950 border border-emerald-500/30 shadow-2xl space-y-2">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-bold">
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>Ports 8104 • 8105 • 8106 | TradeInValuationAgent & Social Split-Pay</span>
+      
+      {/* Header with AI Gift Finder CTA */}
+      <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-slate-950 via-emerald-950/40 to-slate-950 border border-emerald-500/30 shadow-2xl relative overflow-hidden flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+        <div className="space-y-2 max-w-3xl">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-bold">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Ports 8104 • 8105 • 8106 | TradeInValuationAgent & Social Split-Pay</span>
+          </div>
+          <h1 className="text-2xl sm:text-4xl font-black text-white">
+            מתנות משותפות, טרייד-אין חכם (`AI Trade-In`) ורכש ארגוני `B2B`
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+            פיצול תשלום מתנות בין חברים (`gift-registry-splitpay-service`), שמאות מכשירים ישנים עם זיכוי מיידי לקופה (`trade-in-circular-service`), והצעות מחיר כמותיות לעסקים (`b2b-wholesale-quote-service`).
+          </p>
         </div>
-        <h1 className="text-2xl sm:text-4xl font-black text-white">
-          מתנות משותפות, טרייד-אין חכם (`AI Trade-In`) ורכש ארגוני `B2B`
-        </h1>
-        <p className="text-xs sm:text-sm text-slate-400 max-w-3xl">
-          פיצול תשלום מתנות בין חברים (`gift-registry-splitpay-service`), שמאות מכשירים ישנים עם זיכוי מיידי לקופה (`trade-in-circular-service`), והצעות מחיר כמותיות לעסקים (`b2b-wholesale-quote-service`).
-        </p>
+
+        {/* Hero Trigger Button for AI Gift Finder */}
+        <div className="shrink-0 w-full lg:w-auto">
+          <Button
+            onClick={() => setIsGiftFinderOpen(true)}
+            className="w-full lg:w-auto bg-gradient-to-r from-emerald-500 via-teal-500 to-indigo-600 hover:from-emerald-400 hover:to-indigo-500 text-white font-black px-6 py-4 rounded-2xl shadow-xl shadow-emerald-500/25 flex items-center justify-center gap-3.5 text-sm transform hover:scale-[1.02] active:scale-[0.98] transition-all border border-emerald-400/30 group"
+          >
+            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white shrink-0 group-hover:bg-white/30 transition-colors">
+              <Sparkles className="w-5 h-5 text-amber-300 animate-pulse" />
+            </div>
+            <div className="text-right">
+              <div className="text-[11px] text-emerald-100 font-medium">עוזר סטיילינג ושופינג AI</div>
+              <div className="text-sm font-black flex items-center gap-1.5">
+                <span>AI Gift Finder & Personal Shopper</span>
+                <span className="text-base">🎁</span>
+              </div>
+            </div>
+          </Button>
+        </div>
       </div>
 
       {toast && (
@@ -201,6 +229,13 @@ export default function GiftingTradeInB2bPage() {
           <span>{toast}</span>
         </div>
       )}
+
+      {/* AI Gift Finder Modal Component */}
+      <AiGiftFinderModal
+        isOpen={isGiftFinderOpen}
+        onClose={() => setIsGiftFinderOpen(false)}
+        onSelectBundle={handleBundleSelected}
+      />
 
       {/* SECTION 1: Social Gifting & Multi-Payer Split */}
       <section className="space-y-4">

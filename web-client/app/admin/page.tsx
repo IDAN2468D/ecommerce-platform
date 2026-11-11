@@ -5,6 +5,7 @@ import {
   Activity,
   Server,
   ShieldCheck,
+  ShieldAlert,
   Cpu,
   Database,
   RefreshCw,
@@ -12,8 +13,13 @@ import {
   Play,
   Layers,
   TrendingUp,
+  BarChart3,
+  Sparkles,
+  Lock,
 } from "lucide-react";
 import { Button } from "../../components/ui/Button";
+import MerchantAnalyticsDashboard from "../../components/store/MerchantAnalyticsDashboard";
+import FraudGuardDashboard from "../../components/store/FraudGuardDashboard";
 
 interface ServiceNode {
   name: string;
@@ -53,7 +59,10 @@ const MICROSERVICES_CATALOG: ServiceNode[] = [
   { name: "b2b-wholesale-quote-service", port: 8106, tier: "FinTech & Commerce", latencyMs: 6, status: "UP", description: "B2B Corporate Bulk RFQ & Net-30 Invoicing" },
 ];
 
+type AdminTab = "saga" | "analytics" | "fraud";
+
 export default function AdminCommandCenterPage() {
+  const [activeTab, setActiveTab] = useState<AdminTab>("saga");
   const [activeSagaStep, setActiveSagaStep] = useState<number>(5);
   const [simulatingSaga, setSimulatingSaga] = useState(false);
   const [selectedTier, setSelectedTier] = useState<string>("ALL");
@@ -84,117 +93,204 @@ export default function AdminCommandCenterPage() {
             <span>23 Microservices Online • Java 21 Virtual Threads & Kafka KRaft</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-black text-white">
-            מרכז שליטה ובקרה לאדמין (`Enterprise SAGA & Telemetry Center`)
+            מרכז שליטה ובקרה לאדמין (`Enterprise Admin Command Center`)
           </h1>
           <p className="text-xs sm:text-sm text-slate-400">
-            ניטור חי של 23 מיקרו-שירותים (פורטים `8080`–`8103`), סימולטור `5-Step SAGA`, ובקרת `Transactional Outbox`.
+            ניטור חי של 23 מיקרו-שירותים, תזמור SAGA, אנליטיקה וחיזוי מלאי AI, ומערך הגנת הונאות Pre-Capture בזמן אמת.
           </p>
         </div>
 
-        <Button
-          onClick={runLiveSagaTrace}
-          loading={simulatingSaga}
-          className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-5 py-3 rounded-2xl flex items-center gap-2"
+        {activeTab === "saga" && (
+          <Button
+            onClick={runLiveSagaTrace}
+            loading={simulatingSaga}
+            className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-5 py-3 rounded-2xl flex items-center gap-2"
+          >
+            <Play className="w-4 h-4" />
+            <span>הרץ סימולציית 5-Step SAGA חיה</span>
+          </Button>
+        )}
+      </div>
+
+      {/* Top-Level Tab Switcher */}
+      <div className="flex flex-wrap items-center gap-2 p-1.5 rounded-2xl bg-white dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200 dark:border-slate-800 shadow-xl">
+        <button
+          onClick={() => setActiveTab("saga")}
+          className={`flex items-center gap-2.5 px-5 py-3 rounded-xl text-xs sm:text-sm font-black transition-all duration-200 ${
+            activeTab === "saga"
+              ? "bg-gradient-to-r from-amber-500 to-amber-400 text-slate-950 shadow-lg shadow-amber-500/20"
+              : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60"
+          }`}
         >
-          <Play className="w-4 h-4" />
-          <span>הרץ סימולציית 5-Step SAGA חיה</span>
-        </Button>
-      </div>
-
-      {/* Interactive 5-Step SAGA Pipeline Visualizer */}
-      <div className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="font-black text-base sm:text-lg text-slate-900 dark:text-white flex items-center gap-2">
-            <Layers className="w-5 h-5 text-amber-500" />
-            <span>צינור תזמור הזמנות אטומי (`5-Step Event-Driven Kafka SAGA`)</span>
-          </h2>
-          <span className="text-xs font-mono text-emerald-500 font-bold">
-            Zero Message Loss • Outbox Buffer Ready
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
-          {[
-            { step: 1, title: "1. Order Initiation", svc: "order-service (8081)", event: "OrderCreatedEvent" },
-            { step: 2, title: "2. Stock Lock", svc: "inventory-service (8082)", event: "StockReservedEvent" },
-            { step: 3, title: "3. Payment & BNPL", svc: "payment / bnpl (8083/8101)", event: "PaymentCapturedEvent" },
-            { step: 4, title: "4. Carrier & Escrow", svc: "shipping / warranty (8086/8103)", event: "ShipmentScheduledEvent" },
-            { step: 5, title: "5. PDF & SSE Push", svc: "workspace / notif (8091/8085)", event: "OrderConfirmed + Drive PDF" },
-          ].map((item) => {
-            const reached = activeSagaStep >= item.step;
-            return (
-              <div
-                key={item.step}
-                className={`p-4 rounded-2xl border transition-all ${
-                  reached
-                    ? "bg-emerald-500/10 border-emerald-500/40 text-emerald-700 dark:text-emerald-300"
-                    : "bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-400"
-                }`}
-              >
-                <div className="flex items-center justify-between text-xs font-black">
-                  <span>{item.title}</span>
-                  <CheckCircle2 className={`w-4 h-4 ${reached ? "text-emerald-500" : "text-slate-600"}`} />
-                </div>
-                <p className="text-[11px] font-mono mt-1.5 text-slate-500 dark:text-slate-400">{item.svc}</p>
-                <span className="inline-block mt-2 px-2 py-0.5 rounded bg-slate-900 text-amber-400 font-mono text-[10px]">
-                  {item.event}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Tier Filter Tabs */}
-      <div className="flex flex-wrap items-center gap-2">
-        {["ALL", "Edge", "Core SAGA", "AI & Swarm", "FinTech & Commerce"].map((tier) => (
-          <button
-            key={tier}
-            onClick={() => setSelectedTier(tier)}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition ${
-              selectedTier === tier
-                ? "bg-amber-500 text-slate-950 shadow-md"
-                : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-800"
+          <Layers className="w-4 h-4" />
+          <span>בקרה וארכיטקטורת SAGA</span>
+          <span
+            className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
+              activeTab === "saga"
+                ? "bg-slate-950/20 text-slate-950"
+                : "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
             }`}
           >
-            {tier === "ALL" ? `כל המיקרו-שירותים (${MICROSERVICES_CATALOG.length})` : tier}
-          </button>
-        ))}
+            23 Services
+          </span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab("analytics")}
+          className={`flex items-center gap-2.5 px-5 py-3 rounded-xl text-xs sm:text-sm font-black transition-all duration-200 ${
+            activeTab === "analytics"
+              ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/20"
+              : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60"
+          }`}
+        >
+          <BarChart3 className="w-4 h-4" />
+          <span>אנליטיקה ותחזית מלאי AI</span>
+          <span
+            className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
+              activeTab === "analytics"
+                ? "bg-white/20 text-white"
+                : "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
+            }`}
+          >
+            AI Copilot
+          </span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab("fraud")}
+          className={`flex items-center gap-2.5 px-5 py-3 rounded-xl text-xs sm:text-sm font-black transition-all duration-200 ${
+            activeTab === "fraud"
+              ? "bg-gradient-to-r from-rose-500 to-red-600 text-white shadow-lg shadow-rose-500/20"
+              : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60"
+          }`}
+        >
+          <ShieldAlert className="w-4 h-4" />
+          <span>מרכז הגנת הונאות ו-Risk Guard</span>
+          <span
+            className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
+              activeTab === "fraud"
+                ? "bg-white/20 text-white"
+                : "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
+            }`}
+          >
+            Pre-Capture
+          </span>
+        </button>
       </div>
 
-      {/* Microservices Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredServices.map((svc) => (
-          <div
-            key={svc.name}
-            className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-md flex flex-col justify-between space-y-3"
-          >
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center text-amber-400">
-                  <Server className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="font-mono font-black text-xs sm:text-sm text-slate-900 dark:text-white">
-                    {svc.name}
-                  </h3>
-                  <span className="text-[10px] font-bold text-indigo-400">{svc.tier}</span>
-                </div>
-              </div>
-              <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-500 font-mono text-[10px] font-black">
-                :{svc.port} • UP
+      {/* Tab 1: בקרה וארכיטקטורת SAGA */}
+      {activeTab === "saga" && (
+        <div className="space-y-8 animate-fadeIn">
+          {/* Interactive 5-Step SAGA Pipeline Visualizer */}
+          <div className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="font-black text-base sm:text-lg text-slate-900 dark:text-white flex items-center gap-2">
+                <Layers className="w-5 h-5 text-amber-500" />
+                <span>צינור תזמור הזמנות אטומי (`5-Step Event-Driven Kafka SAGA`)</span>
+              </h2>
+              <span className="text-xs font-mono text-emerald-500 font-bold">
+                Zero Message Loss • Outbox Buffer Ready
               </span>
             </div>
 
-            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">{svc.description}</p>
-
-            <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] font-mono text-slate-400">
-              <span>P95 Latency: <strong className="text-emerald-400">{svc.latencyMs}ms</strong></span>
-              <span>Actuator: /health</span>
+            <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
+              {[
+                { step: 1, title: "1. Order Initiation", svc: "order-service (8081)", event: "OrderCreatedEvent" },
+                { step: 2, title: "2. Stock Lock", svc: "inventory-service (8082)", event: "StockReservedEvent" },
+                { step: 3, title: "3. Payment & BNPL", svc: "payment / bnpl (8083/8101)", event: "PaymentCapturedEvent" },
+                { step: 4, title: "4. Carrier & Escrow", svc: "shipping / warranty (8086/8103)", event: "ShipmentScheduledEvent" },
+                { step: 5, title: "5. PDF & SSE Push", svc: "workspace / notif (8091/8085)", event: "OrderConfirmed + Drive PDF" },
+              ].map((item) => {
+                const reached = activeSagaStep >= item.step;
+                return (
+                  <div
+                    key={item.step}
+                    className={`p-4 rounded-2xl border transition-all ${
+                      reached
+                        ? "bg-emerald-500/10 border-emerald-500/40 text-emerald-700 dark:text-emerald-300"
+                        : "bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-400"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between text-xs font-black">
+                      <span>{item.title}</span>
+                      <CheckCircle2 className={`w-4 h-4 ${reached ? "text-emerald-500" : "text-slate-600"}`} />
+                    </div>
+                    <p className="text-[11px] font-mono mt-1.5 text-slate-500 dark:text-slate-400">{item.svc}</p>
+                    <span className="inline-block mt-2 px-2 py-0.5 rounded bg-slate-900 text-amber-400 font-mono text-[10px]">
+                      {item.event}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
           </div>
-        ))}
-      </div>
+
+          {/* Tier Filter Tabs */}
+          <div className="flex flex-wrap items-center gap-2">
+            {["ALL", "Edge", "Core SAGA", "AI & Swarm", "FinTech & Commerce"].map((tier) => (
+              <button
+                key={tier}
+                onClick={() => setSelectedTier(tier)}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition ${
+                  selectedTier === tier
+                    ? "bg-amber-500 text-slate-950 shadow-md"
+                    : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-800"
+                }`}
+              >
+                {tier === "ALL" ? `כל המיקרו-שירותים (${MICROSERVICES_CATALOG.length})` : tier}
+              </button>
+            ))}
+          </div>
+
+          {/* Microservices Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredServices.map((svc) => (
+              <div
+                key={svc.name}
+                className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-md flex flex-col justify-between space-y-3"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-9 h-9 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center text-amber-400">
+                      <Server className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h3 className="font-mono font-black text-xs sm:text-sm text-slate-900 dark:text-white">
+                        {svc.name}
+                      </h3>
+                      <span className="text-[10px] font-bold text-indigo-400">{svc.tier}</span>
+                    </div>
+                  </div>
+                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-500 font-mono text-[10px] font-black">
+                    :{svc.port} • UP
+                  </span>
+                </div>
+
+                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">{svc.description}</p>
+
+                <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] font-mono text-slate-400">
+                  <span>P95 Latency: <strong className="text-emerald-400">{svc.latencyMs}ms</strong></span>
+                  <span>Actuator: /health</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Tab 2: אנליטיקה ותחזית מלאי AI */}
+      {activeTab === "analytics" && (
+        <div className="animate-fadeIn">
+          <MerchantAnalyticsDashboard />
+        </div>
+      )}
+
+      {/* Tab 3: מרכז הגנת הונאות ו-Risk Guard */}
+      {activeTab === "fraud" && (
+        <div className="animate-fadeIn">
+          <FraudGuardDashboard />
+        </div>
+      )}
     </div>
   );
 }

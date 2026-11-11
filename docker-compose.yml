@@ -419,24 +419,12 @@ services:
       MARKETPLACE_SERVICE_URL: http://marketplace-vendor-service:8099
     mem_limit: 224m
     depends_on:
-      - order-service
+      - redis
       - inventory-service
-      - payment-service
-      - notification-service
       - auth-service
-      - shipping-delivery-service
-      - review-rating-service
+      - order-service
+      - payment-service
       - cart-wishlist-service
-      - recommendation-loyalty-service
-      - workspace-integration-service
-      - rag-service
-      - agent-swarm-service
-      - rma-returns-service
-      - dynamic-pricing-service
-      - fraud-risk-service
-      - merchant-analytics-service
-      - subscription-billing-service
-      - marketplace-vendor-service
     networks:
       - platform-network
 
