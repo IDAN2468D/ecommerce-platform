@@ -21,6 +21,7 @@ import {
   ShieldCheck,
   Users,
   RefreshCw,
+  Shirt,
 } from "lucide-react";
 import { useCurrency } from "../../context/CurrencyContext";
 
@@ -37,6 +38,8 @@ export interface ProductCardProps {
   onToggleCompare?: (skuCode: string) => void;
   onOpenQuickView?: (product: any) => void;
   isFeatured?: boolean;
+  tags?: string[];
+  liquidGlassSpecs?: any;
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({
@@ -52,6 +55,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   onToggleCompare,
   onOpenQuickView,
   isFeatured = false,
+  tags,
+  liquidGlassSpecs,
 }) => {
   const router = useRouter();
   const { formatPrice } = useCurrency();
@@ -113,6 +118,26 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     );
   };
 
+  const isFashion =
+    category === "אופנה" ||
+    category === "FASHION" ||
+    category === "CLOTHING" ||
+    category === "ACCESSORIES" ||
+    category?.toLowerCase().includes("dress") ||
+    category?.toLowerCase().includes("shirt") ||
+    category?.toLowerCase().includes("shoes");
+
+  const handleOpenFitting = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    window.dispatchEvent(
+      new CustomEvent("open-virtual-fitting-modal", {
+        detail: {
+          product: { skuCode, name, price, image, category },
+        },
+      })
+    );
+  };
+
   const handleNegotiate = (e: React.MouseEvent) => {
     e.stopPropagation();
     window.dispatchEvent(
@@ -135,12 +160,17 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         isFeatured ? "electric-border-card" : ""
       }`}
     >
-      <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-amber-500 via-amber-300 to-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-30 pointer-events-none" />
+      <div
+        className="absolute top-0 inset-x-0 h-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-30 pointer-events-none"
+        style={{
+          background: liquidGlassSpecs?.accentGradient || "linear-gradient(to right, #f59e0b, #fde047, #6366f1)",
+        }}
+      />
 
       <div className="relative z-10">
         {/* Visual Box */}
         <div
-          onClick={() => onOpenQuickView?.({ skuCode, name, price, description, image, category, stock })}
+          onClick={() => onOpenQuickView?.({ skuCode, name, price, description, image, category, stock, tags, liquidGlassSpecs })}
           className="relative h-72 sm:h-80 w-full bg-gradient-to-b from-slate-100 via-slate-50 to-slate-100 dark:from-slate-950/40 dark:via-slate-900/60 dark:to-slate-950 overflow-hidden cursor-pointer flex items-center justify-center p-6 border-b border-slate-200/60 dark:border-slate-800/80"
         >
           {isUrl && !imgError ? (
@@ -220,14 +250,25 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 <Scale className="w-4 h-4" />
               </button>
             )}
-            <button
-              type="button"
-              onClick={handleOpenRoomAr}
-              title="הדמיה בחלל החדר (Gemini Vision AR)"
-              className="w-10 h-10 rounded-2xl bg-cyan-500/90 text-slate-950 hover:bg-cyan-400 border border-cyan-300 flex items-center justify-center transition-all shadow-lg active:scale-90"
-            >
-              <Sparkles className="w-4 h-4" />
-            </button>
+            {isFashion ? (
+              <button
+                type="button"
+                onClick={handleOpenFitting}
+                title="תא מדידה וירטואלי (AI Vision)"
+                className="w-10 h-10 rounded-2xl bg-indigo-600 text-white hover:bg-indigo-500 border border-indigo-400 flex items-center justify-center transition-all shadow-lg active:scale-90"
+              >
+                <Shirt className="w-4 h-4" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleOpenRoomAr}
+                title="הדמיה בחלל החדר (Gemini Vision AR)"
+                className="w-10 h-10 rounded-2xl bg-cyan-500/90 text-slate-950 hover:bg-cyan-400 border border-cyan-300 flex items-center justify-center transition-all shadow-lg active:scale-90"
+              >
+                <Sparkles className="w-4 h-4" />
+              </button>
+            )}
             <button
               type="button"
               onClick={(e) => {
@@ -270,7 +311,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           </div>
 
           <h3
-            onClick={() => onOpenQuickView?.({ skuCode, name, price, description, image, category, stock })}
+            onClick={() => onOpenQuickView?.({ skuCode, name, price, description, image, category, stock, tags, liquidGlassSpecs })}
             className="font-black text-slate-900 dark:text-slate-100 text-lg sm:text-xl leading-snug group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors line-clamp-2 cursor-pointer"
           >
             {name}
@@ -278,6 +319,20 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed min-h-[2.5rem]">
             {description}
           </p>
+
+          {/* Product Tags (Fashion, Clothing, Accessories, etc.) */}
+          {tags && tags.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 pt-0.5">
+              {tags.slice(0, 3).map((tag) => (
+                <span
+                  key={tag}
+                  className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-slate-100/90 dark:bg-slate-800/90 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700/80"
+                >
+                  #{tag}
+                </span>
+              ))}
+            </div>
+          )}
 
           {/* Holographic SHA-256 Warranty & Resale Value Pill */}
           <div className="flex flex-wrap items-center gap-1.5 pt-0.5 text-[11px]">
@@ -357,14 +412,25 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             <span className="truncate">התמקח AI</span>
           </button>
 
-          <button
-            type="button"
-            onClick={handleOpenRoomAr}
-            className="py-1.5 px-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-700 dark:text-cyan-300 border border-cyan-500/25 font-bold flex items-center justify-center gap-1 transition-colors cursor-pointer"
-          >
-            <Eye className="w-3 h-3 text-cyan-500 shrink-0" />
-            <span className="truncate">הדמיה בחדר</span>
-          </button>
+          {isFashion ? (
+            <button
+              type="button"
+              onClick={handleOpenFitting}
+              className="py-1.5 px-2 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 text-purple-700 dark:text-purple-300 border border-purple-500/25 font-bold flex items-center justify-center gap-1 transition-colors cursor-pointer"
+            >
+              <Shirt className="w-3 h-3 text-purple-500 shrink-0" />
+              <span className="truncate">מדידה AI</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleOpenRoomAr}
+              className="py-1.5 px-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-700 dark:text-cyan-300 border border-cyan-500/25 font-bold flex items-center justify-center gap-1 transition-colors cursor-pointer"
+            >
+              <Eye className="w-3 h-3 text-cyan-500 shrink-0" />
+              <span className="truncate">הדמיה בחדר</span>
+            </button>
+          )}
 
           <button
             type="button"

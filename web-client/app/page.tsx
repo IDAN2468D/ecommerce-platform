@@ -19,6 +19,8 @@ interface Product {
     availableQuantity: number;
     reservedQuantity: number;
   };
+  tags?: string[];
+  liquidGlassSpecs?: any;
 }
 
 export default function CatalogPage() {
@@ -61,6 +63,8 @@ export default function CatalogPage() {
               availableQuantity: Number(item.availableQuantity ?? item.stock?.availableQuantity ?? 10),
               reservedQuantity: Number(item.reservedQuantity ?? item.stock?.reservedQuantity ?? 0),
             },
+            tags: Array.isArray(item.tags) ? item.tags : [],
+            liquidGlassSpecs: item.liquidGlassSpecs || null,
           }));
           setProducts(mapped);
           setLoading(false);
@@ -85,7 +89,9 @@ export default function CatalogPage() {
     products.forEach((p) => {
       if (p.category) set.add(p.category);
     });
-    return ["הכל", ...Array.from(set)];
+    const primaryOrder = ["הכל", "FASHION", "CLOTHING", "ACCESSORIES"];
+    const otherCats = Array.from(set).filter((c) => !primaryOrder.includes(c));
+    return [...primaryOrder.filter((c) => c === "הכל" || set.has(c)), ...otherCats];
   }, [products]);
 
   const toggleCompare = (sku: string) => {
@@ -101,13 +107,18 @@ export default function CatalogPage() {
 
   const filteredProducts = useMemo(() => {
     const q = (searchQuery || "").toLowerCase();
+    const selCatLower = selectedCategory.toLowerCase();
     return products
       .filter((p) => {
-        const matchesCat = selectedCategory === "הכל" || p.category === selectedCategory;
+        const matchesCat =
+          selectedCategory === "הכל" ||
+          p.category.toLowerCase() === selCatLower ||
+          (p.tags && p.tags.some((t: string) => t.toLowerCase() === selCatLower));
         const pName = (p.name || "").toLowerCase();
         const pSku = (p.skuCode || "").toLowerCase();
         const pDesc = (p.description || "").toLowerCase();
-        const matchesQuery = !q || pName.includes(q) || pSku.includes(q) || pDesc.includes(q);
+        const pTags = (p.tags || []).join(" ").toLowerCase();
+        const matchesQuery = !q || pName.includes(q) || pSku.includes(q) || pDesc.includes(q) || pTags.includes(q);
         const matchesMin = minPrice === "" || (p.price || 0) >= Number(minPrice);
         const matchesMax = maxPrice === "" || (p.price || 0) <= Number(maxPrice);
         const matchesStock = !onlyInStock || ((p.stock?.availableQuantity || 0) > 0);
@@ -216,6 +227,8 @@ export default function CatalogPage() {
                 image={product.image}
                 category={product.category}
                 stock={product.stock}
+                tags={product.tags}
+                liquidGlassSpecs={product.liquidGlassSpecs}
                 onAddToCart={addToCart}
                 isCompared={comparedSkus.includes(product.skuCode)}
                 onToggleCompare={toggleCompare}

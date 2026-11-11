@@ -16,6 +16,7 @@ import {
 import { Button } from "../../components/ui/Button";
 import { useCurrency } from "../../context/CurrencyContext";
 import { RoomVisualizerModal } from "../../components/store/RoomVisualizerModal";
+import { LiveAuctionGroupBuyModal } from "../../components/store/LiveAuctionGroupBuyModal";
 
 interface FlashCampaign {
   id: string;
@@ -63,6 +64,10 @@ export default function ArenaPage() {
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const [visualizerOpen, setVisualizerOpen] = useState(false);
   const [visualizerProduct, setVisualizerProduct] = useState<string | undefined>(undefined);
+  const [liveModalOpen, setLiveModalOpen] = useState(false);
+  const [liveModalCampaign, setLiveModalCampaign] = useState<FlashCampaign | null>(null);
+  const [liveModalSquad, setLiveModalSquad] = useState<GroupBuySquad | null>(null);
+  const [liveModalMode, setLiveModalMode] = useState<"auction" | "group_buy">("auction");
 
   const loadArenaData = async () => {
     setLoading(true);
@@ -173,6 +178,42 @@ export default function ArenaPage() {
         isOpen={visualizerOpen}
         onClose={() => setVisualizerOpen(false)}
         defaultProductName={visualizerProduct}
+      />
+
+      <LiveAuctionGroupBuyModal
+        isOpen={liveModalOpen}
+        onClose={() => setLiveModalOpen(false)}
+        defaultMode={liveModalMode}
+        initialCampaign={liveModalCampaign as any}
+        initialSquad={liveModalSquad as any}
+        onBidPlaced={(cId, amount) => {
+          setCampaigns((prev) =>
+            prev.map((c) =>
+              c.id === cId
+                ? {
+                    ...c,
+                    currentHighestBid: amount,
+                    highestBidderName: "עידן קזם (VIP)",
+                    totalBidsCount: c.totalBidsCount + 1,
+                  }
+                : c
+            )
+          );
+        }}
+        onSquadJoined={(sqId) => {
+          setSquads((prev) =>
+            prev.map((sq) => {
+              if (sq.id !== sqId) return sq;
+              const nextCount = sq.currentParticipants + 1;
+              return {
+                ...sq,
+                currentParticipants: nextCount,
+                status: nextCount >= sq.targetParticipants ? "UNLOCKED" : sq.status,
+                participantNames: [...(sq.participantNames || []), "עידן קזם"],
+              };
+            })
+          );
+        }}
       />
 
       {/* Hero Header */}
@@ -312,20 +353,32 @@ export default function ArenaPage() {
 
                 <div className="p-5 pt-0">
                   {isAuction ? (
-                    <Button
-                      onClick={() => handlePlaceBid(c)}
-                      className="w-full bg-gradient-to-r from-amber-500 to-amber-400 text-slate-950 font-black py-3 rounded-2xl flex items-center justify-center gap-2"
-                    >
-                      <Gavel className="w-4 h-4" />
-                      <span>
-                        הגש הצעה של {formatPrice(c.currentHighestBid + (c.minBidIncrement || 100))}
-                      </span>
-                    </Button>
+                    <div className="space-y-2">
+                      <Button
+                        onClick={() => {
+                          setLiveModalCampaign(c);
+                          setLiveModalSquad(null);
+                          setLiveModalMode("auction");
+                          setLiveModalOpen(true);
+                        }}
+                        className="w-full bg-gradient-to-r from-amber-500 to-amber-400 text-slate-950 font-black py-3 rounded-2xl flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-amber-500/20"
+                      >
+                        <Gavel className="w-4 h-4" />
+                        <span>פתח חדר מכרז חי & Auto-Snipe</span>
+                      </Button>
+                      <button
+                        type="button"
+                        onClick={() => handlePlaceBid(c)}
+                        className="w-full text-center text-xs text-amber-500 hover:text-amber-400 font-bold py-1"
+                      >
+                        הגש הצעה מהירה של {formatPrice(c.currentHighestBid + (c.minBidIncrement || 100))}
+                      </button>
+                    </div>
                   ) : (
                     <Button
                       onClick={() => handleClaimFlashDrop(c)}
                       disabled={c.remainingStock <= 0}
-                      className="w-full bg-gradient-to-r from-rose-500 to-amber-500 text-white font-black py-3 rounded-2xl flex items-center justify-center gap-2"
+                      className="w-full bg-gradient-to-r from-rose-500 to-amber-500 text-white font-black py-3 rounded-2xl flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <ShoppingBag className="w-4 h-4" />
                       <span>{c.remainingStock > 0 ? "תפוס יחידה ב-Flash Drop" : "אזל המלאי במבצע"}</span>
@@ -408,14 +461,26 @@ export default function ArenaPage() {
                   </div>
                 </div>
 
-                <div className="p-5 pt-0">
+                <div className="p-5 pt-0 space-y-2">
                   <Button
-                    onClick={() => handleJoinSquad(sq)}
-                    className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black py-3 rounded-2xl flex items-center justify-center gap-2"
+                    onClick={() => {
+                      setLiveModalSquad(sq);
+                      setLiveModalCampaign(null);
+                      setLiveModalMode("group_buy");
+                      setLiveModalOpen(true);
+                    }}
+                    className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black py-3 rounded-2xl flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-emerald-600/20"
                   >
-                    <Users className="w-4 h-4" />
-                    <span>{isUnlocked ? "ההנחה נפתחה! הצטרף מיד במחיר קבוצה" : "הצטרף לקבוצת הרכישה עכשיו"}</span>
+                    <TrendingUp className="w-4 h-4" />
+                    <span>פתח מד התקדמות הנחת הקבוצה</span>
                   </Button>
+                  <button
+                    type="button"
+                    onClick={() => handleJoinSquad(sq)}
+                    className="w-full text-center text-xs text-emerald-400 hover:text-emerald-300 font-bold py-1"
+                  >
+                    {isUnlocked ? "ההנחה נפתחה! הצטרף מיד במחיר קבוצה" : "הצטרף לקבוצת הרכישה עכשיו"}
+                  </button>
                 </div>
               </div>
             );

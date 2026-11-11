@@ -1,0 +1,1741 @@
+[
+  {
+    "skuCode": "MEN-FAS-BLU-083",
+    "productName": "חולצת משבצות כחול-שחור פרימיום לגברים",
+    "unitPrice": 189.0,
+    "description": "חולצת כפתורים קלאסית במשבצות כחול-שחור מכותנה מצרית איכותית 100%, נושמת ומתאימה ליומיום ולאירועים.",
+    "category": "CLOTHING",
+    "imageUrl": "https://cdn.dummyjson.com/product-images/mens-shirts/blue-&-black-check-shirt/thumbnail.webp",
+    "images": [
+      "https://cdn.dummyjson.com/product-images/mens-shirts/blue-&-black-check-shirt/1.webp",
+      "https://cdn.dummyjson.com/product-images/mens-shirts/blue-&-black-check-shirt/2.webp",
+      "https://cdn.dummyjson.com/product-images/mens-shirts/blue-&-black-check-shirt/3.webp",
+      "https://cdn.dummyjson.com/product-images/mens-shirts/blue-&-black-check-shirt/4.webp"
+    ],
+    "availableQuantity": 38,
+    "reservedQuantity": 0,
+    "tags": [
+      "CLOTHING",
+      "FASHION",
+      "חולצות",
+      "גברים",
+      "כותנה",
+      "Casual"
+    ],
+    "brand": "Fashion Trends",
+    "rating": 3.64,
+    "liquidGlassSpecs": {
+      "theme": "indigo",
+      "glowColor": "rgba(99, 102, 241, 0.4)",
+      "badgeStyle": "liquid-indigo-badge",
+      "backdropBlur": "24px",
+      "glassMaterial": "ultra-clear-glass",
+      "accentGradient": "linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%)",
+      "cardElevation": "medium",
+      "sparkleColor": "#60a5fa"
+    }
+  },
+  {
+    "skuCode": "MEN-GIG-GIG-084",
+    "productName": "חולצת טי איכותית Gigabyte Aorus לגברים",
+    "unitPrice": 149.0,
+    "description": "חולצת גיימינג ואופנת רחוב יוקרתית עם לוגו Aorus מובלט, גזרה מחמיאה ועמידות מירבית בכביסות.",
+    "category": "CLOTHING",
+    "imageUrl": "https://cdn.dummyjson.com/product-images/mens-shirts/gigabyte-aorus-men-tshirt/thumbnail.webp",
+    "images": [
+      "https://cdn.dummyjson.com/product-images/mens-shirts/gigabyte-aorus-men-tshirt/1.webp",
+      "https://cdn.dummyjson.com/product-images/mens-shirts/gigabyte-aorus-men-tshirt/2.webp",
+      "https://cdn.dummyjson.com/product-images/mens-shirts/gigabyte-aorus-men-tshirt/3.webp",
+      "https://cdn.dummyjson.com/product-images/mens-shirts/gigabyte-aorus-men-tshirt/4.webp"
+    ],
+    "availableQuantity": 90,
+    "reservedQuantity": 0,
+    "tags": [
+      "CLOTHING",
+      "FASHION",
+      "חולצות טי",
+      "גיימינג",
+      "גברים",
+      "Streetwear"
+    ],
+    "brand": "Gigabyte",
+    "rating": 3.18,
+    "liquidGlassSpecs": {
+      "theme": "amber",
+      "glowColor": "rgba(245, 158, 11, 0.4)",
+      "badgeStyle": "liquid-amber-badge",
+      "backdropBlur": "24px",
+      "glassMaterial": "smoked-glass",
+      "accentGradient": "linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)",
+      "cardElevation": "medium",
+      "sparkleColor": "#fbbf24"
+    }
+  },
+  {
+    "skuCode": "MEN-CLA-PLA-085",
+    "productName": "חולצת פלנל משובצת קלאסית לגברים",
+    "unitPrice": 219.0,
+    "description": "חולצת פלנל חמימה ונעימה בגזרת Regular Fit, מושלמת לעונות מעבר וחורף עם סגירת כפתורים מחוזקת.",
+    "category": "CLOTHING",
+    "imageUrl": "https://cdn.dummyjson.com/product-images/mens-shirts/man-plaid-shirt/thumbnail.webp",
+    "images": [
+      "https://cdn.dummyjson.com/product-images/mens-shirts/man-plaid-shirt/1.webp",
+      "https://cdn.dummyjson.com/product-images/mens-shirts/man-plaid-shirt/2.webp",
+      "https://cdn.dummyjson.com/product-images/mens-shirts/man-plaid-shirt/3.webp",
+      "https://cdn.dummyjson.com/product-images/mens-shirts/man-plaid-shirt/4.webp"
+    ],
+    "availableQuantity": 82,
+    "reservedQuantity": 0,
+    "tags": [
+      "CLOTHING",
+      "FASHION",
+      "חולצות",
+      "פלנל",
+      "חורף",
+      "גברים"
+    ],
+    "brand": "Classic Wear",
+    "rating": 3.46,
+    "liquidGlassSpecs": {
+      "theme": "amber",
+      "glowColor": "rgba(217, 119, 6, 0.35)",
+      "badgeStyle": "liquid-amber-badge",
+      "backdropBlur": "24px",
+      "glassMaterial": "frosted-glass",
+      "accentGradient": "linear-gradient(135deg, #d97706 0%, #b45309 100%)",
+      "cardElevation": "medium",
+      "sparkleColor": "#fbbf24"
+    }
+  },
+  {
+    "skuCode": "MEN-CAS-SHO-086",
+    "productName": "חולצה קצרה אוורירית לגבר בגזרת Slim",
+    "unitPrice": 169.0,
+    "description": "חולצה קצרת שרוולים קלילה מבד פשתן מעורב, אוורירית ומעוצבת במיוחד לאקלים חם ולחופשות קיץ.",
+    "category": "CLOTHING",
+    "imageUrl": "https://cdn.dummyjson.com/product-images/mens-shirts/man-short-sleeve-shirt/thumbnail.webp",
+    "images": [
+      "https://cdn.dummyjson.com/product-images/mens-shirts/man-short-sleeve-shirt/1.webp",
+      "https://cdn.dummyjson.com/product-images/mens-shirts/man-short-sleeve-shirt/2.webp",
+      "https://cdn.dummyjson.com/product-images/mens-shirts/man-short-sleeve-shirt/3.webp",
+      "https://cdn.dummyjson.com/product-images/mens-shirts/man-short-sleeve-shirt/4.webp"
+    ],
+    "availableQuantity": 4,
+    "reservedQuantity": 0,
+    "tags": [
+      "CLOTHING",
+      "FASHION",
+      "חולצות קצרות",
+      "פשתן",
+      "קיץ",
+      "גברים"
+    ],
+    "brand": "Casual Comfort",
+    "rating": 2.9,
+    "liquidGlassSpecs": {
+      "theme": "cyan",
+      "glowColor": "rgba(6, 182, 212, 0.4)",
+      "badgeStyle": "liquid-cyan-badge",
+      "backdropBlur": "24px",
+      "glassMaterial": "ultra-clear-glass",
+      "accentGradient": "linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)",
+      "cardElevation": "medium",
+      "sparkleColor": "#60a5fa"
+    }
+  },
+  {
+    "skuCode": "MEN-URB-CHE-087",
+    "productName": "חולצת כפתורים משובצת אלגנטית לגברים",
+    "unitPrice": 249.0,
+    "description": "חולצת עסקים יוקרתית בדוגמת משבצות עדינה, צווארון מעוצב עם עצמות חיזוק ובד Non-Iron שאינו מתקמט.",
+    "category": "CLOTHING",
+    "imageUrl": "https://cdn.dummyjson.com/product-images/mens-shirts/men-check-shirt/thumbnail.webp",
+    "images": [
+      "https://cdn.dummyjson.com/product-images/mens-shirts/men-check-shirt/1.webp",
+      "https://cdn.dummyjson.com/product-images/mens-shirts/men-check-shirt/2.webp",
+      "https://cdn.dummyjson.com/product-images/mens-shirts/men-check-shirt/3.webp",
+      "https://cdn.dummyjson.com/product-images/mens-shirts/men-check-shirt/4.webp"
+    ],
+    "availableQuantity": 95,
+    "reservedQuantity": 0,
+    "tags": [
+      "CLOTHING",
+      "FASHION",
+      "עסקים",
+      "חולצות מכופתרות",
+      "גברים",
+      "Executive"
+    ],
+    "brand": "Urban Chic",
+    "rating": 2.72,
+    "liquidGlassSpecs": {
+      "theme": "indigo",
+      "glowColor": "rgba(79, 70, 229, 0.35)",
+      "badgeStyle": "liquid-indigo-badge",
+      "backdropBlur": "24px",
+      "glassMaterial": "ultra-clear-glass",
+      "accentGradient": "linear-gradient(135deg, #4338ca 0%, #6366f1 100%)",
+      "cardElevation": "medium",
+      "sparkleColor": "#60a5fa"
+    }
+  },
+  {
+    "skuCode": "WOM-BRD-BLA-177",
+    "productName": "שמלת ערב מקסי יוקרתית לנשים בשחור מלכותי",
+    "unitPrice": 799.0,
+    "description": "שמלת ערב ארוכה ומרשימה מבד משי קרפ איטלקי, גזרה מחמיאה המדגישה את המותן ומחשוף אלגנטי לאירועים נוצצים.",
+    "category": "CLOTHING",
+    "imageUrl": "https://cdn.dummyjson.com/product-images/womens-dresses/black-women's-gown/thumbnail.webp",
+    "images": [
+      "https://cdn.dummyjson.com/product-images/womens-dresses/black-women's-gown/1.webp",
+      "https://cdn.dummyjson.com/product-images/womens-dresses/black-women's-gown/2.webp",
+      "https://cdn.dummyjson.com/product-images/womens-dresses/black-women's-gown/3.webp",
+      "https://cdn.dummyjson.com/product-images/womens-dresses/black-women's-gown/4.webp"
+    ],
+    "availableQuantity": 25,
+    "reservedQuantity": 0,
+    "tags": [
+      "CLOTHING",
+      "FASHION",
+      "שמלות ערב",
+      "נשים",
+      "שחור",
+      "Couture"
+    ],
+    "brand": "Fashion Pro",
+    "rating": 3.64,
+    "liquidGlassSpecs": {
+      "theme": "rose",
+      "glowColor": "rgba(244, 63, 94, 0.45)",
+      "badgeStyle": "liquid-rose-badge",
+      "backdropBlur": "24px",
+      "glassMaterial": "smoked-glass",
+      "accentGradient": "linear-gradient(135deg, #f43f5e 0%, #881337 100%)",
+      "cardElevation": "high",
+      "sparkleColor": "#60a5fa"
+    }
+  },
+  {
+    "skuCode": "WOM-BRD-COR-178",
+    "productName": "מחוך עור משולב חצאית אלגנטית",
+    "unitPrice": 549.0,
+    "description": "עיצוב נועז וייחודי המשלב מחוך עור טבעוני מובנה עם חצאית מתנפנפת אלגנטית, לשילוב מודרני מנצח.",
+    "category": "CLOTHING",
+    "imageUrl": "https://cdn.dummyjson.com/product-images/womens-dresses/corset-leather-with-skirt/thumbnail.webp",
+    "images": [
+      "https://cdn.dummyjson.com/product-images/womens-dresses/corset-leather-with-skirt/1.webp",
+      "https://cdn.dummyjson.com/product-images/womens-dresses/corset-leather-with-skirt/2.webp",
+      "https://cdn.dummyjson.com/product-images/womens-dresses/corset-leather-with-skirt/3.webp",
+      "https://cdn.dummyjson.com/product-images/womens-dresses/corset-leather-with-skirt/4.webp"
+    ],
+    "availableQuantity": 30,
+    "reservedQuantity": 0,
+    "tags": [
+      "CLOTHING",
+      "FASHION",
+      "מחוכים",
+      "עור",
+      "שמלות",
+      "נשים"
+    ],
+    "brand": "Fashion Pro",
+    "rating": 3.05,
+    "liquidGlassSpecs": {
+      "theme": "rose",
+      "glowColor": "rgba(225, 29, 72, 0.4)",
+      "badgeStyle": "liquid-rose-badge",
+      "backdropBlur": "24px",
+      "glassMaterial": "smoked-glass",
+      "accentGradient": "linear-gradient(135deg, #e11d48 0%, #4c0519 100%)",
+      "cardElevation": "high",
+      "sparkleColor": "#60a5fa"
+    }
+  },
+  {
+    "skuCode": "WOM-BRD-COR-179",
+    "productName": "מחוך מעוצב עם חצאית שחורה אופנתית",
+    "unitPrice": 499.0,
+    "description": "דגם סקסי ואלגנטי בעיטורי תחרה עדינים ומבנה תומך, מגיע עם חצאית מיני שחורה יוקרתית.",
+    "category": "CLOTHING",
+    "imageUrl": "https://cdn.dummyjson.com/product-images/womens-dresses/corset-with-black-skirt/thumbnail.webp",
+    "images": [
+      "https://cdn.dummyjson.com/product-images/womens-dresses/corset-with-black-skirt/1.webp",
+      "https://cdn.dummyjson.com/product-images/womens-dresses/corset-with-black-skirt/2.webp",
+      "https://cdn.dummyjson.com/product-images/womens-dresses/corset-with-black-skirt/3.webp",
+      "https://cdn.dummyjson.com/product-images/womens-dresses/corset-with-black-skirt/4.webp"
+    ],
+    "availableQuantity": 33,
+    "reservedQuantity": 0,
+    "tags": [
+      "CLOTHING",
+      "FASHION",
+      "מחוך",
+      "חצאיות",
+      "נשים",
+      "Evening"
+    ],
+    "brand": "Fashion Pro",
+    "rating": 4.52,
+    "liquidGlassSpecs": {
+      "theme": "rose",
+      "glowColor": "rgba(190, 24, 93, 0.4)",
+      "badgeStyle": "liquid-rose-badge",
+      "backdropBlur": "24px",
+      "glassMaterial": "frosted-glass",
+      "accentGradient": "linear-gradient(135deg, #be185d 0%, #500724 100%)",
+      "cardElevation": "medium",
+      "sparkleColor": "#60a5fa"
+    }
+  },
+  {
+    "skuCode": "WOM-BRD-DRE-180",
+    "productName": "שמלת Pea קלילה בגזרה נשית מחמיאה",
+    "unitPrice": 289.0,
+    "description": "שמלת יומיום קלילה ונעימה מכותנה אורגנית, הדפס נקודות עדין ושרוולים קצרים עם סיומת גומי אלסטית.",
+    "category": "CLOTHING",
+    "imageUrl": "https://cdn.dummyjson.com/product-images/womens-dresses/dress-pea/thumbnail.webp",
+    "images": [
+      "https://cdn.dummyjson.com/product-images/womens-dresses/dress-pea/1.webp",
+      "https://cdn.dummyjson.com/product-images/womens-dresses/dress-pea/2.webp",
+      "https://cdn.dummyjson.com/product-images/womens-dresses/dress-pea/3.webp",
+      "https://cdn.dummyjson.com/product-images/womens-dresses/dress-pea/4.webp"
+    ],
+    "availableQuantity": 6,
+    "reservedQuantity": 0,
+    "tags": [
+      "CLOTHING",
+      "FASHION",
+      "שמלות קיץ",
+      "נשים",
+      "Casual",
+      "כותנה"
+    ],
+    "brand": "Fashion Pro",
+    "rating": 4.88,
+    "liquidGlassSpecs": {
+      "theme": "cyan",
+      "glowColor": "rgba(14, 165, 233, 0.35)",
+      "badgeStyle": "liquid-cyan-badge",
+      "backdropBlur": "24px",
+      "glassMaterial": "ultra-clear-glass",
+      "accentGradient": "linear-gradient(135deg, #0ea5e9 0%, #38bdf8 100%)",
+      "cardElevation": "medium",
+      "sparkleColor": "#60a5fa"
+    }
+  },
+  {
+    "skuCode": "WOM-BRD-MAR-181",
+    "productName": "חליפת שני חלקים יוקרתית Marni אדום ושחור",
+    "unitPrice": 999.0,
+    "description": "סט יוקרתי של ז'קט מחויט וחצאית בעיצוב בית האופנה Marni, שילוב צבעים דרמטי וטקסטורת צמר עשירה.",
+    "category": "CLOTHING",
+    "imageUrl": "https://cdn.dummyjson.com/product-images/womens-dresses/marni-red-&-black-suit/thumbnail.webp",
+    "images": [
+      "https://cdn.dummyjson.com/product-images/womens-dresses/marni-red-&-black-suit/1.webp",
+      "https://cdn.dummyjson.com/product-images/womens-dresses/marni-red-&-black-suit/2.webp",
+      "https://cdn.dummyjson.com/product-images/womens-dresses/marni-red-&-black-suit/3.webp",
+      "https://cdn.dummyjson.com/product-images/womens-dresses/marni-red-&-black-suit/4.webp"
+    ],
+    "availableQuantity": 62,
+    "reservedQuantity": 0,
+    "tags": [
+      "CLOTHING",
+      "FASHION",
+      "חליפות",
+      "Marni",
+      "נשים",
+      "Designer"
+    ],
+    "brand": "Fashion Pro",
+    "rating": 4.48,
+    "liquidGlassSpecs": {
+      "theme": "gold",
+      "glowColor": "rgba(245, 158, 11, 0.45)",
+      "badgeStyle": "liquid-gold-badge",
+      "backdropBlur": "24px",
+      "glassMaterial": "iridescent-glass",
+      "accentGradient": "linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%)",
+      "cardElevation": "high",
+      "sparkleColor": "#fbbf24"
+    }
+  },
+  {
+    "skuCode": "TOP-BRD-BLU-162",
+    "productName": "שמלת קיץ כחולה בגזרת Frock מתנפנפת",
+    "unitPrice": 199.0,
+    "description": "שמלת בוהו-שיק כחולה מבד ויסקוזה נופל, מחשוף וי מעוטר רקמה וסיומת מלמלה קסומה.",
+    "category": "CLOTHING",
+    "imageUrl": "https://cdn.dummyjson.com/product-images/tops/blue-frock/thumbnail.webp",
+    "images": [
+      "https://cdn.dummyjson.com/product-images/tops/blue-frock/1.webp",
+      "https://cdn.dummyjson.com/product-images/tops/blue-frock/2.webp",
+      "https://cdn.dummyjson.com/product-images/tops/blue-frock/3.webp",
+      "https://cdn.dummyjson.com/product-images/tops/blue-frock/4.webp"
+    ],
+    "availableQuantity": 52,
+    "reservedQuantity": 0,
+    "tags": [
+      "CLOTHING",
+      "FASHION",
+      "שמלות",
+      "בוהו שיק",
+      "קיץ",
+      "נשים"
+    ],
+    "brand": "Fashion Pro",
+    "rating": 4.17,
+    "liquidGlassSpecs": {
+      "theme": "cyan",
+      "glowColor": "rgba(6, 182, 212, 0.4)",
+      "badgeStyle": "liquid-cyan-badge",
+      "backdropBlur": "24px",
+      "glassMaterial": "ultra-clear-glass",
+      "accentGradient": "linear-gradient(135deg, #0891b2 0%, #22d3ee 100%)",
+      "cardElevation": "medium",
+      "sparkleColor": "#60a5fa"
+    }
+  },
+  {
+    "skuCode": "TOP-BRD-GIR-163",
+    "productName": "שמלת קיץ פרחונית לנערות ונשים",
+    "unitPrice": 179.0,
+    "description": "שמלת ספגטי קלילה עם הדפס פרחים טרופי חי, כתפיות מתכווננות ובד נעים ומרענן לימי שמש חמים.",
+    "category": "CLOTHING",
+    "imageUrl": "https://cdn.dummyjson.com/product-images/tops/girl-summer-dress/thumbnail.webp",
+    "images": [
+      "https://cdn.dummyjson.com/product-images/tops/girl-summer-dress/1.webp",
+      "https://cdn.dummyjson.com/product-images/tops/girl-summer-dress/2.webp",
+      "https://cdn.dummyjson.com/product-images/tops/girl-summer-dress/3.webp",
+      "https://cdn.dummyjson.com/product-images/tops/girl-summer-dress/4.webp"
+    ],
+    "availableQuantity": 43,
+    "reservedQuantity": 0,
+    "tags": [
+      "CLOTHING",
+      "FASHION",
+      "שמלות",
+      "פרחוני",
+      "קיץ",
+      "נשים"
+    ],
+    "brand": "Fashion Pro",
+    "rating": 4.77,
+    "liquidGlassSpecs": {
+      "theme": "rose",
+      "glowColor": "rgba(236, 72, 153, 0.4)",
+      "badgeStyle": "liquid-rose-badge",
+      "backdropBlur": "24px",
+      "glassMaterial": "frosted-glass",
+      "accentGradient": "linear-gradient(135deg, #ec4899 0%, #f472b6 100%)",
+      "cardElevation": "medium",
+      "sparkleColor": "#60a5fa"
+    }
+  },
+  {
+    "skuCode": "TOP-BRD-GRA-164",
+    "productName": "שמלת קז'ואל אפורה בטקסטורה רכה",
+    "unitPrice": 169.0,
+    "description": "שמלת טי שירט אפורה בטקסטורת מלאנג' מפנקת, גזרה ישרה עם שסע צדדי קטן לנוחות מקסימלית בתנועה.",
+    "category": "CLOTHING",
+    "imageUrl": "https://cdn.dummyjson.com/product-images/tops/gray-dress/thumbnail.webp",
+    "images": [
+      "https://cdn.dummyjson.com/product-images/tops/gray-dress/1.webp",
+      "https://cdn.dummyjson.com/product-images/tops/gray-dress/2.webp",
+      "https://cdn.dummyjson.com/product-images/tops/gray-dress/3.webp",
+      "https://cdn.dummyjson.com/product-images/tops/gray-dress/4.webp"
+    ],
+    "availableQuantity": 55,
+    "reservedQuantity": 0,
+    "tags": [
+      "CLOTHING",
+      "FASHION",
+      "שמלות קז'ואל",
+      "בייסיק",
+      "נשים"
+    ],
+    "brand": "Fashion Pro",
+    "rating": 2.72,
+    "liquidGlassSpecs": {
+      "theme": "indigo",
+      "glowColor": "rgba(100, 116, 139, 0.35)",
+      "badgeStyle": "liquid-indigo-badge",
+      "backdropBlur": "24px",
+      "glassMaterial": "frosted-glass",
+      "accentGradient": "linear-gradient(135deg, #64748b 0%, #94a3b8 100%)",
+      "cardElevation": "medium",
+      "sparkleColor": "#60a5fa"
+    }
+  },
+  {
+    "skuCode": "TOP-BRD-SHO-165",
+    "productName": "שמלת מיני קצרה ואופנתית",
+    "unitPrice": 189.0,
+    "description": "שמלת מיני שובבה בגזרת A-Line, מחמיאה ומודרנית, מתאימה לנעלי עקב או סניקרס למראה צעיר ורענן.",
+    "category": "CLOTHING",
+    "imageUrl": "https://cdn.dummyjson.com/product-images/tops/short-frock/thumbnail.webp",
+    "images": [
+      "https://cdn.dummyjson.com/product-images/tops/short-frock/1.webp",
+      "https://cdn.dummyjson.com/product-images/tops/short-frock/2.webp",
+      "https://cdn.dummyjson.com/product-images/tops/short-frock/3.webp",
+      "https://cdn.dummyjson.com/product-images/tops/short-frock/4.webp"
+    ],
+    "availableQuantity": 22,
+    "reservedQuantity": 0,
+    "tags": [
+      "CLOTHING",
+      "FASHION",
+      "שמלות מיני",
+      "אופנה",
+      "נשים"
+    ],
+    "brand": "Fashion Pro",
+    "rating": 3.23,
+    "liquidGlassSpecs": {
+      "theme": "rose",
+      "glowColor": "rgba(244, 63, 94, 0.4)",
+      "badgeStyle": "liquid-rose-badge",
+      "backdropBlur": "24px",
+      "glassMaterial": "ultra-clear-glass",
+      "accentGradient": "linear-gradient(135deg, #f43f5e 0%, #fb7185 100%)",
+      "cardElevation": "medium",
+      "sparkleColor": "#60a5fa"
+    }
+  },
+  {
+    "skuCode": "TOP-BRD-TAR-166",
+    "productName": "שמלת Tartan משובצת בסגנון סקוטי עכשווי",
+    "unitPrice": 239.0,
+    "description": "שמלת משבצות טרטאן בגזרת וינטג' מודרנית עם צווארון סירה, רוכסן נסתר בגב ובד איכותי עמיד לקמטים.",
+    "category": "CLOTHING",
+    "imageUrl": "https://cdn.dummyjson.com/product-images/tops/tartan-dress/thumbnail.webp",
+    "images": [
+      "https://cdn.dummyjson.com/product-images/tops/tartan-dress/1.webp",
+      "https://cdn.dummyjson.com/product-images/tops/tartan-dress/2.webp",
+      "https://cdn.dummyjson.com/product-images/tops/tartan-dress/3.webp",
+      "https://cdn.dummyjson.com/product-images/tops/tartan-dress/4.webp"
+    ],
+    "availableQuantity": 73,
+    "reservedQuantity": 0,
+    "tags": [
+      "CLOTHING",
+      "FASHION",
+      "שמלות",
+      "טרטאן",
+      "רטרו",
+      "נשים"
+    ],
+    "brand": "Fashion Pro",
+    "rating": 4.05,
+    "liquidGlassSpecs": {
+      "theme": "amber",
+      "glowColor": "rgba(217, 119, 6, 0.4)",
+      "badgeStyle": "liquid-amber-badge",
+      "backdropBlur": "24px",
+      "glassMaterial": "frosted-glass",
+      "accentGradient": "linear-gradient(135deg, #d97706 0%, #f59e0b 100%)",
+      "cardElevation": "medium",
+      "sparkleColor": "#fbbf24"
+    }
+  },
+  {
+    "skuCode": "SUN-FAS-BLA-154",
+    "productName": "משקפי שמש יוקרתיים בעיצוב שחור קלאסי",
+    "unitPrice": 299.0,
+    "description": "משקפי שמש שחורים מבריקים עם מסגרת אצטט איטלקית איכותית, עדשות מקוטבות Polarized עם 100% הגנת UV400.",
+    "category": "ACCESSORIES",
+    "imageUrl": "https://cdn.dummyjson.com/product-images/sunglasses/black-sun-glasses/thumbnail.webp",
+    "images": [
+      "https://cdn.dummyjson.com/product-images/sunglasses/black-sun-glasses/1.webp",
+      "https://cdn.dummyjson.com/product-images/sunglasses/black-sun-glasses/2.webp",
+      "https://cdn.dummyjson.com/product-images/sunglasses/black-sun-glasses/3.webp"
+    ],
+    "availableQuantity": 60,
+    "reservedQuantity": 0,
+    "tags": [
+      "ACCESSORIES",
+      "FASHION",
+      "משקפי שמש",
+      "Polarized",
+      "יוקרה",
+      "קיץ"
+    ],
+    "brand": "Fashion Shades",
+    "rating": 4.41,
+    "liquidGlassSpecs": {
+      "theme": "indigo",
+      "glowColor": "rgba(15, 23, 42, 0.6)",
+      "badgeStyle": "liquid-indigo-badge",
+      "backdropBlur": "24px",
+      "glassMaterial": "smoked-glass",
+      "accentGradient": "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)",
+      "cardElevation": "medium",
+      "sparkleColor": "#60a5fa"
+    }
+  },
+  {
+    "skuCode": "SUN-FAS-CLA-155",
+    "productName": "משקפי שמש אייקוניים במסגרת רטרו",
+    "unitPrice": 259.0,
+    "description": "עיצוב וינטג' נצחי עם מסגרת מטאלית דקה וקלת משקל, עדשות ירוקות G-15 להפחתת בוהק וראייה חדה במיוחד.",
+    "category": "ACCESSORIES",
+    "imageUrl": "https://cdn.dummyjson.com/product-images/sunglasses/classic-sun-glasses/thumbnail.webp",
+    "images": [
+      "https://cdn.dummyjson.com/product-images/sunglasses/classic-sun-glasses/1.webp",
+      "https://cdn.dummyjson.com/product-images/sunglasses/classic-sun-glasses/2.webp",
+      "https://cdn.dummyjson.com/product-images/sunglasses/classic-sun-glasses/3.webp"
+    ],
+    "availableQuantity": 3,
+    "reservedQuantity": 0,
+    "tags": [
+      "ACCESSORIES",
+      "FASHION",
+      "משקפי שמש",
+      "וינטג'",
+      "רטרו",
+      "אופנה"
+    ],
+    "brand": "Fashion Shades",
+    "rating": 3.86,
+    "liquidGlassSpecs": {
+      "theme": "gold",
+      "glowColor": "rgba(245, 158, 11, 0.4)",
+      "badgeStyle": "liquid-gold-badge",
+      "backdropBlur": "24px",
+      "glassMaterial": "iridescent-glass",
+      "accentGradient": "linear-gradient(135deg, #d97706 0%, #fbbf24 100%)",
+      "cardElevation": "medium",
+      "sparkleColor": "#fbbf24"
+    }
+  },
+  {
+    "skuCode": "SUN-FAS-GRE-156",
+    "productName": "משקפי שמש ספורט-אלגנט ירוק ושחור מטאלי",
+    "unitPrice": 319.0,
+    "description": "משקפי שמש ספורטיביים עמידים בפני זעזועים ושריטות, מבנה ארגונומי יציב לספורט, נהיגה ופעילות חוץ.",
+    "category": "ACCESSORIES",
+    "imageUrl": "https://cdn.dummyjson.com/product-images/sunglasses/green-and-black-glasses/thumbnail.webp",
+    "images": [
+      "https://cdn.dummyjson.com/product-images/sunglasses/green-and-black-glasses/1.webp",
+      "https://cdn.dummyjson.com/product-images/sunglasses/green-and-black-glasses/2.webp",
+      "https://cdn.dummyjson.com/product-images/sunglasses/green-and-black-glasses/3.webp"
+    ],
+    "availableQuantity": 24,
+    "reservedQuantity": 0,
+    "tags": [
+      "ACCESSORIES",
+      "FASHION",
+      "משקפי שמש",
+      "ספורט",
+      "אקטיב",
+      "נהיגה"
+    ],
+    "brand": "Fashion Shades",
+    "rating": 4.55,
+    "liquidGlassSpecs": {
+      "theme": "emerald",
+      "glowColor": "rgba(16, 185, 129, 0.4)",
+      "badgeStyle": "liquid-emerald-badge",
+      "backdropBlur": "24px",
+      "glassMaterial": "ultra-clear-glass",
+      "accentGradient": "linear-gradient(135deg, #059669 0%, #10b981 100%)",
+      "cardElevation": "medium",
+      "sparkleColor": "#60a5fa"
+    }
+  },
+  {
+    "skuCode": "SUN-FAS-PAR-157",
+    "productName": "משקפי שמש מעוצבים למסיבות ופסטיבלים",
+    "unitPrice": 199.0,
+    "description": "דגם אופנתי עכשווי בעל מסגרת גיאומטרית מודרנית וצבעוניות נועזת, להצהרה אופנתית בלתי נשכחת.",
+    "category": "ACCESSORIES",
+    "imageUrl": "https://cdn.dummyjson.com/product-images/sunglasses/party-glasses/thumbnail.webp",
+    "images": [
+      "https://cdn.dummyjson.com/product-images/sunglasses/party-glasses/1.webp",
+      "https://cdn.dummyjson.com/product-images/sunglasses/party-glasses/2.webp",
+      "https://cdn.dummyjson.com/product-images/sunglasses/party-glasses/3.webp"
+    ],
+    "availableQuantity": 86,
+    "reservedQuantity": 0,
+    "tags": [
+      "ACCESSORIES",
+      "FASHION",
+      "משקפי שמש",
+      "פסטיבלים",
+      "מסיבות",
+      "טרנדי"
+    ],
+    "brand": "Fashion Fun",
+    "rating": 2.79,
+    "liquidGlassSpecs": {
+      "theme": "rose",
+      "glowColor": "rgba(244, 63, 94, 0.4)",
+      "badgeStyle": "liquid-rose-badge",
+      "backdropBlur": "24px",
+      "glassMaterial": "iridescent-glass",
+      "accentGradient": "linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)",
+      "cardElevation": "medium",
+      "sparkleColor": "#60a5fa"
+    }
+  },
+  {
+    "skuCode": "SUN-FAS-SUN-158",
+    "productName": "משקפי שמש מעוצבים עם עדשות מקוטבות UV400",
+    "unitPrice": 229.0,
+    "description": "משקפי שמש יוניסקס אופנתיים המתאימים לכל מבנה פנים, ציפוי הידרופובי דוחה מים וטביעות אצבע.",
+    "category": "ACCESSORIES",
+    "imageUrl": "https://cdn.dummyjson.com/product-images/sunglasses/sunglasses/thumbnail.webp",
+    "images": [
+      "https://cdn.dummyjson.com/product-images/sunglasses/sunglasses/1.webp",
+      "https://cdn.dummyjson.com/product-images/sunglasses/sunglasses/2.webp",
+      "https://cdn.dummyjson.com/product-images/sunglasses/sunglasses/3.webp"
+    ],
+    "availableQuantity": 27,
+    "reservedQuantity": 0,
+    "tags": [
+      "ACCESSORIES",
+      "FASHION",
+      "משקפי שמש",
+      "יוניסקס",
+      "UV400"
+    ],
+    "brand": "Fashion Shades",
+    "rating": 3.02,
+    "liquidGlassSpecs": {
+      "theme": "cyan",
+      "glowColor": "rgba(6, 182, 212, 0.35)",
+      "badgeStyle": "liquid-cyan-badge",
+      "backdropBlur": "24px",
+      "glassMaterial": "ultra-clear-glass",
+      "accentGradient": "linear-gradient(135deg, #0891b2 0%, #06b6d4 100%)",
+      "cardElevation": "medium",
+      "sparkleColor": "#60a5fa"
+    }
+  },
+  {
+    "skuCode": "MEN-NIK-NIK-088",
+    "productName": "נעלי סניקרס Nike Air Jordan 1 אדום ושחור פרימיום",
+    "unitPrice": 799.0,
+    "description": "סניקרס אייקוניות מעור איכותי בצבעי אדום ושחור (Bred/Chicago), כרית אוויר Air-Sole מובנית לתמיכה מרבית.",
+    "category": "FASHION",
+    "imageUrl": "https://cdn.dummyjson.com/product-images/mens-shoes/nike-air-jordan-1-red-and-black/thumbnail.webp",
+    "images": [
+      "https://cdn.dummyjson.com/product-images/mens-shoes/nike-air-jordan-1-red-and-black/1.webp",
+      "https://cdn.dummyjson.com/product-images/mens-shoes/nike-air-jordan-1-red-and-black/2.webp",
+      "https://cdn.dummyjson.com/product-images/mens-shoes/nike-air-jordan-1-red-and-black/3.webp",
+      "https://cdn.dummyjson.com/product-images/mens-shoes/nike-air-jordan-1-red-and-black/4.webp"
+    ],
+    "availableQuantity": 7,
+    "reservedQuantity": 0,
+    "tags": [
+      "FASHION",
+      "CLOTHING",
+      "נעליים",
+      "סניקרס",
+      "Nike",
+      "Air Jordan",
+      "גברים"
+    ],
+    "brand": "Nike",
+    "rating": 4.77,
+    "liquidGlassSpecs": {
+      "theme": "rose",
+      "glowColor": "rgba(239, 68, 68, 0.45)",
+      "badgeStyle": "liquid-rose-badge",
+      "backdropBlur": "24px",
+      "glassMaterial": "smoked-glass",
+      "accentGradient": "linear-gradient(135deg, #dc2626 0%, #991b1b 100%)",
+      "cardElevation": "high",
+      "sparkleColor": "#60a5fa"
+    }
+  },
+  {
+    "skuCode": "MEN-NIK-NIK-089",
+    "productName": "נעלי ספורט מקצועיות Nike Cleats לבייסבול וריצה",
+    "unitPrice": 429.0,
+    "description": "נעלי פקקים מקצועיות עם אחיזת שטח מעולה, גפה נושמת מחומרים ממוחזרים ותמיכה קרסולית משופרת.",
+    "category": "FASHION",
+    "imageUrl": "https://cdn.dummyjson.com/product-images/mens-shoes/nike-baseball-cleats/thumbnail.webp",
+    "images": [
+      "https://cdn.dummyjson.com/product-images/mens-shoes/nike-baseball-cleats/1.webp",
+      "https://cdn.dummyjson.com/product-images/mens-shoes/nike-baseball-cleats/2.webp",
+      "https://cdn.dummyjson.com/product-images/mens-shoes/nike-baseball-cleats/3.webp",
+      "https://cdn.dummyjson.com/product-images/mens-shoes/nike-baseball-cleats/4.webp"
+    ],
+    "availableQuantity": 12,
+    "reservedQuantity": 0,
+    "tags": [
+      "FASHION",
+      "נעלי ספורט",
+      "Nike",
+      "אימונים",
+      "גברים"
+    ],
+    "brand": "Nike",
+    "rating": 3.88,
+    "liquidGlassSpecs": {
+      "theme": "indigo",
+      "glowColor": "rgba(99, 102, 241, 0.4)",
+      "badgeStyle": "liquid-indigo-badge",
+      "backdropBlur": "24px",
+      "glassMaterial": "frosted-glass",
+      "accentGradient": "linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)",
+      "cardElevation": "medium",
+      "sparkleColor": "#60a5fa"
+    }
+  },
+  {
+    "skuCode": "MEN-PUM-PUM-090",
+    "productName": "סניקרס מעוצבות Puma Future Rider Trainers",
+    "unitPrice": 449.0,
+    "description": "סניקרס רטרו-מודרניות עם סוליית Federbein בולמת זעזועים, שילובי צבעים נועזים ונוחות לאורך כל שעות היום.",
+    "category": "FASHION",
+    "imageUrl": "https://cdn.dummyjson.com/product-images/mens-shoes/puma-future-rider-trainers/thumbnail.webp",
+    "images": [
+      "https://cdn.dummyjson.com/product-images/mens-shoes/puma-future-rider-trainers/1.webp",
+      "https://cdn.dummyjson.com/product-images/mens-shoes/puma-future-rider-trainers/2.webp",
+      "https://cdn.dummyjson.com/product-images/mens-shoes/puma-future-rider-trainers/3.webp",
+      "https://cdn.dummyjson.com/product-images/mens-shoes/puma-future-rider-trainers/4.webp"
+    ],
+    "availableQuantity": 90,
+    "reservedQuantity": 0,
+    "tags": [
+      "FASHION",
+      "נעליים",
+      "Puma",
+      "סניקרס",
+      "יומיום",
+      "Casual"
+    ],
+    "brand": "Puma",
+    "rating": 4.9,
+    "liquidGlassSpecs": {
+      "theme": "cyan",
+      "glowColor": "rgba(6, 182, 212, 0.4)",
+      "badgeStyle": "liquid-cyan-badge",
+      "backdropBlur": "24px",
+      "glassMaterial": "ultra-clear-glass",
+      "accentGradient": "linear-gradient(135deg, #0891b2 0%, #14b8a6 100%)",
+      "cardElevation": "medium",
+      "sparkleColor": "#60a5fa"
+    }
+  },
+  {
+    "skuCode": "MEN-OFF-SPO-091",
+    "productName": "נעלי ספורט אורבניות Off-White & Red מהדורה מוגבלת",
+    "unitPrice": 599.0,
+    "description": "עיצוב סטריטוור אולטרה-מודרני עם שילובי צבעים לבן ואדום, סוליה רחבה מודרנית ועיטורים טיפוגרפיים.",
+    "category": "FASHION",
+    "imageUrl": "https://cdn.dummyjson.com/product-images/mens-shoes/sports-sneakers-off-white-&-red/thumbnail.webp",
+    "images": [
+      "https://cdn.dummyjson.com/product-images/mens-shoes/sports-sneakers-off-white-&-red/1.webp",
+      "https://cdn.dummyjson.com/product-images/mens-shoes/sports-sneakers-off-white-&-red/2.webp",
+      "https://cdn.dummyjson.com/product-images/mens-shoes/sports-sneakers-off-white-&-red/3.webp",
+      "https://cdn.dummyjson.com/product-images/mens-shoes/sports-sneakers-off-white-&-red/4.webp"
+    ],
+    "availableQuantity": 17,
+    "reservedQuantity": 0,
+    "tags": [
+      "FASHION",
+      "נעליים",
+      "Off-White",
+      "סטריטוור",
+      "מהדורה מוגבלת"
+    ],
+    "brand": "Off White",
+    "rating": 4.77,
+    "liquidGlassSpecs": {
+      "theme": "amber",
+      "glowColor": "rgba(245, 158, 11, 0.4)",
+      "badgeStyle": "liquid-amber-badge",
+      "backdropBlur": "24px",
+      "glassMaterial": "smoked-glass",
+      "accentGradient": "linear-gradient(135deg, #f59e0b 0%, #ea580c 100%)",
+      "cardElevation": "high",
+      "sparkleColor": "#fbbf24"
+    }
+  },
+  {
+    "skuCode": "MEN-OFF-SPO-092",
+    "productName": "סניקרס ספורטיביות Off-White בגימור עור וטקסטיל",
+    "unitPrice": 549.0,
+    "description": "סניקרס קלות משקל בעיצוב אורבני עכשווי, מדרס מוקצף אנטומי לנוחות מוגברת ועיצוב אווירודינמי.",
+    "category": "FASHION",
+    "imageUrl": "https://cdn.dummyjson.com/product-images/mens-shoes/sports-sneakers-off-white-red/thumbnail.webp",
+    "images": [
+      "https://cdn.dummyjson.com/product-images/mens-shoes/sports-sneakers-off-white-red/1.webp",
+      "https://cdn.dummyjson.com/product-images/mens-shoes/sports-sneakers-off-white-red/2.webp",
+      "https://cdn.dummyjson.com/product-images/mens-shoes/sports-sneakers-off-white-red/3.webp",
+      "https://cdn.dummyjson.com/product-images/mens-shoes/sports-sneakers-off-white-red/4.webp"
+    ],
+    "availableQuantity": 62,
+    "reservedQuantity": 0,
+    "tags": [
+      "FASHION",
+      "נעליים",
+      "סניקרס",
+      "אופנת רחוב",
+      "גברים"
+    ],
+    "brand": "Off White",
+    "rating": 4.69,
+    "liquidGlassSpecs": {
+      "theme": "gold",
+      "glowColor": "rgba(217, 119, 6, 0.35)",
+      "badgeStyle": "liquid-gold-badge",
+      "backdropBlur": "24px",
+      "glassMaterial": "frosted-glass",
+      "accentGradient": "linear-gradient(135deg, #d97706 0%, #ea580c 100%)",
+      "cardElevation": "high",
+      "sparkleColor": "#fbbf24"
+    }
+  },
+  {
+    "skuCode": "WOM-COM-BLA-185",
+    "productName": "נעלי בית יוקרתיות מעור שחור וחום לנוחות מושלמת",
+    "unitPrice": 189.0,
+    "description": "נעלי בית יוקרתיות מעור רך מובחר עם ריפוד פרוותי חמים, סוליית גומי עמידה המתאימה גם לחצר.",
+    "category": "FASHION",
+    "imageUrl": "https://cdn.dummyjson.com/product-images/womens-shoes/black-&-brown-slipper/thumbnail.webp",
+    "images": [
+      "https://cdn.dummyjson.com/product-images/womens-shoes/black-&-brown-slipper/1.webp",
+      "https://cdn.dummyjson.com/product-images/womens-shoes/black-&-brown-slipper/2.webp",
+      "https://cdn.dummyjson.com/product-images/womens-shoes/black-&-brown-slipper/3.webp",
+      "https://cdn.dummyjson.com/product-images/womens-shoes/black-&-brown-slipper/4.webp"
+    ],
+    "availableQuantity": 3,
+    "reservedQuantity": 0,
+    "tags": [
+      "FASHION",
+      "נעלי בית",
+      "עור",
+      "נוחות",
+      "נשים"
+    ],
+    "brand": "Comfort Trends",
+    "rating": 2.53,
+    "liquidGlassSpecs": {
+      "theme": "amber",
+      "glowColor": "rgba(180, 83, 9, 0.35)",
+      "badgeStyle": "liquid-amber-badge",
+      "backdropBlur": "24px",
+      "glassMaterial": "smoked-glass",
+      "accentGradient": "linear-gradient(135deg, #78350f 0%, #92400e 100%)",
+      "cardElevation": "medium",
+      "sparkleColor": "#fbbf24"
+    }
+  },
+  {
+    "skuCode": "WOM-CAL-CAL-186",
+    "productName": "נעלי עקב אלגנטיות Calvin Klein לאירועים",
+    "unitPrice": 589.0,
+    "description": "נעלי עקב שפיץ יוקרתיות מבית Calvin Klein, עקב 8 ס\"מ יציב, גימור עור שחור מבריק וסמל המתכת המפורסם.",
+    "category": "FASHION",
+    "imageUrl": "https://cdn.dummyjson.com/product-images/womens-shoes/calvin-klein-heel-shoes/thumbnail.webp",
+    "images": [
+      "https://cdn.dummyjson.com/product-images/womens-shoes/calvin-klein-heel-shoes/1.webp",
+      "https://cdn.dummyjson.com/product-images/womens-shoes/calvin-klein-heel-shoes/2.webp",
+      "https://cdn.dummyjson.com/product-images/womens-shoes/calvin-klein-heel-shoes/3.webp",
+      "https://cdn.dummyjson.com/product-images/womens-shoes/calvin-klein-heel-shoes/4.webp"
+    ],
+    "availableQuantity": 93,
+    "reservedQuantity": 0,
+    "tags": [
+      "FASHION",
+      "נעלי עקב",
+      "Calvin Klein",
+      "אירועים",
+      "נשים",
+      "Designer"
+    ],
+    "brand": "Calvin Klein",
+    "rating": 4.92,
+    "liquidGlassSpecs": {
+      "theme": "indigo",
+      "glowColor": "rgba(30, 41, 59, 0.5)",
+      "badgeStyle": "liquid-indigo-badge",
+      "backdropBlur": "24px",
+      "glassMaterial": "ultra-clear-glass",
+      "accentGradient": "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)",
+      "cardElevation": "high",
+      "sparkleColor": "#60a5fa"
+    }
+  },
+  {
+    "skuCode": "WOM-FAS-GOL-187",
+    "productName": "נעלי עקב נוצצות בגוון זהב יוקרתי לאירועי ערב",
+    "unitPrice": 389.0,
+    "description": "נעלי סנדל עקב מוזהבות עם רצועות דקיקות משובצות קריסטלים, מושלמות לחתונות, נשפים ואירועים חגיגיים.",
+    "category": "FASHION",
+    "imageUrl": "https://cdn.dummyjson.com/product-images/womens-shoes/golden-shoes-woman/thumbnail.webp",
+    "images": [
+      "https://cdn.dummyjson.com/product-images/womens-shoes/golden-shoes-woman/1.webp",
+      "https://cdn.dummyjson.com/product-images/womens-shoes/golden-shoes-woman/2.webp",
+      "https://cdn.dummyjson.com/product-images/womens-shoes/golden-shoes-woman/3.webp",
+      "https://cdn.dummyjson.com/product-images/womens-shoes/golden-shoes-woman/4.webp"
+    ],
+    "availableQuantity": 88,
+    "reservedQuantity": 0,
+    "tags": [
+      "FASHION",
+      "נעלי עקב",
+      "זהב",
+      "אירועים",
+      "נשים",
+      "Party"
+    ],
+    "brand": "Fashion Diva",
+    "rating": 3.26,
+    "liquidGlassSpecs": {
+      "theme": "gold",
+      "glowColor": "rgba(245, 158, 11, 0.5)",
+      "badgeStyle": "liquid-gold-badge",
+      "backdropBlur": "24px",
+      "glassMaterial": "iridescent-glass",
+      "accentGradient": "linear-gradient(135deg, #fbbf24 0%, #d97706 100%)",
+      "cardElevation": "medium",
+      "sparkleColor": "#fbbf24"
+    }
+  },
+  {
+    "skuCode": "WOM-PAM-PAM-188",
+    "productName": "נעלי סירה אופנתיות Pampi Shoes בגזרה שטוחה",
+    "unitPrice": 229.0,
+    "description": "נעלי בובה קלאסיות ונוחות במיוחד עם מדרס עור נושם ופפיון עדין, מתאימות למשרד וליום ארוך על הרגליים.",
+    "category": "FASHION",
+    "imageUrl": "https://cdn.dummyjson.com/product-images/womens-shoes/pampi-shoes/thumbnail.webp",
+    "images": [
+      "https://cdn.dummyjson.com/product-images/womens-shoes/pampi-shoes/1.webp",
+      "https://cdn.dummyjson.com/product-images/womens-shoes/pampi-shoes/2.webp",
+      "https://cdn.dummyjson.com/product-images/womens-shoes/pampi-shoes/3.webp",
+      "https://cdn.dummyjson.com/product-images/womens-shoes/pampi-shoes/4.webp"
+    ],
+    "availableQuantity": 49,
+    "reservedQuantity": 0,
+    "tags": [
+      "FASHION",
+      "נעלי סירה",
+      "שטוחות",
+      "נוחות",
+      "נשים"
+    ],
+    "brand": "Pampi",
+    "rating": 3.05,
+    "liquidGlassSpecs": {
+      "theme": "rose",
+      "glowColor": "rgba(244, 63, 94, 0.35)",
+      "badgeStyle": "liquid-rose-badge",
+      "backdropBlur": "24px",
+      "glassMaterial": "frosted-glass",
+      "accentGradient": "linear-gradient(135deg, #f43f5e 0%, #fda4af 100%)",
+      "cardElevation": "medium",
+      "sparkleColor": "#60a5fa"
+    }
+  },
+  {
+    "skuCode": "WOM-FAS-SHO-189",
+    "productName": "נעלי עקב אדומות לוהטות במראה נשי עוצמתי",
+    "unitPrice": 349.0,
+    "description": "נעלי עקב אדומות בגזרת Pump קלאסית עם גימור לכה מבריק, עקב סטילטו מחמיא שמושך את כל המבטים.",
+    "category": "FASHION",
+    "imageUrl": "https://cdn.dummyjson.com/product-images/womens-shoes/red-shoes/thumbnail.webp",
+    "images": [
+      "https://cdn.dummyjson.com/product-images/womens-shoes/red-shoes/1.webp",
+      "https://cdn.dummyjson.com/product-images/womens-shoes/red-shoes/2.webp",
+      "https://cdn.dummyjson.com/product-images/womens-shoes/red-shoes/3.webp",
+      "https://cdn.dummyjson.com/product-images/womens-shoes/red-shoes/4.webp"
+    ],
+    "availableQuantity": 7,
+    "reservedQuantity": 0,
+    "tags": [
+      "FASHION",
+      "נעלי עקב",
+      "אדום",
+      "Stiletto",
+      "נשים"
+    ],
+    "brand": "Fashion Express",
+    "rating": 3.25,
+    "liquidGlassSpecs": {
+      "theme": "rose",
+      "glowColor": "rgba(225, 29, 72, 0.45)",
+      "badgeStyle": "liquid-rose-badge",
+      "backdropBlur": "24px",
+      "glassMaterial": "ultra-clear-glass",
+      "accentGradient": "linear-gradient(135deg, #e11d48 0%, #be123c 100%)",
+      "cardElevation": "medium",
+      "sparkleColor": "#60a5fa"
+    }
+  },
+  {
+    "skuCode": "MEN-FAS-BRO-093",
+    "productName": "שעון יד אלגנטי לגבר עם רצועת עור חומה איכותית",
+    "unitPrice": 549.0,
+    "description": "שעון אנלוגי מעוצב עם חוגה לבנה נקייה, מחוגי פלדה כחולים ורצועת עור איטלקי אמיתי בתפירת יד.",
+    "category": "ACCESSORIES",
+    "imageUrl": "https://cdn.dummyjson.com/product-images/mens-watches/brown-leather-belt-watch/thumbnail.webp",
+    "images": [
+      "https://cdn.dummyjson.com/product-images/mens-watches/brown-leather-belt-watch/1.webp",
+      "https://cdn.dummyjson.com/product-images/mens-watches/brown-leather-belt-watch/2.webp",
+      "https://cdn.dummyjson.com/product-images/mens-watches/brown-leather-belt-watch/3.webp"
+    ],
+    "availableQuantity": 32,
+    "reservedQuantity": 0,
+    "tags": [
+      "ACCESSORIES",
+      "FASHION",
+      "שעונים",
+      "גברים",
+      "עור",
+      "אלגנטי"
+    ],
+    "brand": "Fashion Timepieces",
+    "rating": 4.19,
+    "liquidGlassSpecs": {
+      "theme": "amber",
+      "glowColor": "rgba(180, 83, 9, 0.4)",
+      "badgeStyle": "liquid-amber-badge",
+      "backdropBlur": "24px",
+      "glassMaterial": "smoked-glass",
+      "accentGradient": "linear-gradient(135deg, #92400e 0%, #b45309 100%)",
+      "cardElevation": "high",
+      "sparkleColor": "#fbbf24"
+    }
+  },
+  {
+    "skuCode": "MEN-LON-LON-094",
+    "productName": "שעון יוקרה שוויצרי Longines Master Collection לגברים",
+    "unitPrice": 6890.0,
+    "description": "יצירת מופת שוויצרית עם מנגנון אוטומטי שוויצרי Calibre L897, זכוכית ספיר קריסטל חסינת שריטות ותצוגת תאריכון.",
+    "category": "ACCESSORIES",
+    "imageUrl": "https://cdn.dummyjson.com/product-images/mens-watches/longines-master-collection/thumbnail.webp",
+    "images": [
+      "https://cdn.dummyjson.com/product-images/mens-watches/longines-master-collection/1.webp",
+      "https://cdn.dummyjson.com/product-images/mens-watches/longines-master-collection/2.webp",
+      "https://cdn.dummyjson.com/product-images/mens-watches/longines-master-collection/3.webp"
+    ],
+    "availableQuantity": 100,
+    "reservedQuantity": 0,
+    "tags": [
+      "ACCESSORIES",
+      "FASHION",
+      "שעוני יוקרה",
+      "Longines",
+      "שוויצרי",
+      "גברים"
+    ],
+    "brand": "Longines",
+    "rating": 3.87,
+    "liquidGlassSpecs": {
+      "theme": "indigo",
+      "glowColor": "rgba(99, 102, 241, 0.5)",
+      "badgeStyle": "liquid-indigo-badge",
+      "backdropBlur": "24px",
+      "glassMaterial": "iridescent-glass",
+      "accentGradient": "linear-gradient(135deg, #312e81 0%, #4338ca 100%)",
+      "cardElevation": "high",
+      "sparkleColor": "#60a5fa"
+    }
+  },
+  {
+    "skuCode": "MEN-ROL-ROL-095",
+    "productName": "שעון רולקס Rolex Cellini Date חוגה שחורה יוקרתית",
+    "unitPrice": 34900.0,
+    "description": "שעון רולקס מקורי מסדרת צ'ליני היוקרתית בזהב לבן 18K, חוגה שחורה בעיבוד קרני שמש ורצועת עור תנין שחורה.",
+    "category": "ACCESSORIES",
+    "imageUrl": "https://cdn.dummyjson.com/product-images/mens-watches/rolex-cellini-date-black-dial/thumbnail.webp",
+    "images": [
+      "https://cdn.dummyjson.com/product-images/mens-watches/rolex-cellini-date-black-dial/1.webp",
+      "https://cdn.dummyjson.com/product-images/mens-watches/rolex-cellini-date-black-dial/2.webp",
+      "https://cdn.dummyjson.com/product-images/mens-watches/rolex-cellini-date-black-dial/3.webp"
+    ],
+    "availableQuantity": 40,
+    "reservedQuantity": 0,
+    "tags": [
+      "ACCESSORIES",
+      "FASHION",
+      "שעוני יוקרה",
+      "Rolex",
+      "זהב לבן",
+      "גברים",
+      "VIP"
+    ],
+    "brand": "Rolex",
+    "rating": 4.97,
+    "liquidGlassSpecs": {
+      "theme": "gold",
+      "glowColor": "rgba(245, 158, 11, 0.6)",
+      "badgeStyle": "liquid-gold-badge",
+      "backdropBlur": "24px",
+      "glassMaterial": "iridescent-glass",
+      "accentGradient": "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
+      "cardElevation": "high",
+      "sparkleColor": "#fbbf24"
+    }
+  },
+  {
+    "skuCode": "MEN-ROL-ROL-096",
+    "productName": "שעון יוקרה Rolex Cellini Moonphase מנגנון אסטרונומי",
+    "unitPrice": 48900.0,
+    "description": "שעון אספנות נדיר של רולקס עם דיסקית אמייל כחולה המציגה את מופעי הירח עם חלקיק מטאוריט אמיתי.",
+    "category": "ACCESSORIES",
+    "imageUrl": "https://cdn.dummyjson.com/product-images/mens-watches/rolex-cellini-moonphase/thumbnail.webp",
+    "images": [
+      "https://cdn.dummyjson.com/product-images/mens-watches/rolex-cellini-moonphase/1.webp",
+      "https://cdn.dummyjson.com/product-images/mens-watches/rolex-cellini-moonphase/2.webp",
+      "https://cdn.dummyjson.com/product-images/mens-watches/rolex-cellini-moonphase/3.webp"
+    ],
+    "availableQuantity": 36,
+    "reservedQuantity": 0,
+    "tags": [
+      "ACCESSORIES",
+      "FASHION",
+      "שעוני יוקרה",
+      "Rolex",
+      "Moonphase",
+      "אספנות",
+      "VIP"
+    ],
+    "brand": "Rolex",
+    "rating": 2.58,
+    "liquidGlassSpecs": {
+      "theme": "gold",
+      "glowColor": "rgba(245, 158, 11, 0.65)",
+      "badgeStyle": "liquid-gold-badge",
+      "backdropBlur": "24px",
+      "glassMaterial": "iridescent-glass",
+      "accentGradient": "linear-gradient(135deg, #fbbf24 0%, #b45309 100%)",
+      "cardElevation": "high",
+      "sparkleColor": "#fbbf24"
+    }
+  },
+  {
+    "skuCode": "MEN-ROL-ROL-097",
+    "productName": "שעון רולקס Rolex Datejust לגבר מפלדת אויסטר פרימיום",
+    "unitPrice": 42500.0,
+    "description": "דגם הדגל האייקוני של רולקס בקוטר 41 מ\"מ עם בזל מחורץ, עדשת ציקלופ מגדילה מעל התאריכון וצמיד Jubilee.",
+    "category": "ACCESSORIES",
+    "imageUrl": "https://cdn.dummyjson.com/product-images/mens-watches/rolex-datejust/thumbnail.webp",
+    "images": [
+      "https://cdn.dummyjson.com/product-images/mens-watches/rolex-datejust/1.webp",
+      "https://cdn.dummyjson.com/product-images/mens-watches/rolex-datejust/2.webp",
+      "https://cdn.dummyjson.com/product-images/mens-watches/rolex-datejust/3.webp"
+    ],
+    "availableQuantity": 86,
+    "reservedQuantity": 0,
+    "tags": [
+      "ACCESSORIES",
+      "FASHION",
+      "שעוני יוקרה",
+      "Rolex",
+      "Datejust",
+      "שוויצרי",
+      "VIP"
+    ],
+    "brand": "Rolex",
+    "rating": 3.66,
+    "liquidGlassSpecs": {
+      "theme": "gold",
+      "glowColor": "rgba(245, 158, 11, 0.6)",
+      "badgeStyle": "liquid-gold-badge",
+      "backdropBlur": "24px",
+      "glassMaterial": "iridescent-glass",
+      "accentGradient": "linear-gradient(135deg, #f59e0b 0%, #b45309 100%)",
+      "cardElevation": "high",
+      "sparkleColor": "#fbbf24"
+    }
+  },
+  {
+    "skuCode": "MEN-ROL-ROL-098",
+    "productName": "שעון צלילה אייקוני Rolex Submariner עמיד ל-300 מטר",
+    "unitPrice": 46900.0,
+    "description": "שעון הצוללנים המפורסם בעולם מפלדת Oystersteel, בזל קרמי Cerachrom שחור בלתי שריט ומחוגים זוהרים Chromalight.",
+    "category": "ACCESSORIES",
+    "imageUrl": "https://cdn.dummyjson.com/product-images/mens-watches/rolex-submariner-watch/thumbnail.webp",
+    "images": [
+      "https://cdn.dummyjson.com/product-images/mens-watches/rolex-submariner-watch/1.webp",
+      "https://cdn.dummyjson.com/product-images/mens-watches/rolex-submariner-watch/2.webp",
+      "https://cdn.dummyjson.com/product-images/mens-watches/rolex-submariner-watch/3.webp"
+    ],
+    "availableQuantity": 55,
+    "reservedQuantity": 0,
+    "tags": [
+      "ACCESSORIES",
+      "FASHION",
+      "שעוני יוקרה",
+      "Rolex",
+      "Submariner",
+      "צלילה",
+      "VIP"
+    ],
+    "brand": "Rolex",
+    "rating": 2.69,
+    "liquidGlassSpecs": {
+      "theme": "cyan",
+      "glowColor": "rgba(6, 182, 212, 0.6)",
+      "badgeStyle": "liquid-cyan-badge",
+      "backdropBlur": "24px",
+      "glassMaterial": "iridescent-glass",
+      "accentGradient": "linear-gradient(135deg, #0e7490 0%, #0891b2 100%)",
+      "cardElevation": "high",
+      "sparkleColor": "#60a5fa"
+    }
+  },
+  {
+    "skuCode": "WOM-IWC-ING-190",
+    "productName": "שעון יד יוקרתי לנשים IWC Ingenieur Automatic פלדת על-חלד",
+    "unitPrice": 18900.0,
+    "description": "שעון נשים יוקרתי בעיצובו של ג'ראלד ג'נטה עם לוח בדוגמת רשת גריד ייחודית ומנגנון הגנה משדות מגנטיים.",
+    "category": "ACCESSORIES",
+    "imageUrl": "https://cdn.dummyjson.com/product-images/womens-watches/iwc-ingenieur-automatic-steel/thumbnail.webp",
+    "images": [
+      "https://cdn.dummyjson.com/product-images/womens-watches/iwc-ingenieur-automatic-steel/1.webp",
+      "https://cdn.dummyjson.com/product-images/womens-watches/iwc-ingenieur-automatic-steel/2.webp",
+      "https://cdn.dummyjson.com/product-images/womens-watches/iwc-ingenieur-automatic-steel/3.webp"
+    ],
+    "availableQuantity": 90,
+    "reservedQuantity": 0,
+    "tags": [
+      "ACCESSORIES",
+      "FASHION",
+      "שעוני יוקרה",
+      "IWC",
+      "נשים",
+      "שוויצרי"
+    ],
+    "brand": "IWC",
+    "rating": 2.93,
+    "liquidGlassSpecs": {
+      "theme": "indigo",
+      "glowColor": "rgba(99, 102, 241, 0.5)",
+      "badgeStyle": "liquid-indigo-badge",
+      "backdropBlur": "24px",
+      "glassMaterial": "iridescent-glass",
+      "accentGradient": "linear-gradient(135deg, #3730a3 0%, #4f46e5 100%)",
+      "cardElevation": "high",
+      "sparkleColor": "#60a5fa"
+    }
+  },
+  {
+    "skuCode": "WOM-ROL-ROL-191",
+    "productName": "שעון יוקרה Rolex Cellini Moonphase מהדורה מיוחדת לנשים",
+    "unitPrice": 49900.0,
+    "description": "שעון פרימיום מעוטר בזהב אוורוז 18K עם תצוגת מופעי ירח פואטית ורצועת עור שחומה יוקרתית.",
+    "category": "ACCESSORIES",
+    "imageUrl": "https://cdn.dummyjson.com/product-images/womens-watches/rolex-cellini-moonphase/thumbnail.webp",
+    "images": [
+      "https://cdn.dummyjson.com/product-images/womens-watches/rolex-cellini-moonphase/1.webp",
+      "https://cdn.dummyjson.com/product-images/womens-watches/rolex-cellini-moonphase/2.webp",
+      "https://cdn.dummyjson.com/product-images/womens-watches/rolex-cellini-moonphase/3.webp"
+    ],
+    "availableQuantity": 52,
+    "reservedQuantity": 0,
+    "tags": [
+      "ACCESSORIES",
+      "FASHION",
+      "שעוני יוקרה",
+      "Rolex",
+      "זהב אדום",
+      "נשים",
+      "VIP"
+    ],
+    "brand": "Rolex",
+    "rating": 3.83,
+    "liquidGlassSpecs": {
+      "theme": "gold",
+      "glowColor": "rgba(245, 158, 11, 0.65)",
+      "badgeStyle": "liquid-gold-badge",
+      "backdropBlur": "24px",
+      "glassMaterial": "iridescent-glass",
+      "accentGradient": "linear-gradient(135deg, #fbbf24 0%, #b45309 100%)",
+      "cardElevation": "high",
+      "sparkleColor": "#fbbf24"
+    }
+  },
+  {
+    "skuCode": "WOM-ROL-ROL-192",
+    "productName": "שעון יוקרה לנשים Rolex Datejust Women בגימור יהלומים",
+    "unitPrice": 44500.0,
+    "description": "שעון ליידי דייטג'אסט בקוטר 31 מ\"מ משובץ יהלומים מובחרים בחוגה ובבזל, שילוב פלדה וזהב צהוב 18K.",
+    "category": "ACCESSORIES",
+    "imageUrl": "https://cdn.dummyjson.com/product-images/womens-watches/rolex-datejust-women/thumbnail.webp",
+    "images": [
+      "https://cdn.dummyjson.com/product-images/womens-watches/rolex-datejust-women/1.webp",
+      "https://cdn.dummyjson.com/product-images/womens-watches/rolex-datejust-women/2.webp",
+      "https://cdn.dummyjson.com/product-images/womens-watches/rolex-datejust-women/3.webp"
+    ],
+    "availableQuantity": 4,
+    "reservedQuantity": 0,
+    "tags": [
+      "ACCESSORIES",
+      "FASHION",
+      "שעוני יוקרה",
+      "Rolex",
+      "יהלומים",
+      "נשים",
+      "VIP"
+    ],
+    "brand": "Rolex",
+    "rating": 2.86,
+    "liquidGlassSpecs": {
+      "theme": "gold",
+      "glowColor": "rgba(245, 158, 11, 0.6)",
+      "badgeStyle": "liquid-gold-badge",
+      "backdropBlur": "24px",
+      "glassMaterial": "iridescent-glass",
+      "accentGradient": "linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)",
+      "cardElevation": "high",
+      "sparkleColor": "#fbbf24"
+    }
+  },
+  {
+    "skuCode": "WOM-FAS-WAT-193",
+    "productName": "שעון יד יוקרתי לנשים בציפוי זהב 18K",
+    "unitPrice": 1490.0,
+    "description": "שעון צמיד תכשיטי אלגנטי בציפוי זהב מבריק, לוח פנינה עדין ומנגנון קוורץ שוויצרי מדויק.",
+    "category": "ACCESSORIES",
+    "imageUrl": "https://cdn.dummyjson.com/product-images/womens-watches/watch-gold-for-women/thumbnail.webp",
+    "images": [
+      "https://cdn.dummyjson.com/product-images/womens-watches/watch-gold-for-women/1.webp",
+      "https://cdn.dummyjson.com/product-images/womens-watches/watch-gold-for-women/2.webp",
+      "https://cdn.dummyjson.com/product-images/womens-watches/watch-gold-for-women/3.webp"
+    ],
+    "availableQuantity": 15,
+    "reservedQuantity": 0,
+    "tags": [
+      "ACCESSORIES",
+      "FASHION",
+      "שעונים",
+      "זהב",
+      "נשים",
+      "תכשיטים"
+    ],
+    "brand": "Fashion Gold",
+    "rating": 4.24,
+    "liquidGlassSpecs": {
+      "theme": "gold",
+      "glowColor": "rgba(245, 158, 11, 0.45)",
+      "badgeStyle": "liquid-gold-badge",
+      "backdropBlur": "24px",
+      "glassMaterial": "ultra-clear-glass",
+      "accentGradient": "linear-gradient(135deg, #d97706 0%, #fbbf24 100%)",
+      "cardElevation": "high",
+      "sparkleColor": "#fbbf24"
+    }
+  },
+  {
+    "skuCode": "WOM-FAS-WOM-194",
+    "productName": "שעון יד אופנתי וקלאסי לאישה בעיצוב מינימליסטי",
+    "unitPrice": 649.0,
+    "description": "שעון יד דק בעיצוב נורדי מודרני, גוף דקיק 6 מ\"מ ורצועת רשת מילנזית נוחה המתכווננת בקלות.",
+    "category": "ACCESSORIES",
+    "imageUrl": "https://cdn.dummyjson.com/product-images/womens-watches/women's-wrist-watch/thumbnail.webp",
+    "images": [
+      "https://cdn.dummyjson.com/product-images/womens-watches/women's-wrist-watch/1.webp",
+      "https://cdn.dummyjson.com/product-images/womens-watches/women's-wrist-watch/2.webp",
+      "https://cdn.dummyjson.com/product-images/womens-watches/women's-wrist-watch/3.webp"
+    ],
+    "availableQuantity": 12,
+    "reservedQuantity": 0,
+    "tags": [
+      "ACCESSORIES",
+      "FASHION",
+      "שעונים",
+      "מינימליזם",
+      "נשים"
+    ],
+    "brand": "Fashion Co.",
+    "rating": 3.52,
+    "liquidGlassSpecs": {
+      "theme": "rose",
+      "glowColor": "rgba(244, 63, 94, 0.35)",
+      "badgeStyle": "liquid-rose-badge",
+      "backdropBlur": "24px",
+      "glassMaterial": "ultra-clear-glass",
+      "accentGradient": "linear-gradient(135deg, #fb7185 0%, #f43f5e 100%)",
+      "cardElevation": "high",
+      "sparkleColor": "#60a5fa"
+    }
+  },
+  {
+    "skuCode": "WOM-FAS-BLU-172",
+    "productName": "תיק יד כחול יוקרתי לנשים בעיצוב איטלקי",
+    "unitPrice": 289.0,
+    "description": "תיק יד יוקרתי מבד סאטן כחול עמוק בתוספת רצועת כתף מתפרקת, תא מרכזי מרווח וסגירת רוכסן איכותית.",
+    "category": "ACCESSORIES",
+    "imageUrl": "https://cdn.dummyjson.com/product-images/womens-bags/blue-women's-handbag/thumbnail.webp",
+    "images": [
+      "https://cdn.dummyjson.com/product-images/womens-bags/blue-women's-handbag/1.webp",
+      "https://cdn.dummyjson.com/product-images/womens-bags/blue-women's-handbag/2.webp",
+      "https://cdn.dummyjson.com/product-images/womens-bags/blue-women's-handbag/3.webp"
+    ],
+    "availableQuantity": 76,
+    "reservedQuantity": 0,
+    "tags": [
+      "ACCESSORIES",
+      "FASHION",
+      "תיקים",
+      "נשים",
+      "כחול",
+      "איטלקי"
+    ],
+    "brand": "Fashionista",
+    "rating": 2.92,
+    "liquidGlassSpecs": {
+      "theme": "cyan",
+      "glowColor": "rgba(6, 182, 212, 0.4)",
+      "badgeStyle": "liquid-cyan-badge",
+      "backdropBlur": "24px",
+      "glassMaterial": "ultra-clear-glass",
+      "accentGradient": "linear-gradient(135deg, #0284c7 0%, #38bdf8 100%)",
+      "cardElevation": "medium",
+      "sparkleColor": "#60a5fa"
+    }
+  },
+  {
+    "skuCode": "WOM-HES-HES-173",
+    "productName": "תיק עור יוקרתי Heshe לנשים עם תאי אחסון מרובים",
+    "unitPrice": 699.0,
+    "description": "תיק עור אמיתי מעובד במרקם עשיר ורך, מגוון תאים פנימיים וחיצוניים, חומרה מוזהבת ועמידות מעולה לשנים רבות.",
+    "category": "ACCESSORIES",
+    "imageUrl": "https://cdn.dummyjson.com/product-images/womens-bags/heshe-women's-leather-bag/thumbnail.webp",
+    "images": [
+      "https://cdn.dummyjson.com/product-images/womens-bags/heshe-women's-leather-bag/1.webp",
+      "https://cdn.dummyjson.com/product-images/womens-bags/heshe-women's-leather-bag/2.webp",
+      "https://cdn.dummyjson.com/product-images/womens-bags/heshe-women's-leather-bag/3.webp"
+    ],
+    "availableQuantity": 99,
+    "reservedQuantity": 0,
+    "tags": [
+      "ACCESSORIES",
+      "FASHION",
+      "תיקי עור",
+      "Heshe",
+      "נשים",
+      "איכות"
+    ],
+    "brand": "Heshe",
+    "rating": 4.92,
+    "liquidGlassSpecs": {
+      "theme": "amber",
+      "glowColor": "rgba(180, 83, 9, 0.4)",
+      "badgeStyle": "liquid-amber-badge",
+      "backdropBlur": "24px",
+      "glassMaterial": "smoked-glass",
+      "accentGradient": "linear-gradient(135deg, #92400e 0%, #b45309 100%)",
+      "cardElevation": "high",
+      "sparkleColor": "#fbbf24"
+    }
+  },
+  {
+    "skuCode": "WOM-PRA-PRA-174",
+    "productName": "תיק יד יוקרתי לנשים מבית Prada עור שחור קלאסי",
+    "unitPrice": 3890.0,
+    "description": "תיק מעצבים אייקוני של בית האופנה פראדה מעור Saffiano שחור, לוחית לוגו משולשת באמייל וחלל פנימי יוקרתי.",
+    "category": "ACCESSORIES",
+    "imageUrl": "https://cdn.dummyjson.com/product-images/womens-bags/prada-women-bag/thumbnail.webp",
+    "images": [
+      "https://cdn.dummyjson.com/product-images/womens-bags/prada-women-bag/1.webp",
+      "https://cdn.dummyjson.com/product-images/womens-bags/prada-women-bag/2.webp",
+      "https://cdn.dummyjson.com/product-images/womens-bags/prada-women-bag/3.webp"
+    ],
+    "availableQuantity": 75,
+    "reservedQuantity": 0,
+    "tags": [
+      "ACCESSORIES",
+      "FASHION",
+      "תיקים",
+      "Prada",
+      "מעצבים",
+      "VIP",
+      "נשים"
+    ],
+    "brand": "Prada",
+    "rating": 2.71,
+    "liquidGlassSpecs": {
+      "theme": "indigo",
+      "glowColor": "rgba(30, 41, 59, 0.6)",
+      "badgeStyle": "liquid-indigo-badge",
+      "backdropBlur": "24px",
+      "glassMaterial": "iridescent-glass",
+      "accentGradient": "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)",
+      "cardElevation": "high",
+      "sparkleColor": "#60a5fa"
+    }
+  },
+  {
+    "skuCode": "WOM-URB-WHI-175",
+    "productName": "תרמיל גב לבן מעור טבעוני מעוצב וקל משקל",
+    "unitPrice": 249.0,
+    "description": "תיק גב אורבני מושלם לסטודנטיות ולעבודה, מתאים לטאבלט וארנק, רצועות גב מרופדות וסגירה מגנטית נוחה.",
+    "category": "ACCESSORIES",
+    "imageUrl": "https://cdn.dummyjson.com/product-images/womens-bags/white-faux-leather-backpack/thumbnail.webp",
+    "images": [
+      "https://cdn.dummyjson.com/product-images/womens-bags/white-faux-leather-backpack/1.webp",
+      "https://cdn.dummyjson.com/product-images/womens-bags/white-faux-leather-backpack/2.webp",
+      "https://cdn.dummyjson.com/product-images/womens-bags/white-faux-leather-backpack/3.webp"
+    ],
+    "availableQuantity": 39,
+    "reservedQuantity": 0,
+    "tags": [
+      "ACCESSORIES",
+      "FASHION",
+      "תיקי גב",
+      "עור טבעוני",
+      "נשים",
+      "אורבני"
+    ],
+    "brand": "Urban Chic",
+    "rating": 3.36,
+    "liquidGlassSpecs": {
+      "theme": "cyan",
+      "glowColor": "rgba(226, 232, 240, 0.5)",
+      "badgeStyle": "liquid-cyan-badge",
+      "backdropBlur": "24px",
+      "glassMaterial": "ultra-clear-glass",
+      "accentGradient": "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)",
+      "cardElevation": "medium",
+      "sparkleColor": "#60a5fa"
+    }
+  },
+  {
+    "skuCode": "WOM-ELE-WOM-176",
+    "productName": "תיק יד שחור קלאסי מרווח לנשים בגימור מט",
+    "unitPrice": 349.0,
+    "description": "תיק שופינג (Tote) שחור שיקי מרווח במיוחד, עור עמיד לשריטות ורצועות ידית כפולות לנשיאה קלה ונוחה.",
+    "category": "ACCESSORIES",
+    "imageUrl": "https://cdn.dummyjson.com/product-images/womens-bags/women-handbag-black/thumbnail.webp",
+    "images": [
+      "https://cdn.dummyjson.com/product-images/womens-bags/women-handbag-black/1.webp",
+      "https://cdn.dummyjson.com/product-images/womens-bags/women-handbag-black/2.webp",
+      "https://cdn.dummyjson.com/product-images/womens-bags/women-handbag-black/3.webp"
+    ],
+    "availableQuantity": 11,
+    "reservedQuantity": 0,
+    "tags": [
+      "ACCESSORIES",
+      "FASHION",
+      "תיקים",
+      "Tote",
+      "שחור",
+      "נשים"
+    ],
+    "brand": "Elegance Collection",
+    "rating": 2.89,
+    "liquidGlassSpecs": {
+      "theme": "indigo",
+      "glowColor": "rgba(15, 23, 42, 0.5)",
+      "badgeStyle": "liquid-indigo-badge",
+      "backdropBlur": "24px",
+      "glassMaterial": "smoked-glass",
+      "accentGradient": "linear-gradient(135deg, #334155 0%, #0f172a 100%)",
+      "cardElevation": "medium",
+      "sparkleColor": "#60a5fa"
+    }
+  },
+  {
+    "skuCode": "WOM-BRD-GRE-182",
+    "productName": "עגילי קריסטל ירוקים נוצצים לאירועים מיוחדים",
+    "unitPrice": 249.0,
+    "description": "עגילי ערב תלויים משובצים אבני קריסטל ירוקות אמרלד בליטוש מבריק, ציפוי רודיום נוגד השחרה והיפואלרגני.",
+    "category": "ACCESSORIES",
+    "imageUrl": "https://cdn.dummyjson.com/product-images/womens-jewellery/green-crystal-earring/thumbnail.webp",
+    "images": [
+      "https://cdn.dummyjson.com/product-images/womens-jewellery/green-crystal-earring/1.webp",
+      "https://cdn.dummyjson.com/product-images/womens-jewellery/green-crystal-earring/2.webp",
+      "https://cdn.dummyjson.com/product-images/womens-jewellery/green-crystal-earring/3.webp"
+    ],
+    "availableQuantity": 54,
+    "reservedQuantity": 0,
+    "tags": [
+      "ACCESSORIES",
+      "FASHION",
+      "תכשיטים",
+      "עגילים",
+      "קריסטלים",
+      "אמרלד",
+      "נשים"
+    ],
+    "brand": "Fashion Pro",
+    "rating": 3.96,
+    "liquidGlassSpecs": {
+      "theme": "emerald",
+      "glowColor": "rgba(16, 185, 129, 0.45)",
+      "badgeStyle": "liquid-emerald-badge",
+      "backdropBlur": "24px",
+      "glassMaterial": "iridescent-glass",
+      "accentGradient": "linear-gradient(135deg, #059669 0%, #10b981 100%)",
+      "cardElevation": "medium",
+      "sparkleColor": "#60a5fa"
+    }
+  },
+  {
+    "skuCode": "WOM-BRD-GRE-183",
+    "productName": "עגילים אובליים משובצים אבן ירוקה בליטוש יוקרתי",
+    "unitPrice": 219.0,
+    "description": "עגילים צמודים בצורת אובל אלגנטית, משובצים באבן חן בגוון ירוק עמוק ומוקפים במסגרת זירקונים נוצצת.",
+    "category": "ACCESSORIES",
+    "imageUrl": "https://cdn.dummyjson.com/product-images/womens-jewellery/green-oval-earring/thumbnail.webp",
+    "images": [
+      "https://cdn.dummyjson.com/product-images/womens-jewellery/green-oval-earring/1.webp",
+      "https://cdn.dummyjson.com/product-images/womens-jewellery/green-oval-earring/2.webp",
+      "https://cdn.dummyjson.com/product-images/womens-jewellery/green-oval-earring/3.webp"
+    ],
+    "availableQuantity": 73,
+    "reservedQuantity": 0,
+    "tags": [
+      "ACCESSORIES",
+      "FASHION",
+      "תכשיטים",
+      "עגילים צמודים",
+      "נשים",
+      "מתנה"
+    ],
+    "brand": "Fashion Pro",
+    "rating": 3.57,
+    "liquidGlassSpecs": {
+      "theme": "emerald",
+      "glowColor": "rgba(5, 150, 105, 0.45)",
+      "badgeStyle": "liquid-emerald-badge",
+      "backdropBlur": "24px",
+      "glassMaterial": "ultra-clear-glass",
+      "accentGradient": "linear-gradient(135deg, #047857 0%, #34d399 100%)",
+      "cardElevation": "medium",
+      "sparkleColor": "#60a5fa"
+    }
+  },
+  {
+    "skuCode": "WOM-BRD-TRO-184",
+    "productName": "עגילים טרופיים בעיצוב אקזוטי ומרהיב",
+    "unitPrice": 199.0,
+    "description": "עגילי סטייטמנט בהשראת הטבע הטרופי, שילוב עדין של עלי זהב ואבני טורקיז מרהיבות למראה קיצי ורענן.",
+    "category": "ACCESSORIES",
+    "imageUrl": "https://cdn.dummyjson.com/product-images/womens-jewellery/tropical-earring/thumbnail.webp",
+    "images": [
+      "https://cdn.dummyjson.com/product-images/womens-jewellery/tropical-earring/1.webp",
+      "https://cdn.dummyjson.com/product-images/womens-jewellery/tropical-earring/2.webp",
+      "https://cdn.dummyjson.com/product-images/womens-jewellery/tropical-earring/3.webp"
+    ],
+    "availableQuantity": 5,
+    "reservedQuantity": 0,
+    "tags": [
+      "ACCESSORIES",
+      "FASHION",
+      "תכשיטים",
+      "עגילים",
+      "טרופי",
+      "נשים"
+    ],
+    "brand": "Fashion Pro",
+    "rating": 4.4,
+    "liquidGlassSpecs": {
+      "theme": "gold",
+      "glowColor": "rgba(245, 158, 11, 0.45)",
+      "badgeStyle": "liquid-gold-badge",
+      "backdropBlur": "24px",
+      "glassMaterial": "iridescent-glass",
+      "accentGradient": "linear-gradient(135deg, #f59e0b 0%, #10b981 100%)",
+      "cardElevation": "medium",
+      "sparkleColor": "#fbbf24"
+    }
+  }
+]
