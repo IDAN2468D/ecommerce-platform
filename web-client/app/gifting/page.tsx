@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
 import {
   Gift,
   Recycle,
@@ -10,10 +11,13 @@ import {
   HeartHandshake,
   Tag,
   FileSpreadsheet,
+  Camera,
+  ArrowLeft,
 } from "lucide-react";
 import { Button } from "../../components/ui/Button";
 import { useCurrency } from "../../context/CurrencyContext";
 import { AiGiftFinderModal, GiftBundle } from "../../components/store/AiGiftFinderModal";
+import { TradeInScannerModal } from "../../components/store/TradeInScannerModal";
 
 interface GiftCampaign {
   id: string;
@@ -66,6 +70,7 @@ export default function GiftingTradeInB2bPage() {
   const [quotes, setQuotes] = useState<B2bQuote[]>([]);
   const [toast, setToast] = useState<string | null>(null);
   const [isGiftFinderOpen, setIsGiftFinderOpen] = useState<boolean>(false);
+  const [isTradeInScannerOpen, setIsTradeInScannerOpen] = useState<boolean>(false);
 
   // Trade-In Form state
   const [deviceModel, setDeviceModel] = useState("Apple iPad Pro 12.9 M2");
@@ -237,6 +242,16 @@ export default function GiftingTradeInB2bPage() {
         onSelectBundle={handleBundleSelected}
       />
 
+      {/* AI Visual Trade-In Scanner Modal Component */}
+      <TradeInScannerModal
+        isOpen={isTradeInScannerOpen}
+        onClose={() => setIsTradeInScannerOpen(false)}
+        onVoucherApplied={(voucherCode, creditAmount) => {
+          loadAll();
+          showNotice(`שובר טרייד-אין ${voucherCode} על סך ${formatPrice(creditAmount)} הופעל בהצלחה על סל הקניות!`);
+        }}
+      />
+
       {/* SECTION 1: Social Gifting & Multi-Payer Split */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
@@ -359,12 +374,22 @@ export default function GiftingTradeInB2bPage() {
               </div>
             </div>
 
-            <Button
-              type="submit"
-              className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black py-3 rounded-2xl"
-            >
-              חשב שווי טרייד-אין והנפק שובר קיזוז לקופה
-            </Button>
+            <div className="flex flex-col gap-2 pt-1">
+              <Button
+                type="submit"
+                className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black py-3 rounded-2xl"
+              >
+                חשב שווי טרייד-אין והנפק שובר קיזוז לקופה
+              </Button>
+              <Button
+                type="button"
+                onClick={() => setIsTradeInScannerOpen(true)}
+                className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black py-3 rounded-2xl flex items-center justify-center gap-2"
+              >
+                <Camera className="w-4 h-4 text-emerald-300" />
+                <span>סרוק תצלום מכשיר ושדרג שובר (AI Visual Scanner)</span>
+              </Button>
+            </div>
           </form>
 
           <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
@@ -441,7 +466,16 @@ export default function GiftingTradeInB2bPage() {
           </form>
 
           <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-            <span className="text-xs font-bold text-slate-400 block">הצעות מחיר B2B מאושרות:</span>
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-400 block">הצעות מחיר B2B מאושרות:</span>
+              <Link
+                href="/b2b"
+                className="text-[11px] font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1"
+              >
+                <span>עבור לפורטל B2B המורחב</span>
+                <ArrowLeft className="w-3 h-3" />
+              </Link>
+            </div>
             {quotes.slice(0, 3).map((q) => (
               <div
                 key={q.id}

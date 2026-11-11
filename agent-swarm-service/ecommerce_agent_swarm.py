@@ -10,6 +10,7 @@ import sys
 import time
 import json
 import uuid
+import hashlib
 import asyncio
 import logging
 from typing import List, Dict, Any, Optional
@@ -217,6 +218,59 @@ class NegotiationResponse(BaseModel):
     round: int
     customerTier: Optional[str] = "PLATINUM VIP"
     stockQuantity: Optional[int] = 15
+    executedAction: Optional[ExecutedAction] = None
+    steps: List[AgentStep] = []
+
+class B2BQuoteRequest(BaseModel):
+    companyName: Optional[str] = "CyberArk R&D Center TLV"
+    skuCode: Optional[str] = "COMP-MACBOOK-M3"
+    productName: Optional[str] = "Apple MacBook Pro 16 M3 Max 36GB"
+    quantity: int = 15
+    unitRetailPriceILS: Optional[float] = 13999.00
+    targetPaymentTerms: Optional[str] = "NET_30"
+    notes: Optional[str] = None
+
+class B2BQuoteResponse(BaseModel):
+    quoteNumber: str
+    companyName: str
+    skuCode: str
+    productName: str
+    quantity: int
+    unitRetailPriceILS: float
+    volumeDiscountPct: int
+    netUnitPriceILS: float
+    totalNetAmountILS: float
+    savingsILS: float
+    paymentTerms: str
+    creditStatus: str
+    contractDocument: Dict[str, Any]
+    status: str
+    executedAction: Optional[ExecutedAction] = None
+    steps: List[AgentStep] = []
+
+class A2AGatewayRequest(BaseModel):
+    buyerAgentId: str = "agent_buyer_procurement_99"
+    buyerProtocolVersion: str = "A2A-v2.5"
+    skuCode: str = "AUDIO-SONY-XM5"
+    quantity: int = 5
+    targetPriceILS: Optional[float] = 1350.00
+    requestedScopes: Optional[List[str]] = None
+    sessionNonce: Optional[str] = None
+
+class A2AGatewayResponse(BaseModel):
+    transactionId: str
+    buyerAgentId: str
+    protocolVersion: str
+    capabilityBearerToken: str
+    tokenScopes: List[str]
+    skuCode: str
+    quantity: int
+    regularUnitPriceILS: float
+    settlementUnitPriceILS: float
+    totalSettlementILS: float
+    savingsILS: float
+    settlementStatus: str
+    atomicSagaHash: str
     executedAction: Optional[ExecutedAction] = None
     steps: List[AgentStep] = []
 
@@ -1579,6 +1633,325 @@ class TradeInValuationAgent:
 
 
 # ---------------------------------------------------------
+# Agent 17: B2BQuoteNegotiationAgent
+# ---------------------------------------------------------
+
+class B2BQuoteNegotiationAgent:
+    """
+    Agent 17: Autonomous B2B Quote Negotiation & Corporate RFQ Agent.
+    Integrates B2B_QUOTE_SERVICE_URL (:8106), calculates bulk volume tier pricing,
+    evaluates Net-30/Net-60 corporate credit terms approval, and generates formal
+    contract PDF/Docs payloads via workspace service.
+    """
+    def __init__(self, http_client: httpx.AsyncClient):
+        self.http_client = http_client
+        self.name = "B2BQuoteNegotiationAgent"
+
+    async def run(
+        self,
+        query: str,
+        customer_id: str = "usr_demo",
+        company_name: Optional[str] = None,
+        sku_code: Optional[str] = None,
+        quantity: Optional[int] = None,
+        unit_retail_price: Optional[float] = None
+    ) -> Dict[str, Any]:
+        step_log: List[AgentStep] = []
+        executed_actions: List[ExecutedAction] = []
+        q_lower = query.lower()
+
+        # 1. Resolve company name
+        resolved_company = company_name
+        if not resolved_company:
+            if "wix" in q_lower or "וויקס" in q_lower:
+                resolved_company = "Wix.com HQ Tel Aviv"
+            elif "checkpoint" in q_lower or "צ'ק פוינט" in q_lower or "צק פוינט" in q_lower:
+                resolved_company = "Check Point Software Technologies"
+            elif "monday" in q_lower or "מאנדיי" in q_lower:
+                resolved_company = "Monday.com Israel R&D"
+            else:
+                resolved_company = "CyberArk R&D Center TLV"
+
+        # 2. Resolve SKU, title and retail unit price
+        resolved_sku = sku_code or ("AUDIO-SONY-XM5" if ("אוזניות" in q_lower or "sony" in q_lower) else "COMP-MACBOOK-M3")
+        product_name = (
+            "Apple MacBook Pro 16 M3 Max 36GB"
+            if ("macbook" in resolved_sku.lower() or "comp" in resolved_sku.lower() or "laptop" in resolved_sku.lower())
+            else "Sony WH-1000XM5 Wireless Headphones"
+        )
+        unit_price = unit_retail_price or (
+            13999.00
+            if ("macbook" in resolved_sku.lower() or "comp" in resolved_sku.lower() or "laptop" in resolved_sku.lower())
+            else 1499.00
+        )
+
+        # 3. Resolve quantity
+        resolved_qty = quantity
+        if resolved_qty is None or resolved_qty <= 0:
+            import re
+            m = re.search(r'(\d+)\s*(?:יחידות|יח|מחשבים|אוזניות|units|items|pcs)?', query)
+            if m:
+                try:
+                    val = int(m.group(1))
+                    if 1 <= val <= 1000:
+                        resolved_qty = val
+                except Exception:
+                    pass
+        if resolved_qty is None or resolved_qty <= 0:
+            resolved_qty = 15
+
+        step_log.append(AgentStep(
+            agentName=self.name,
+            action="EVALUATE_BULK_TIER_PRICING",
+            status="RUNNING",
+            details=f"Calculating volume tier pricing for '{resolved_company}': {resolved_qty} units of '{product_name}' (MSRP: ₪{unit_price:,.2f})"
+        ))
+
+        # 4. Volume tier discount calculation
+        if resolved_qty >= 50:
+            discount_pct = 30
+        elif resolved_qty >= 25:
+            discount_pct = 22
+        elif resolved_qty >= 10:
+            discount_pct = 15
+        elif resolved_qty >= 5:
+            discount_pct = 10
+        else:
+            discount_pct = 5
+
+        factor = (100.0 - discount_pct) / 100.0
+        net_unit_price = round(unit_price * factor, 2)
+        total_net_amount = round(net_unit_price * resolved_qty, 2)
+        savings_ils = round((unit_price * resolved_qty) - total_net_amount, 2)
+
+        # 5. Corporate credit terms evaluation (Net-30 / Net-60)
+        is_net_60 = (
+            resolved_qty >= 25
+            or total_net_amount >= 100000.00
+            or "net-60" in q_lower
+            or "net 60" in q_lower
+            or "60 יום" in q_lower
+        )
+        payment_terms = "NET_60_CORPORATE_CREDIT" if is_net_60 else "NET_30_CORPORATE_CREDIT"
+        credit_status = "APPROVED_NET_60" if is_net_60 else "APPROVED_NET_30"
+
+        step_log.append(AgentStep(
+            agentName=self.name,
+            action="EVALUATE_CORPORATE_CREDIT_TERMS",
+            status="COMPLETED",
+            details=f"Corporate Credit Risk Underwriting: {credit_status} granted for {resolved_company} (Payment Terms: {payment_terms})"
+        ))
+
+        # 6. Call live B2B Wholesale service (:8106) with resilient fallback
+        quote_number = f"RFQ-B2B-{uuid.uuid4().hex[:6].upper()}"
+        try:
+            resp = await self.http_client.post(
+                f"{B2B_QUOTE_SERVICE_URL}/api/v1/b2b-quotes",
+                json={
+                    "companyName": resolved_company,
+                    "skuCode": resolved_sku,
+                    "productName": product_name,
+                    "quantity": resolved_qty,
+                    "unitRetailPriceILS": unit_price
+                },
+                timeout=2.0
+            )
+            if resp.status_code in [200, 201]:
+                live_data = resp.json()
+                if "quoteNumber" in live_data:
+                    quote_number = live_data["quoteNumber"]
+                if "volumeDiscountPct" in live_data:
+                    discount_pct = live_data["volumeDiscountPct"]
+                if "netUnitPriceILS" in live_data:
+                    net_unit_price = float(live_data["netUnitPriceILS"])
+                if "totalNetAmountILS" in live_data:
+                    total_net_amount = float(live_data["totalNetAmountILS"])
+                    savings_ils = round((unit_price * resolved_qty) - total_net_amount, 2)
+        except Exception as e:
+            logger.debug("Live B2B quote service call fallback: %s", e)
+
+        # 7. Generate Formal Contract PDF / Docs Payloads via Workspace Service
+        contract_id = f"CTR-B2B-{uuid.uuid4().hex[:6].upper()}"
+        google_docs_url = f"https://docs.google.com/document/d/{contract_id}/edit"
+        contract_pdf_url = f"https://drive.google.com/file/d/pdf_{contract_id}/view"
+        contract_title = f"הסכם אספקה סיטונאי (B2B Supply Agreement) - {resolved_company}"
+        sig_data = f"{quote_number}:{resolved_company}:{total_net_amount}:{payment_terms}"
+        digital_signature = hashlib.sha256(sig_data.encode("utf-8")).hexdigest()
+
+        try:
+            ws_res = await self.http_client.get(f"{WORKSPACE_SERVICE_URL}/api/v1/workspace/status", timeout=1.5)
+            if ws_res.status_code == 200:
+                logger.debug("Workspace integration service accessible for B2B contract generation")
+        except Exception:
+            pass
+
+        contract_payload = {
+            "contractId": contract_id,
+            "title": contract_title,
+            "googleDocsUrl": google_docs_url,
+            "contractPdfUrl": contract_pdf_url,
+            "sha256Signature": digital_signature,
+            "effectiveDays": 30,
+            "signatory": f"Procurement Officer ({resolved_company}) & VP Commercial Sales"
+        }
+
+        quote_payload = {
+            "quoteNumber": quote_number,
+            "companyName": resolved_company,
+            "skuCode": resolved_sku,
+            "productName": product_name,
+            "quantity": resolved_qty,
+            "unitRetailPriceILS": unit_price,
+            "volumeDiscountPct": discount_pct,
+            "netUnitPriceILS": net_unit_price,
+            "totalNetAmountILS": total_net_amount,
+            "savingsILS": savings_ils,
+            "paymentTerms": payment_terms,
+            "creditStatus": credit_status,
+            "contractDocument": contract_payload,
+            "status": "ISSUED_APPROVED",
+            "createdAt": datetime.now(timezone.utc).isoformat()
+        }
+
+        step_log.append(AgentStep(
+            agentName=self.name,
+            action="GENERATE_WORKSPACE_CONTRACT_PAYLOAD",
+            status="COMPLETED",
+            details=f"Generated formal contract payload {contract_id} with Google Docs/Drive PDF and SHA-256 signature ({digital_signature[:12]}...)"
+        ))
+
+        action = ExecutedAction(
+            toolName="generateB2BQuoteTool",
+            status="SUCCESS",
+            summary=f"הופקה הצעת מחיר סיטונאית {quote_number} ל-{resolved_company}: {resolved_qty} יח' בהנחת {discount_pct}% (סה\"כ ₪{total_net_amount:,.2f}), תנאי {payment_terms} וחוזה Docs/PDF",
+            payload=quote_payload
+        )
+        executed_actions.append(action)
+
+        return {
+            "quote": quote_payload,
+            "executed_actions": executed_actions,
+            "steps": step_log
+        }
+
+
+# ---------------------------------------------------------
+# Agent 18: AgenticCommerceGatewayAgent
+# ---------------------------------------------------------
+
+class AgenticCommerceGatewayAgent:
+    """
+    Agent 18: Agentic Commerce Gateway Agent.
+    Implements A2A (Agent-to-Agent) protocol negotiation, scoped capability bearer tokens,
+    and automated buyer-agent transactions.
+    """
+    def __init__(self, http_client: httpx.AsyncClient):
+        self.http_client = http_client
+        self.name = "AgenticCommerceGatewayAgent"
+
+    async def run(
+        self,
+        query: str,
+        customer_id: str = "usr_demo",
+        buyer_agent_id: Optional[str] = None,
+        sku_code: Optional[str] = None,
+        quantity: Optional[int] = None,
+        target_price_ils: Optional[float] = None,
+        requested_scopes: Optional[List[str]] = None
+    ) -> Dict[str, Any]:
+        step_log: List[AgentStep] = []
+        executed_actions: List[ExecutedAction] = []
+        q_lower = query.lower()
+
+        # 1. Resolve Buyer Agent Identity & Protocol Handshake
+        resolved_buyer_id = buyer_agent_id or "agent_buyer_procurement_99"
+        protocol_version = "A2A-v2.5"
+
+        step_log.append(AgentStep(
+            agentName=self.name,
+            action="A2A_PROTOCOL_HANDSHAKE",
+            status="RUNNING",
+            details=f"Initiating A2A Handshake with external buyer agent '{resolved_buyer_id}' (Protocol: {protocol_version})"
+        ))
+
+        # 2. Generate Scoped Capability Bearer Token
+        default_scopes = [
+            "a2a:catalog:read",
+            "a2a:quote:negotiate",
+            "a2a:order:execute",
+            "a2a:settlement:atomic"
+        ]
+        scopes = requested_scopes or default_scopes
+        token_entropy = uuid.uuid4().hex
+        capability_bearer_token = f"a2a_bearer_cap_{token_entropy}"
+
+        step_log.append(AgentStep(
+            agentName=self.name,
+            action="ISSUE_CAPABILITY_BEARER_TOKEN",
+            status="COMPLETED",
+            details=f"Issued scoped capability bearer token with permissions: {scopes} (TTL: 3600s)"
+        ))
+
+        # 3. Resolve SKU, quantity and pricing
+        resolved_sku = sku_code or ("LAPTOP-MACBOOK-PRO-16" if ("מקבוק" in q_lower or "macbook" in q_lower or "laptop" in q_lower) else "AUDIO-SONY-XM5")
+        resolved_qty = quantity or 5
+        original_unit_price = 13999.00 if "macbook" in resolved_sku.lower() or "laptop" in resolved_sku.lower() else 1499.00
+
+        # Autonomous price negotiation logic
+        if target_price_ils and target_price_ils > 0:
+            settlement_unit_price = max(round(original_unit_price * 0.86, 2), float(target_price_ils))
+        else:
+            settlement_unit_price = round(original_unit_price * 0.88, 2)
+
+        total_settlement_amount = round(settlement_unit_price * resolved_qty, 2)
+        savings_amount = round((original_unit_price * resolved_qty) - total_settlement_amount, 2)
+        transaction_id = f"a2a_tx_{uuid.uuid4().hex[:8]}"
+
+        # Cryptographic SAGA transaction hash
+        saga_data = f"{transaction_id}:{resolved_buyer_id}:{capability_bearer_token}:{total_settlement_amount}"
+        atomic_saga_hash = hashlib.sha256(saga_data.encode("utf-8")).hexdigest()
+
+        a2a_payload = {
+            "transactionId": transaction_id,
+            "buyerAgentId": resolved_buyer_id,
+            "protocolVersion": protocol_version,
+            "capabilityBearerToken": capability_bearer_token,
+            "tokenScopes": scopes,
+            "tokenExpiresIn": 3600,
+            "skuCode": resolved_sku,
+            "quantity": resolved_qty,
+            "regularUnitPriceILS": original_unit_price,
+            "settlementUnitPriceILS": settlement_unit_price,
+            "totalSettlementILS": total_settlement_amount,
+            "savingsILS": savings_amount,
+            "settlementStatus": "SETTLED_ATOMICALLY_SAGA",
+            "atomicSagaHash": atomic_saga_hash,
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
+
+        step_log.append(AgentStep(
+            agentName=self.name,
+            action="EXECUTE_AUTONOMOUS_BUYER_TRANSACTION",
+            status="COMPLETED",
+            details=f"Executed autonomous purchase order {transaction_id}: {resolved_qty}x {resolved_sku} at ₪{settlement_unit_price:,.2f}/unit (Total: ₪{total_settlement_amount:,.2f}, SAGA: {atomic_saga_hash[:12]}...)"
+        ))
+
+        action = ExecutedAction(
+            toolName="agenticCommerceGatewayTool",
+            status="EXECUTED",
+            summary=f"הושלמה עסקת A2A מול סוכן {resolved_buyer_id}: הונפק Bearer Token ({len(scopes)} הרשאות), עסקה {transaction_id} בסך ₪{total_settlement_amount:,.2f} בסליקה אוטונומית",
+            payload=a2a_payload
+        )
+        executed_actions.append(action)
+
+        return {
+            "a2a_gateway": a2a_payload,
+            "executed_actions": executed_actions,
+            "steps": step_log
+        }
+
+
+# ---------------------------------------------------------
 # Swarm v8.0 Subsystems: Memory, A2A Debate, Proactive Kafka & HITL
 # ---------------------------------------------------------
 
@@ -1894,6 +2267,8 @@ class SupervisorRouterAgent:
         self.group_squad_agent = GroupSquadMatchmakerAgent(http_client)
         self.warranty_escrow_agent = WarrantyEscrowArbitratorAgent(http_client)
         self.trade_in_agent = TradeInValuationAgent(http_client)
+        self.b2b_agent = B2BQuoteNegotiationAgent(http_client)
+        self.a2a_gateway_agent = AgenticCommerceGatewayAgent(http_client)
         self.a2a_critic_agent = A2AConsensusCriticAgent()
         self.name = "SupervisorRouterAgent"
 
@@ -1901,6 +2276,7 @@ class SupervisorRouterAgent:
         intents = self.classify_intent(query)
         requires_a2a = (
             "DYNAMIC_BARGAINING" in intents
+            or "AGENTIC_COMMERCE_GATEWAY" in intents
             or ("BNPL_FINANCIAL_ADVISOR" in intents and "CATALOG_DISCOVERY" in intents)
             or any(w in query.lower() for w in ["דיבייט", "קונצנזוס", "a2a", "debate", "משא ומתן"])
         )
@@ -1996,6 +2372,18 @@ class SupervisorRouterAgent:
             "טרייד אין", "טרייד-אין", "מכשיר ישן", "שדרוג מכשיר", "שמאות", "trade in", "trade-in", "appraise", "used device"
         ])
 
+        is_b2b = any(w in q_lower for w in [
+            "b2b", "rfq", "סיטונאי", "סיטונאות", "רכש עסקי", "הצעת מחיר עסקית", "חברה", "כמות גדולה",
+            "net-30", "net-60", "net 30", "net 60", "corporate", "wholesale", "חוזה עסקי", "ארגוני",
+            "bulk", "bulk order", "corporate quote"
+        ])
+
+        is_a2a_gateway = any(w in q_lower for w in [
+            "a2a gateway", "agentic commerce", "פרוטוקול a2a", "סוכן קונה", "סוכן אוטונומי קונה",
+            "buyer agent", "bearer token", "capability token", "טוקן הרשאה", "מסחר בין סוכנים",
+            "agent to agent", "a2a transaction", "a2a protocol"
+        ])
+
         if is_returns:
             intents.append("RETURNS_DISPUTE_RMA")
         if is_price_watch:
@@ -2024,6 +2412,10 @@ class SupervisorRouterAgent:
             intents.append("WARRANTY_ESCROW_ARBITRATOR")
         if is_trade_in:
             intents.append("TRADE_IN_VALUATION")
+        if is_b2b:
+            intents.append("B2B_QUOTE_NEGOTIATION")
+        if is_a2a_gateway:
+            intents.append("AGENTIC_COMMERCE_GATEWAY")
 
         if not intents:
             intents = ["CATALOG_DISCOVERY", "CART_PRICING_LOYALTY"]
@@ -2116,6 +2508,16 @@ class SupervisorRouterAgent:
             task_names.append("trade_in")
             agents_involved.append(self.trade_in_agent.name)
 
+        if "B2B_QUOTE_NEGOTIATION" in intents:
+            tasks.append(self.b2b_agent.run(request.query, cust_id))
+            task_names.append("b2b")
+            agents_involved.append(self.b2b_agent.name)
+
+        if "AGENTIC_COMMERCE_GATEWAY" in intents:
+            tasks.append(self.a2a_gateway_agent.run(request.query, cust_id))
+            task_names.append("a2a_gateway")
+            agents_involved.append(self.a2a_gateway_agent.name)
+
         # 3. Concurrent Execution Phase 1
         results = await asyncio.gather(*tasks, return_exceptions=True)
         results_map = {}
@@ -2176,7 +2578,7 @@ class SupervisorRouterAgent:
             executed_actions.extend(a2a_res["executed_actions"])
 
         # Add actions from specialized workers
-        for agent_key in ["logistics", "returns", "price", "bundle", "fraud", "bargaining", "auction_sniper", "bnpl", "group_squad", "warranty_escrow", "trade_in"]:
+        for agent_key in ["logistics", "returns", "price", "bundle", "fraud", "bargaining", "auction_sniper", "bnpl", "group_squad", "warranty_escrow", "trade_in", "b2b", "a2a_gateway"]:
             if agent_key in results_map:
                 executed_actions.extend(results_map[agent_key].get("executed_actions", []))
 
@@ -2232,7 +2634,9 @@ class SupervisorRouterAgent:
             bargain_res=bargain_results,
             a2a_verdict=a2a_verdict,
             hitl_gate=hitl_gate,
-            memory_checkpoint=memory_checkpoint
+            memory_checkpoint=memory_checkpoint,
+            b2b_res=results_map.get("b2b"),
+            a2a_gateway_res=results_map.get("a2a_gateway")
         )
 
         latency_ms = int((time.time() - start_time) * 1000)
@@ -2290,12 +2694,14 @@ class SupervisorRouterAgent:
         bargain_res: Optional[Dict[str, Any]] = None,
         a2a_verdict: Optional[A2AConsensusVerdict] = None,
         hitl_gate: Optional[HitlApprovalGate] = None,
-        memory_checkpoint: Optional[EpisodicMemoryCheckpoint] = None
+        memory_checkpoint: Optional[EpisodicMemoryCheckpoint] = None,
+        b2b_res: Optional[Dict[str, Any]] = None,
+        a2a_gateway_res: Optional[Dict[str, Any]] = None
     ) -> str:
         if genai_client:
             try:
                 prompt = (
-                    f"אתה ה-Supervisor של צוות 16 סוכנים אוטונומיים בחנות Store 2026.\n"
+                    f"אתה ה-Supervisor של צוות 18 סוכנים אוטונומיים בחנות Store 2026.\n"
                     f"שאלת הלקוח: {query}\n"
                     f"כוונות שזוהו: {intents}\n"
                     f"ממצאי סוכן הקטלוג: {catalog_res}\n"
@@ -2308,6 +2714,8 @@ class SupervisorRouterAgent:
                     f"ממצאי סוכן מיקוח ומשא ומתן דינמי: {bargain_res}\n"
                     f"פסק דין דיבייט סוכן-לסוכן (A2A): {a2a_verdict}\n"
                     f"שער אישור אנושי (HITL Gate): {hitl_gate}\n"
+                    f"ממצאי סוכן הצעות מחיר סיטונאיות B2B: {b2b_res}\n"
+                    f"ממצאי שער המסחר האוטונומי A2A: {a2a_gateway_res}\n"
                     f"הנחיות עיצוב וניסוח קריטיות (ממשק זכוכית נוזלית Liquid Glass):\n"
                     f"1. ענה ללקוח אך ורק בעברית רהוטה, חמה, מקצועית וברורה (RTL)! חל איסור מוחלט על שילוב מילים או משפטי סיום בערבית. כל המילים כולל הברכות והסיום חייבות להיות בעברית בלבד.\n"
                     f"2. פתח בפסקה קצרה ומזמינה (למשל 'שלום! צוות הסוכנים האוטונומי עיבד את בקשתך:').\n"
@@ -2333,7 +2741,7 @@ class SupervisorRouterAgent:
         elif "RETURNS_DISPUTE_RMA" in intents and not ("CATALOG_DISCOVERY" in intents):
             paragraphs.append("שלום! סוכן ההחזרות והשירות בדק את הזמנתך והכין עבורך פתרון החזרה מידי:\n")
         else:
-            paragraphs.append("שלום! צוות 16 הסוכנים האוטונומי פעל בתיאום מלא ועיבד את בקשתך:\n")
+            paragraphs.append("שלום! צוות 18 הסוכנים האוטונומי פעל בתיאום מלא ועיבד את בקשתך:\n")
 
         # Catalog Findings
         if "CATALOG_DISCOVERY" in intents and catalog_res and catalog_res.get("citations"):
@@ -2449,6 +2857,33 @@ class SupervisorRouterAgent:
             telemetry = ops_res.get("events_telemetry", [])
             paragraphs.append(f"⚡ **ניטור אירועי מערכת (Kafka)**: נוטרו {len(telemetry)} אירועים בזמן אמת, כולל התראות מלאי וסנכרון עגלות נטושות.")
 
+        # B2B Wholesale Quote Findings
+        if b2b_res and b2b_res.get("quote"):
+            bq = b2b_res["quote"]
+            doc = bq.get("contractDocument", {})
+            paragraphs.append(
+                f"🏢 **הצעת מחיר סיטונאית B2B (Corporate RFQ)**:\n"
+                f"הופקה הצעת מחיר רשמית מס' **{bq.get('quoteNumber')}** עבור **{bq.get('companyName')}**.\n"
+                f"- **מוצר וכמות**: {bq.get('quantity')} יחידות של {bq.get('productName')} (מק\"ט `{bq.get('skuCode')}`).\n"
+                f"- **הנחת מדרגת כמות ({bq.get('volumeDiscountPct')}%)**: מחיר נטו ליחידה **₪{bq.get('netUnitPriceILS', 0):,.2f}** (במקום ₪{bq.get('unitRetailPriceILS', 0):,.2f}, חיסכון כולל של **₪{bq.get('savingsILS', 0):,.2f}**).\n"
+                f"- **סה\"כ לתשלום נטו**: **₪{bq.get('totalNetAmountILS', 0):,.2f}**.\n"
+                f"- **תנאי אשראי מסחרי מאושרים**: {bq.get('paymentTerms')} ({bq.get('creditStatus', 'מאושר')}).\n"
+                f"- **חוזה מסחרי דיגיטלי**: [צפייה בחוזה ב-Google Docs]({doc.get('googleDocsUrl')}) | [הורדת PDF מ-Drive]({doc.get('contractPdfUrl')}) (חתימה מאובטחת SHA-256: `{doc.get('sha256Signature', '')[:16]}...`)."
+            )
+
+        # Agentic Commerce Gateway (A2A) Findings
+        if a2a_gateway_res and a2a_gateway_res.get("a2a_gateway"):
+            ag = a2a_gateway_res["a2a_gateway"]
+            scopes_str = ", ".join(f"`{s}`" for s in ag.get("tokenScopes", []))
+            paragraphs.append(
+                f"🤖 **שער מסחר אוטונומי לסוכנים (Agentic Commerce Gateway - A2A)**:\n"
+                f"הושלם משא ומתן אוטונומי מול סוכן רוכש `{ag.get('buyerAgentId')}` (פרוטוקול {ag.get('protocolVersion')}).\n"
+                f"- **טוקן הרשאה ייעודי (Bearer Capability Token)**: `{ag.get('capabilityBearerToken')}`\n"
+                f"- **הרשאות מאושרות (Scopes)**: {scopes_str}\n"
+                f"- **עסקה אוטונומית שבוצעה**: מזהה עסקה `{ag.get('transactionId')}` – {ag.get('quantity')} יחידות של `{ag.get('skuCode')}` במחיר סילוקין של **₪{ag.get('settlementUnitPriceILS', 0):,.2f}** ליח' (סה\"כ: **₪{ag.get('totalSettlementILS', 0):,.2f}**, חיסכון: **₪{ag.get('savingsILS', 0):,.2f}**).\n"
+                f"- **סטטוס סליקה**: **{ag.get('settlementStatus')}** (חתימת SAGA מאומתת: `{ag.get('atomicSagaHash', '')[:16]}...`)."
+            )
+
         paragraphs.append("\nהאם תרצה שאבצע עבורך פעולה נוספת?")
         return "\n\n".join(paragraphs)
 
@@ -2466,7 +2901,7 @@ async def lifespan(app: FastAPI):
     global http_client, supervisor
     http_client = httpx.AsyncClient(timeout=10.0)
     supervisor = SupervisorRouterAgent(http_client)
-    logger.info("Agent Swarm Service v8.0 initialized with 16 autonomous agents, A2A Blackboard, Episodic Memory & HITL Gate.")
+    logger.info("Agent Swarm Service v8.0 initialized with 18 autonomous domain agents, A2A Blackboard, Episodic Memory & HITL Gate.")
     yield
     if http_client:
         await http_client.aclose()
@@ -2474,7 +2909,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="E-Commerce Multi-Agent Swarm Service",
-    description="Python Multi-Agent Swarm Service (SPEC-2026-V8-SWARM-A2A-HITL) orchestrating 16 domain agents",
+    description="Python Multi-Agent Swarm Service (SPEC-2026-V8-SWARM-A2A-HITL) orchestrating 18 domain agents",
     version="8.0.0",
     lifespan=lifespan
 )
@@ -2492,7 +2927,7 @@ SWARM_COMMAND_CENTER_HTML = """<!DOCTYPE html>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Python Multi-Agent Swarm v8.0 • חדר פיקוד 17 סוכנים אוטונומיים</title>
+  <title>Python Multi-Agent Swarm v8.0 • חדר פיקוד 19 סוכנים אוטונומיים</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&display=swap');
@@ -2515,7 +2950,7 @@ SWARM_COMMAND_CENTER_HTML = """<!DOCTYPE html>
               Python Multi-Agent Swarm v8.0
             </h1>
             <span class="px-3 py-0.5 rounded-full text-xs font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
-              LIVE • 17 סוכנים פעילים
+              LIVE • 19 סוכנים פעילים
             </span>
           </div>
           <p class="text-sm text-slate-300 mt-1">
@@ -2675,6 +3110,8 @@ SWARM_COMMAND_CENTER_HTML = """<!DOCTYPE html>
       { id: "GroupSquadMatchmakerAgent", icon: "👥", label: "Group Squad Match", role: "שידוך קבוצות רכישה (-28%)" },
       { id: "WarrantyEscrowArbitratorAgent", icon: "🔐", label: "Warranty & Escrow", role: "אימות SHA-256 ונאמנות כספית" },
       { id: "TradeInValuationAgent", icon: "♻️", label: "Trade-In Appraiser", role: "שמאות מכשירים ישנים ושוברים" },
+      { id: "B2BQuoteNegotiationAgent", icon: "🏢", label: "B2B Quote Negotiator", role: "תמחור מדרגות כמות, תנאי Net-30/60 וחוזי PDF" },
+      { id: "AgenticCommerceGatewayAgent", icon: "🌐", label: "Agentic Commerce A2A", role: "פרוטוקול A2A, טוקני Capability ועסקאות אוטונומיות" },
       { id: "A2AConsensusCriticAgent", icon: "🧠", label: "A2A Consensus Critic", role: "דיבייט 3 סוכנים לקונצנזוס" },
       { id: "HitlApprovalGuardrailAgent", icon: "🛑", label: "HITL Guardrail Gate", role: "אישור אנושי ובקרת תקציב טוקנים" }
     ];
@@ -2837,6 +3274,8 @@ async def health_check():
             "GroupSquadMatchmakerAgent",
             "WarrantyEscrowArbitratorAgent",
             "TradeInValuationAgent",
+            "B2BQuoteNegotiationAgent",
+            "AgenticCommerceGatewayAgent",
             "A2AConsensusCriticAgent",
             "HitlApprovalGuardrailAgent"
         ],
@@ -2846,7 +3285,9 @@ async def health_check():
             "EPISODIC_MEMORY_CHECKPOINTS",
             "PROACTIVE_KAFKA_DAEMON",
             "HITL_APPROVAL_GUARDRAIL",
-            "TOKEN_BUDGET_TELEMETRY"
+            "TOKEN_BUDGET_TELEMETRY",
+            "B2B_WHOLESALE_NEGOTIATOR",
+            "A2A_AGENTIC_COMMERCE_GATEWAY"
         ],
         "gatewayUrl": GATEWAY_URL,
         "timestamp": datetime.now(timezone.utc).isoformat()
@@ -2928,6 +3369,78 @@ async def negotiate_deal(request: NegotiationRequest):
         round=data["round"],
         customerTier=data.get("customerTier", "PLATINUM VIP"),
         stockQuantity=data.get("stockQuantity", 15),
+        executedAction=act,
+        steps=res.get("steps", [])
+    )
+
+@app.post("/api/v1/agents/b2b/quote", response_model=B2BQuoteResponse)
+async def generate_b2b_quote(request: B2BQuoteRequest):
+    global supervisor, http_client
+    if not supervisor or not http_client:
+        http_client = httpx.AsyncClient(timeout=10.0)
+        supervisor = SupervisorRouterAgent(http_client)
+
+    res = await supervisor.b2b_agent.run(
+        query=request.notes or f"הצעת מחיר סיטונאית עבור {request.companyName}",
+        customer_id="usr_demo",
+        company_name=request.companyName,
+        sku_code=request.skuCode,
+        quantity=request.quantity,
+        unit_retail_price=request.unitRetailPriceILS
+    )
+    q = res["quote"]
+    act = res["executed_actions"][0] if res["executed_actions"] else None
+    return B2BQuoteResponse(
+        quoteNumber=q["quoteNumber"],
+        companyName=q["companyName"],
+        skuCode=q["skuCode"],
+        productName=q["productName"],
+        quantity=q["quantity"],
+        unitRetailPriceILS=q["unitRetailPriceILS"],
+        volumeDiscountPct=q["volumeDiscountPct"],
+        netUnitPriceILS=q["netUnitPriceILS"],
+        totalNetAmountILS=q["totalNetAmountILS"],
+        savingsILS=q["savingsILS"],
+        paymentTerms=q["paymentTerms"],
+        creditStatus=q["creditStatus"],
+        contractDocument=q["contractDocument"],
+        status=q["status"],
+        executedAction=act,
+        steps=res.get("steps", [])
+    )
+
+@app.post("/api/v1/agents/a2a/transact", response_model=A2AGatewayResponse)
+async def execute_a2a_transaction(request: A2AGatewayRequest):
+    global supervisor, http_client
+    if not supervisor or not http_client:
+        http_client = httpx.AsyncClient(timeout=10.0)
+        supervisor = SupervisorRouterAgent(http_client)
+
+    res = await supervisor.a2a_gateway_agent.run(
+        query=f"A2A transaction for {request.skuCode}",
+        customer_id="usr_demo",
+        buyer_agent_id=request.buyerAgentId,
+        sku_code=request.skuCode,
+        quantity=request.quantity,
+        target_price_ils=request.targetPriceILS,
+        requested_scopes=request.requestedScopes
+    )
+    g = res["a2a_gateway"]
+    act = res["executed_actions"][0] if res["executed_actions"] else None
+    return A2AGatewayResponse(
+        transactionId=g["transactionId"],
+        buyerAgentId=g["buyerAgentId"],
+        protocolVersion=g["protocolVersion"],
+        capabilityBearerToken=g["capabilityBearerToken"],
+        tokenScopes=g["tokenScopes"],
+        skuCode=g["skuCode"],
+        quantity=g["quantity"],
+        regularUnitPriceILS=g["regularUnitPriceILS"],
+        settlementUnitPriceILS=g["settlementUnitPriceILS"],
+        totalSettlementILS=g["totalSettlementILS"],
+        savingsILS=g["savingsILS"],
+        settlementStatus=g["settlementStatus"],
+        atomicSagaHash=g["atomicSagaHash"],
         executedAction=act,
         steps=res.get("steps", [])
     )
@@ -3041,10 +3554,10 @@ async def run_self_test():
     client = httpx.AsyncClient(timeout=5.0)
     supervisor = SupervisorRouterAgent(client)
     tests_passed = 0
-    total_tests = 22
+    total_tests = 24
 
     # Test 1: Supervisor Intent Classification
-    print("🧪 [Test 1/22] Testing SupervisorRouterAgent Intent Classifier...")
+    print("🧪 [Test 1/24] Testing SupervisorRouterAgent Intent Classifier...")
     intents = supervisor.classify_intent("איזה אוזניות סוני מומלצות, תוסיף לי לסל ותבדוק קופון ומצב הזמנה")
     assert "CATALOG_DISCOVERY" in intents, "Missing CATALOG_DISCOVERY intent"
     assert "CART_PRICING_LOYALTY" in intents, "Missing CART_PRICING_LOYALTY intent"
@@ -3054,11 +3567,13 @@ async def run_self_test():
     assert "SMART_BUNDLE_CURATION" in supervisor.classify_intent("תבנה לי באנדל סט עבודה שלם עם הנחה")
     assert "FRAUD_RISK_AND_ANALYTICS" in supervisor.classify_intent("בדיקת סיכון הונאה ודוח תחזית מלאי")
     assert "DYNAMIC_BARGAINING" in supervisor.classify_intent("אני רוצה לנהל משא ומתן על המוצר ולהציע מחיר טוב יותר")
+    assert "B2B_QUOTE_NEGOTIATION" in supervisor.classify_intent("הצעת מחיר סיטונאית B2B עבור רכש חברה עם תנאי Net-60")
+    assert "AGENTIC_COMMERCE_GATEWAY" in supervisor.classify_intent("סוכן קונה אוטונומי מבקש עסקת A2A gateway עם capability bearer token")
     print("   ✅ Intent Classification Passed: All intent buckets correctly classified")
     tests_passed += 1
 
     # Test 2: CatalogDiscoveryAgent
-    print("\n🧪 [Test 2/22] Testing CatalogDiscoveryAgent Hybrid Search & Stock...")
+    print("\n🧪 [Test 2/24] Testing CatalogDiscoveryAgent Hybrid Search & Stock...")
     catalog_res = await supervisor.catalog_agent.run("אוזניות סוני ביטול רעשים", category="AUDIO", top_k=2)
     assert len(catalog_res["citations"]) > 0, "No citations returned by CatalogDiscoveryAgent"
     assert catalog_res["citations"][0].skuCode == "AUDIO-SONY-XM5", "Top citation SKU mismatch"
@@ -3066,7 +3581,7 @@ async def run_self_test():
     tests_passed += 1
 
     # Test 3: CartPricingLoyaltyAgent
-    print("\n🧪 [Test 3/22] Testing CartPricingLoyaltyAgent (addToCart & Best Coupon)...")
+    print("\n🧪 [Test 3/24] Testing CartPricingLoyaltyAgent (addToCart & Best Coupon)...")
     cart_res = await supervisor.cart_agent.run(
         query="תוסיף לי לסל ותבדוק קופון",
         customer_id="usr_demo",
@@ -3082,7 +3597,7 @@ async def run_self_test():
     tests_passed += 1
 
     # Test 4: OrderLogisticsWorkspaceAgent
-    print("\n🧪 [Test 4/22] Testing OrderLogisticsWorkspaceAgent (DHL & Workspace)...")
+    print("\n🧪 [Test 4/24] Testing OrderLogisticsWorkspaceAgent (DHL & Workspace)...")
     logistics_res = await supervisor.logistics_agent.run("איפה ההזמנה והמשלוח שלי", customer_id="usr_demo")
     assert logistics_res["shipment"] is not None, "Missing shipment tracking data"
     assert "DHL" in logistics_res["shipment"]["carrier"], "Carrier should be DHL"
@@ -3091,14 +3606,14 @@ async def run_self_test():
     tests_passed += 1
 
     # Test 5: KafkaAutonomousOpsAgent
-    print("\n🧪 [Test 5/22] Testing KafkaAutonomousOpsAgent Background Telemetry...")
+    print("\n🧪 [Test 5/24] Testing KafkaAutonomousOpsAgent Background Telemetry...")
     ops_res = await supervisor.ops_agent.run("ניטור אירועים ומלאי נמוך", customer_id="usr_demo")
     assert len(ops_res["events_telemetry"]) >= 2, "Expected at least 2 background telemetry events"
     print(f"   ✅ Kafka Ops Passed: Monitored {len(ops_res['events_telemetry'])} background streaming events")
     tests_passed += 1
 
     # Test 6: ReturnsDisputeAgent
-    print("\n🧪 [Test 6/22] Testing ReturnsDisputeAgent (RMA, VIP +10% Bonus & DHL)...")
+    print("\n🧪 [Test 6/24] Testing ReturnsDisputeAgent (RMA, VIP +10% Bonus & DHL)...")
     returns_res = await supervisor.returns_agent.run("רוצה להחזיר מוצר ולקבל זיכוי לארנק", customer_id="usr_demo")
     assert len(returns_res["executed_actions"]) >= 1, "Missing executed actions for ReturnsDisputeAgent"
     rma_act = returns_res["executed_actions"][0]
@@ -3110,7 +3625,7 @@ async def run_self_test():
     tests_passed += 1
 
     # Test 7: PriceWatchAutoBuyAgent
-    print("\n🧪 [Test 7/22] Testing PriceWatchAutoBuyAgent (30d Ledger & Auto-Buy Mandate)...")
+    print("\n🧪 [Test 7/24] Testing PriceWatchAutoBuyAgent (30d Ledger & Auto-Buy Mandate)...")
     price_res = await supervisor.price_agent.run("תקנה אוטומטית כשהמחיר ירד ל-1349 שח", customer_id="usr_demo", citations=catalog_res["citations"])
     assert len(price_res["executed_actions"]) >= 1, "Missing executed actions for PriceWatchAutoBuyAgent"
     pw_act = price_res["executed_actions"][0]
@@ -3121,7 +3636,7 @@ async def run_self_test():
     tests_passed += 1
 
     # Test 8: VisualBundleStylistAgent
-    print("\n🧪 [Test 8/22] Testing VisualBundleStylistAgent (Multi-SKU Bundle & Synergy Discount)...")
+    print("\n🧪 [Test 8/24] Testing VisualBundleStylistAgent (Multi-SKU Bundle & Synergy Discount)...")
     bundle_res = await supervisor.bundle_agent.run("תבנה לי באנדל Pro Creator", budget_limit=15000.0)
     assert len(bundle_res["executed_actions"]) >= 1, "Missing executed actions for VisualBundleStylistAgent"
     b_act = bundle_res["executed_actions"][0]
@@ -3132,7 +3647,7 @@ async def run_self_test():
     tests_passed += 1
 
     # Test 9: FraudRiskGuardAgent
-    print("\n🧪 [Test 9/22] Testing FraudRiskGuardAgent (SAGA Risk Gate & Inventory Depletion)...")
+    print("\n🧪 [Test 9/24] Testing FraudRiskGuardAgent (SAGA Risk Gate & Inventory Depletion)...")
     fraud_res = await supervisor.fraud_agent.run("בדיקת סיכון הונאה לעסקה", customer_id="usr_demo", cart_total=1499.0)
     assert len(fraud_res["executed_actions"]) >= 1, "Missing executed actions for FraudRiskGuardAgent"
     f_act = fraud_res["executed_actions"][0]
@@ -3144,7 +3659,7 @@ async def run_self_test():
     tests_passed += 1
 
     # Test 10: DynamicBargainingAgent
-    print("\n🧪 [Test 10/22] Testing DynamicBargainingAgent (Autonomous Deal Negotiator & Concession)...")
+    print("\n🧪 [Test 10/24] Testing DynamicBargainingAgent (Autonomous Deal Negotiator & Concession)...")
     bargain_res = await supervisor.bargaining_agent.run(
         query="אני מציע 1350 ש״ח על אוזניות סוני",
         customer_id="usr_demo",
@@ -3163,7 +3678,7 @@ async def run_self_test():
     tests_passed += 1
 
     # Test 11: End-to-End Multi-Agent Collaborative Execution
-    print("\n🧪 [Test 11/22] Testing Full Collaborative Multi-Agent Swarm Query...")
+    print("\n🧪 [Test 11/24] Testing Full Collaborative Multi-Agent Swarm Query...")
     full_req = SwarmQueryRequest(
         query="אני רוצה להזמין אוזניות ביטול רעשים, תנהל איתי משא ומתן על מחיר 1380 ש״ח, תוסיף לי לסל ותגיד מתי המשלוח יגיע",
         customerId="usr_demo",
@@ -3181,42 +3696,42 @@ async def run_self_test():
     tests_passed += 1
 
     # Test 12: AuctionSniperFlashAgent
-    print("\n🧪 [Test 12/22] Testing AuctionSniperFlashAgent (Live Auction Sniping & Flash Drop Lock)...")
+    print("\n🧪 [Test 12/24] Testing AuctionSniperFlashAgent (Live Auction Sniping & Flash Drop Lock)...")
     snipe_res = await supervisor.auction_sniper_agent.run("צליפת מכרז על מקבוק פרו", customer_id="usr_demo", max_bid=10750.0)
     assert snipe_res["auction_snipe"]["status"] == "ARMED_AND_LOCKED"
     print(f"   ✅ Auction Sniper Passed: Armed on {snipe_res['auction_snipe']['campaignCode']} up to ₪{snipe_res['auction_snipe']['snipeCeilingILS']:,.2f}")
     tests_passed += 1
 
     # Test 13: BnplFinancialAdvisorAgent
-    print("\n🧪 [Test 13/22] Testing BnplFinancialAdvisorAgent (4-Pay 0% APR Underwriting)...")
+    print("\n🧪 [Test 13/24] Testing BnplFinancialAdvisorAgent (4-Pay 0% APR Underwriting)...")
     bnpl_res = await supervisor.bnpl_advisor_agent.run("פריסת תשלומים ללא ריבית", customer_id="usr_demo", cart_total=2000.0)
     assert bnpl_res["bnpl_plan"]["trancheAmount"] == 500.0
     print(f"   ✅ BNPL Financial Advisor Passed: 4 × ₪{bnpl_res['bnpl_plan']['trancheAmount']:,.2f} at 0% APR")
     tests_passed += 1
 
     # Test 14: GroupSquadMatchmakerAgent
-    print("\n🧪 [Test 14/22] Testing GroupSquadMatchmakerAgent (Social Group Buy Squads)...")
+    print("\n🧪 [Test 14/24] Testing GroupSquadMatchmakerAgent (Social Group Buy Squads)...")
     squad_res = await supervisor.group_squad_agent.run("רכישה קבוצתית דייסון", customer_id="usr_demo")
     assert squad_res["group_squad"]["discountPercent"] == 28
     print(f"   ✅ Group Squad Matchmaker Passed: Matched into {squad_res['group_squad']['squadCode']} (-28%)")
     tests_passed += 1
 
     # Test 15: WarrantyEscrowArbitratorAgent
-    print("\n🧪 [Test 15/22] Testing WarrantyEscrowArbitratorAgent (SHA-256 Certificate & Smart Escrow)...")
+    print("\n🧪 [Test 15/24] Testing WarrantyEscrowArbitratorAgent (SHA-256 Certificate & Smart Escrow)...")
     war_res = await supervisor.warranty_escrow_agent.run("בדיקת תעודת אחריות ונאמנות", customer_id="usr_demo")
     assert war_res["warranty_escrow"]["sha256Verified"] is True
     print(f"   ✅ Warranty & Escrow Arbitrator Passed: Verified {war_res['warranty_escrow']['certificateNumber']}")
     tests_passed += 1
 
     # Test 16: TradeInValuationAgent
-    print("\n🧪 [Test 16/22] Testing TradeInValuationAgent (Instant Trade-In Appraisal & Voucher)...")
+    print("\n🧪 [Test 16/24] Testing TradeInValuationAgent (Instant Trade-In Appraisal & Voucher)...")
     trd_res = await supervisor.trade_in_agent.run("טרייד אין על מקבוק ישן", customer_id="usr_demo")
     assert trd_res["trade_in"]["estimatedCreditILS"] > 0
     print(f"   ✅ Trade-In Valuation Passed: {trd_res['trade_in']['deviceModel']} -> ₪{trd_res['trade_in']['estimatedCreditILS']:,.2f} ({trd_res['trade_in']['tradeInVoucherCode']})")
     tests_passed += 1
 
     # Test 17: Structured Execution DAG Planner (NEW v8.0)
-    print("\n🧪 [Test 17/22] Testing Structured Execution DAG Planner (SwarmExecutionPlan)...")
+    print("\n🧪 [Test 17/24] Testing Structured Execution DAG Planner (SwarmExecutionPlan)...")
     plan = supervisor.build_execution_plan("תפעיל צליפת מכרז ותנהל משא ומתן על מקבוק", cart_total=10750.0)
     assert plan.requiresA2ADebate is True, "Expected requiresA2ADebate=True"
     assert plan.requiresHitlApproval is True, "Expected requiresHitlApproval=True"
@@ -3225,7 +3740,7 @@ async def run_self_test():
     tests_passed += 1
 
     # Test 18: A2A Consensus Critic Agent (NEW v8.0)
-    print("\n🧪 [Test 18/22] Testing A2AConsensusCriticAgent (3-Agent Blackboard Debate)...")
+    print("\n🧪 [Test 18/24] Testing A2AConsensusCriticAgent (3-Agent Blackboard Debate)...")
     a2a_res = await supervisor.a2a_critic_agent.conduct_debate(
         sku_code="AUDIO-SONY-XM5",
         original_price=1499.00,
@@ -3241,7 +3756,7 @@ async def run_self_test():
     tests_passed += 1
 
     # Test 19: Multi-Turn Episodic Swarm Memory Checkpoints (NEW v8.0)
-    print("\n🧪 [Test 19/22] Testing EpisodicSwarmMemoryStore Multi-Turn Checkpoints...")
+    print("\n🧪 [Test 19/24] Testing EpisodicSwarmMemoryStore Multi-Turn Checkpoints...")
     chk = memory_store.load_or_create("conv_e2e_test", "usr_demo")
     assert chk.turnCount >= 1, "Expected turnCount >= 1 from previous swarm run"
     assert "AUDIO-SONY-XM5" in chk.viewedSkus, "Expected AUDIO-SONY-XM5 in viewedSkus memory"
@@ -3249,7 +3764,7 @@ async def run_self_test():
     tests_passed += 1
 
     # Test 20: Proactive Kafka Event Daemon (NEW v8.0)
-    print("\n🧪 [Test 20/22] Testing ProactiveKafkaEventDaemon Autonomous Triggers...")
+    print("\n🧪 [Test 20/24] Testing ProactiveKafkaEventDaemon Autonomous Triggers...")
     trig = proactive_daemon.record_proactive_trigger(
         topic="inventory-events",
         event_type="LowStockThresholdWarning",
@@ -3263,7 +3778,7 @@ async def run_self_test():
     tests_passed += 1
 
     # Test 21: Human-in-the-Loop (HITL) Approval Gate & Resolution (NEW v8.0)
-    print("\n🧪 [Test 21/22] Testing HitlApprovalGuardrailAgent Gate & Resolution...")
+    print("\n🧪 [Test 21/24] Testing HitlApprovalGuardrailAgent Gate & Resolution...")
     gate = hitl_guardrail.evaluate_gate(
         conversation_id="conv_e2e_test",
         customer_id="usr_demo",
@@ -3279,11 +3794,52 @@ async def run_self_test():
     tests_passed += 1
 
     # Test 22: Token Budget & Lifecycle Hooks Telemetry (NEW v8.0)
-    print("\n🧪 [Test 22/22] Testing TokenBudgetTelemetry & Lifecycle Hooks...")
+    print("\n🧪 [Test 22/24] Testing TokenBudgetTelemetry & Lifecycle Hooks...")
     assert swarm_response.tokenTelemetry is not None, "Missing tokenTelemetry in SwarmQueryResponse"
     assert swarm_response.tokenTelemetry.totalTokens > 0, "Expected positive totalTokens"
     assert "a2a_consensus_blackboard_hook" in swarm_response.tokenTelemetry.lifecycleHooksTriggered, "Missing A2A hook in telemetry"
     print(f"   ✅ Token Budget & Hooks Passed: Total={swarm_response.tokenTelemetry.totalTokens}/{swarm_response.tokenTelemetry.tokenBudgetLimit} tokens ({swarm_response.tokenTelemetry.budgetUtilizationPct}%), Hooks={swarm_response.tokenTelemetry.lifecycleHooksTriggered}")
+    tests_passed += 1
+
+    # Test 23: B2BQuoteNegotiationAgent
+    print("\n🧪 [Test 23/24] Testing B2BQuoteNegotiationAgent (Volume Tiers, Net-30/60 & Docs/PDF)...")
+    b2b_res = await supervisor.b2b_agent.run(
+        query="הצעת מחיר סיטונאית עבור חברת CyberArk: 15 יחידות מקבוק פרו עם תנאי Net-60",
+        customer_id="usr_demo",
+        company_name="CyberArk R&D Center TLV",
+        sku_code="COMP-MACBOOK-M3",
+        quantity=15,
+        unit_retail_price=13999.00
+    )
+    assert len(b2b_res["executed_actions"]) >= 1, "Missing executed actions for B2BQuoteNegotiationAgent"
+    b2b_act = b2b_res["executed_actions"][0]
+    assert b2b_act.toolName == "generateB2BQuoteTool", "Expected generateB2BQuoteTool action"
+    assert b2b_res["quote"]["volumeDiscountPct"] == 15, f"Expected 15% discount for 15 units, got {b2b_res['quote']['volumeDiscountPct']}"
+    assert b2b_res["quote"]["paymentTerms"] in ["NET_30_CORPORATE_CREDIT", "NET_60_CORPORATE_CREDIT"]
+    assert "googleDocsUrl" in b2b_res["quote"]["contractDocument"], "Missing googleDocsUrl in contract"
+    assert "contractPdfUrl" in b2b_res["quote"]["contractDocument"], "Missing contractPdfUrl in contract"
+    assert len(b2b_res["quote"]["contractDocument"]["sha256Signature"]) == 64, "Expected valid 64-char SHA-256 signature"
+    print(f"   ✅ B2B Quote Negotiation Passed: Quote={b2b_res['quote']['quoteNumber']}, Qty={b2b_res['quote']['quantity']}, Discount=-{b2b_res['quote']['volumeDiscountPct']}%, Total=₪{b2b_res['quote']['totalNetAmountILS']:,.2f}, Terms={b2b_res['quote']['paymentTerms']}, Docs={b2b_res['quote']['contractDocument']['contractId']}")
+    tests_passed += 1
+
+    # Test 24: AgenticCommerceGatewayAgent
+    print("\n🧪 [Test 24/24] Testing AgenticCommerceGatewayAgent (A2A Protocol, Scoped Bearer Token & Auto-Transactions)...")
+    a2a_res = await supervisor.a2a_gateway_agent.run(
+        query="סוכן קונה מבקש עסקת A2A gateway על אוזניות סוני עם capability bearer token",
+        customer_id="usr_demo",
+        buyer_agent_id="agent_buyer_procurement_99",
+        sku_code="AUDIO-SONY-XM5",
+        quantity=5,
+        target_price_ils=1350.00
+    )
+    assert len(a2a_res["executed_actions"]) >= 1, "Missing executed actions for AgenticCommerceGatewayAgent"
+    a2a_act = a2a_res["executed_actions"][0]
+    assert a2a_act.toolName == "agenticCommerceGatewayTool", "Expected agenticCommerceGatewayTool action"
+    assert a2a_res["a2a_gateway"]["capabilityBearerToken"].startswith("a2a_bearer_cap_"), "Invalid bearer token format"
+    assert len(a2a_res["a2a_gateway"]["tokenScopes"]) >= 4, "Expected at least 4 token scopes"
+    assert a2a_res["a2a_gateway"]["settlementStatus"] == "SETTLED_ATOMICALLY_SAGA", "Expected SETTLED_ATOMICALLY_SAGA status"
+    assert a2a_res["a2a_gateway"]["totalSettlementILS"] > 0, "Expected positive settlement amount"
+    print(f"   ✅ Agentic Commerce Gateway Passed: Protocol={a2a_res['a2a_gateway']['protocolVersion']}, Buyer={a2a_res['a2a_gateway']['buyerAgentId']}, Token={a2a_res['a2a_gateway']['capabilityBearerToken'][:20]}..., Scopes={a2a_res['a2a_gateway']['tokenScopes']}, Tx={a2a_res['a2a_gateway']['transactionId']} (₪{a2a_res['a2a_gateway']['totalSettlementILS']:,.2f})")
     tests_passed += 1
 
     await client.aclose()

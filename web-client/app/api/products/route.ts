@@ -30,11 +30,14 @@ export async function GET(request: NextRequest) {
     console.warn("Backend Gateway/Inventory unreachable, using rich fallback catalog:", error?.message);
   }
 
-  // Graceful Fallback: filter fallback catalog by category if requested
+  // Graceful Fallback: filter fallback catalog by category or tag if requested
   let filtered = FALLBACK_PRODUCTS;
   if (category && category !== "ALL" && category !== "הכל") {
+    const catLower = category.toLowerCase();
     filtered = FALLBACK_PRODUCTS.filter(
-      (p) => p.category.toLowerCase() === category.toLowerCase()
+      (p) =>
+        p.category.toLowerCase() === catLower ||
+        (Array.isArray(p.tags) && p.tags.some((t: string) => t.toLowerCase() === catLower))
     );
   }
 

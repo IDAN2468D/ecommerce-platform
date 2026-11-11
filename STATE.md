@@ -2,7 +2,7 @@
 
 - **Governance**: Spec-First (`.agents/specs/WEB_CLIENT_REDESIGN_SPEC.md`, `.agents/specs/RECOMMENDATION_RAG_INTEGRATION_SPEC.md`, `PRD-2026-UI-REDESIGN-V3`).
 - **Team Lead Approval**: Approved by Idan.
-- **Current Active Focus**: Track F Verified (Full-Stack Enterprise Extensions via Native Swarm: Merchant Analytics, Fraud Guard, Marketplace Payouts & AI Gift Finder).
+- **Current Active Focus**: Track G Verified (Autonomous B2B Negotiation, A2A Commerce Gateway, DummyJSON Fashion Catalog & Next-Gen Liquid Glass 4.0 Pro Storefront).
 - **Last Updated**: 2026-11-11
 
 ---
@@ -81,6 +81,30 @@
 - [x] F.5 איחוד מרכז הבקרה הראשי (`web-client/app/admin/page.tsx`):
   - שילוב מחליף טאבים ראשי (3 טאבים מלאים: בקרה ו-SAGA, אנליטיקה ותחזית מלאי AI, ומרכז הגנת הונאות).
 - [x] F.6 אימות מקצה לקצה: הרצת `npm run build` מלאה (29 נתיבים ירוקים 100% ללא שגיאות).
+
+---
+
+## 💎 Track G: Autonomous B2B Wholesale, A2A Commerce & Next-Gen Fashion Storefront (V7.0)
+- [x] G.1 קטלוג אופנה, ביגוד ואקססוריז מועשר (DummyJSON Fashion Integration):
+  - יצירת `scripts/seed_fashion_products.py` ו-`scripts/fashion_products.json` עם 49 מוצרים מועשרים מ-10 קטגוריות בינלאומיות (`mens-shirts`, `womens-dresses`, `tops`, `sunglasses`, `mens-shoes`, `womens-shoes`, `mens-watches`, `womens-watches`, `womens-bags`, `womens-jewellery`).
+  - העשרת כל המוצרים בכותרות ותיאורים קולחים בעברית, תמחור שקלי מותאם שוק ישראלי (₪119 - ₪49,900), מלאי ריאליסטי ומפרטי עיצוב Liquid Glass 4.0 Pro (`glowColor`, `backdropBlur`, `glassMaterial`, `accentGradient`, `theme`, `elevation`).
+  - יצירת `web-client/lib/products.ts` ועדכון `web-client/lib/fallback-catalog.ts` עם 227 פריטים המחולקים לקטגוריות `CLOTHING` (24), `ACCESSORIES` (29), `FASHION` (10) ומוצרי טכנולוגיה.
+  - עדכון `app/api/products/route.ts`, `app/page.tsx` ו-`components/store/ProductCard.tsx` לסינון קטגוריות מתקדם והצגת תגיות מפרט זכוכית.
+- [x] G.2 סוכני בינה מלאכותית אוטונומיים חדשים ב-`agent-swarm-service`:
+  - `B2BQuoteNegotiationAgent`: אינטגרציה עם `B2B_QUOTE_SERVICE_URL` (:8106), חישוב מדרגות מחיר והנחות כמויות (10%-30%), חיתום אשראי תאגידי בתנאי Net-30/Net-60, והפקת חוזה Google Docs/Drive PDF חתום דיגיטלית ב-SHA-256.
+  - `AgenticCommerceGatewayAgent`: מימוש פרוטוקול A2A (Agent-to-Agent v2.5), הנפקת טוקני הרשאה תחומי יכולות (Bearer Capability Tokens, TTL 3600s), וסליקה אטומית של עסקאות רכש אוטונומיות בין סוכנים.
+  - חיווט ב-`SupervisorRouterAgent`: סיווג כוונות ל-`B2B_QUOTE_NEGOTIATION` ו-`AGENTIC_COMMERCE_GATEWAY`, תכנון DAG, והוספת נתיבי REST ייעודיים (`/api/v1/agents/b2b/quote`, `/api/v1/agents/a2a/transact`), הרחבת מטריצת הבריאות ל-19 סוכנים פעילים.
+  - הרחבת `run_self_test()` ל-24 מבחנים מקיפים (`100% green`).
+- [x] G.3 שדרוגי UI/UX ופורטלים חדשים ב-`web-client` (Liquid Glass 4.0 Pro RTL):
+  - פורטל B2B ו-RFQ מלא בנתיב `web-client/app/b2b/page.tsx`: מחשבון הנחת כמויות אינטראקטיבי (10%-38%), טופס הגשת בקשת אשראי וחיתום תאגידי, מחולל הצעות מחיר מיידי ב-AI, מודל תצוגה מקדימה והדפסת PDF רשמי, וספר הצעות מחיר היסטורי.
+  - רכיב `LiveAuctionGroupBuyModal.tsx`: מכרזים חיים עם ספירה לאחור, מנגנון Auto-Bid Snipe עם קביעת תקרת מחיר, פיד הצעות מחיר זורם בזמן אמת עם תגיות מובילים, וסרגל התקדמות הנחות קבוצתיות (Group Buy) עם תגמולי הפניות.
+  - רכיב `TradeInScannerModal.tsx`: שמאות ויזואלית מבוססת AI (סריקת לייזר והעלאת תמונה, סיווג איכות Like New / Good / Fair, פירוק דיאגנוסטי והנפקת שובר זיכוי מיידי לסל הקניות).
+  - רכיב `VirtualFittingModal.tsx` ונתיב `app/api/rag/virtual-fitting/route.ts`: מדידת בגדים וירטואלית ב-AI Vision עם בחירת דוגמן/ית, העלאת תמונת משתמש, סרגלי התאמת מידות גוף, מפות חום התאמה (Heatmaps), המלצת מידה מותאמת והוספה ישירה לסל.
+  - טאב 4 ב-`web-client/app/admin/page.tsx` "הנדסת כאוס וריפוי עצמי (Chaos & Circuit Breakers)": הזרקת תקלות חיות (Latency Spike, 503 Container Crash, Packet Loss, SAGA Timeout), לוח בקרה של Circuit Breakers (CLOSED, HALF_OPEN, OPEN) וסימולטור תיקון עצמי אוטונומי.
+  - שילוב תפריטים וקישורים ב-`HeaderNav.tsx`, `AppShell.tsx`, `arena/page.tsx`, `gifting/page.tsx` ו-`ProductCard.tsx`.
+- [x] G.4 אימות מלא מקצה לקצה (Verification):
+  - הרצת `python agent-swarm-service/ecommerce_agent_swarm.py --self-test` – 24/24 בדיקות עברו בהצלחה מלאה (100% Green).
+  - הרצת `npm run build` ב-`web-client` – קומפילציה נקייה לחלוטין של 31 נתיבים סטטיים ודינמיים ללא שום שגיאה או אזהרה (0 errors).
 
 ---
 

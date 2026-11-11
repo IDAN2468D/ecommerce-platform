@@ -11,6 +11,9 @@ import { MobileBottomNav } from "./MobileBottomNav";
 import { VoiceShoppingModal } from "./store/VoiceShoppingModal";
 import { DealNegotiatorModal } from "./store/DealNegotiatorModal";
 import { RoomVisualizerModal } from "./store/RoomVisualizerModal";
+import { LiveAuctionGroupBuyModal } from "./store/LiveAuctionGroupBuyModal";
+import { TradeInScannerModal } from "./store/TradeInScannerModal";
+import { VirtualFittingModal } from "./store/VirtualFittingModal";
 import { Loader2, Lock } from "lucide-react";
 
 export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -20,6 +23,13 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
   const [isVoiceOpen, setIsVoiceOpen] = useState(false);
   const [negotiateProduct, setNegotiateProduct] = useState<any | null>(null);
   const [visualizerProduct, setVisualizerProduct] = useState<string | null>(null);
+  const [isAuctionModalOpen, setIsAuctionModalOpen] = useState(false);
+  const [auctionCampaign, setAuctionCampaign] = useState<any | null>(null);
+  const [auctionSquad, setAuctionSquad] = useState<any | null>(null);
+  const [auctionModalMode, setAuctionModalMode] = useState<"auction" | "group_buy">("auction");
+  const [isTradeInOpen, setIsTradeInOpen] = useState(false);
+  const [isFittingOpen, setIsFittingOpen] = useState(false);
+  const [fittingProduct, setFittingProduct] = useState<any | null>(null);
 
   const checkAuth = () => {
     if (typeof window === "undefined") return;
@@ -34,18 +44,35 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
     const handleOpenNegotiate = (e: any) => setNegotiateProduct(e?.detail?.product || null);
     const handleOpenVisualizer = (e: any) =>
       setVisualizerProduct(e?.detail?.productName || "Apple MacBook Pro 16 M3 Max");
+    const handleOpenAuction = (e: any) => {
+      setAuctionCampaign(e?.detail?.campaign || null);
+      setAuctionSquad(e?.detail?.squad || null);
+      setAuctionModalMode(e?.detail?.mode || "auction");
+      setIsAuctionModalOpen(true);
+    };
+    const handleOpenTradeIn = () => setIsTradeInOpen(true);
+    const handleOpenFitting = (e: any) => {
+      setFittingProduct(e?.detail?.product || null);
+      setIsFittingOpen(true);
+    };
 
     window.addEventListener("auth-changed", handleAuthChange);
     window.addEventListener("storage", handleAuthChange);
     window.addEventListener("open-voice-modal", handleOpenVoice);
     window.addEventListener("open-negotiate-modal", handleOpenNegotiate);
     window.addEventListener("open-room-visualizer", handleOpenVisualizer);
+    window.addEventListener("open-auction-modal", handleOpenAuction);
+    window.addEventListener("open-trade-in-modal", handleOpenTradeIn);
+    window.addEventListener("open-virtual-fitting-modal", handleOpenFitting);
     return () => {
       window.removeEventListener("auth-changed", handleAuthChange);
       window.removeEventListener("storage", handleAuthChange);
       window.removeEventListener("open-voice-modal", handleOpenVoice);
       window.removeEventListener("open-negotiate-modal", handleOpenNegotiate);
       window.removeEventListener("open-room-visualizer", handleOpenVisualizer);
+      window.removeEventListener("open-auction-modal", handleOpenAuction);
+      window.removeEventListener("open-trade-in-modal", handleOpenTradeIn);
+      window.removeEventListener("open-virtual-fitting-modal", handleOpenFitting);
     };
   }, []);
 
@@ -129,6 +156,22 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
         isOpen={!!visualizerProduct}
         defaultProductName={visualizerProduct || undefined}
         onClose={() => setVisualizerProduct(null)}
+      />
+      <LiveAuctionGroupBuyModal
+        isOpen={isAuctionModalOpen}
+        onClose={() => setIsAuctionModalOpen(false)}
+        defaultMode={auctionModalMode}
+        initialCampaign={auctionCampaign || undefined}
+        initialSquad={auctionSquad || undefined}
+      />
+      <TradeInScannerModal
+        isOpen={isTradeInOpen}
+        onClose={() => setIsTradeInOpen(false)}
+      />
+      <VirtualFittingModal
+        isOpen={isFittingOpen}
+        onClose={() => setIsFittingOpen(false)}
+        defaultProduct={fittingProduct || undefined}
       />
     </div>
   );

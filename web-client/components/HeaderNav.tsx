@@ -19,6 +19,7 @@ import {
   ChevronLeft,
   Layers,
   Mic,
+  Building2,
 } from "lucide-react";
 import { useNotificationStream } from "../lib/useNotificationStream";
 import { NotificationToast } from "./NotificationToast";
@@ -126,7 +127,8 @@ export const HeaderNav: React.FC = () => {
   const navLinks = [
     { href: "/", label: "קטלוג מוצרים", icon: Store, active: pathname === "/" },
     { href: "/arena", label: "זירת Flash & קבוצתיות", icon: Layers, active: pathname.startsWith("/arena"), highlight: true },
-    { href: "/gifting", label: "מתנות, טרייד-אין ו-B2B", icon: Coins, active: pathname.startsWith("/gifting") },
+    { href: "/b2b", label: "פורטל B2B וסיטונאות", icon: Building2, active: pathname.startsWith("/b2b") },
+    { href: "/gifting", label: "מתנות וטרייד-אין", icon: Coins, active: pathname.startsWith("/gifting") },
     { href: "/orders", label: "מעקב הזמנות", icon: Package, active: pathname.startsWith("/orders") },
     { href: "/profile", label: "מועדון VIP ואחריות", icon: Crown, active: pathname.startsWith("/profile") },
     { href: "/admin", label: "בקרה SAGA", icon: ShieldCheck, active: pathname.startsWith("/admin") },
