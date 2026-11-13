@@ -114,17 +114,17 @@ export const MobileBottomNav: React.FC = () => {
           <span className="text-[10px] tracking-tight">טרייד/מתנה</span>
         </Link>
 
-        {/* 4. 15-Agent AI Swarm Command */}
+        {/* 4. 25-Agent AI Swarm Command */}
         <button
           type="button"
           onClick={handleOpenSwarm}
           className="flex flex-col items-center justify-center gap-1 h-full py-1 text-indigo-600 dark:text-indigo-400 active:scale-95 transition-transform"
-          title="נחיל 15 סוכני AI"
+          title="נחיל 25 סוכני AI"
         >
           <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-500/20 to-indigo-500/20 border border-indigo-500/40 flex items-center justify-center shadow-sm">
             <Bot className="w-4 h-4 text-indigo-600 dark:text-amber-400" />
           </div>
-          <span className="text-[10px] font-bold tracking-tight">15 סוכנים</span>
+          <span className="text-[10px] font-bold tracking-tight">25 סוכנים</span>
         </button>
 
         {/* 5. Cart Drawer Trigger */}
