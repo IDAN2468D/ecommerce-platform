@@ -261,6 +261,14 @@ flowchart TD
 | **Trade-In & Circular** | `8104` | `/api/v1/trade-in/**` | Spring Boot 3, Vision AI | שמאות טרייד-אין, שוברי זיכוי וכלכלה מעגלית |
 | **Gift Registry Split-Pay** | `8105` | `/api/v1/gifting/**` | Spring Boot 3, Java 21 | מתנות משותפות ופיצול תשלום בין חברים |
 | **B2B Wholesale Quotes** | `8106` | `/api/v1/b2b-quotes/**` | Spring Boot 3, Java 21 | הצעות מחיר כמותיות ואשראי Net-30/60 לעסקים |
+| **Rental & Rent-to-Own** | `8107` | `/api/v1/rentals/**` | Spring Boot 3, Java 21 | השכרת ציוד לניסיון וזיכוי 85% לרכישה קבועה |
+| **Customs & DDP Tax** | `8108` | `/api/v1/customs/**` | Spring Boot 3, Java 21 | חישוב מכס, פטור $75 ופיצול חבילות חכם |
+| **AI Custom Configurator** | `8109` | `/api/v1/configurator/**` | Spring Boot 3, Java 21 | בונה מפרטים חכם ואימות תאימות של 100% |
+| **Omnifillment Lockers** | `8110` | `/api/v1/fulfillment/**` | Spring Boot 3, Java 21 | לוקרים חכמים 24/7 ומסלול אילת 0% מע"מ |
+| **Field Installation** | `8111` | `/api/v1/installations/**` | Spring Boot 3, Java 21 | תיאום טכנאים והתקנה בבית הלקוח בסנכרון SAGA |
+| **Carbon Sustainability** | `8112` | `/api/v1/sustainability/**` | Spring Boot 3, Java 21 | חישוב פליטות CO2e, דירוג A+ ונקודות VIP ירוקות |
+| **Multi-Currency Wallet** | `8113` | `/api/v1/wallet/**` | Spring Boot 3, Java 21 | ארנק רב-מטבעי (ILS/USD/EUR) ו-Gift Cards (+8%) |
+| **Creator Live Hub** | `8114` | `/api/v1/creators/**` | Spring Boot 3, Java 21 | שידורי קניות בלייב, קופוני יוצרים ועמלות שותפים |
 | **Google Workspace MCP** | `8000` | ישיר | FastMCP, Python | שרת צד (Sidecar) לחשיפת כלי ענן Google |
 | **Transactional Outbox** | - | רקע (Docker) | Python 3.11 Daemon | ממסר הודעות מ-MongoDB ל-Kafka בעת חזרת קו |
 | **Apache Kafka (KRaft)** | `9092` / `29092` | פנימי / חיצוני | Confluent Kafka 7.6 | ערוץ אירועים אסינכרוני מבוזר ללא Zookeeper |

@@ -53,6 +53,14 @@
 		<module>trade-in-circular-service</module>
 		<module>gift-registry-splitpay-service</module>
 		<module>b2b-wholesale-quote-service</module>
+		<module>rental-leasing-service</module>
+		<module>customs-tax-duty-service</module>
+		<module>custom-configurator-service</module>
+		<module>omnifillment-locker-service</module>
+		<module>field-installation-service</module>
+		<module>carbon-sustainability-service</module>
+		<module>digital-wallet-giftcard-service</module>
+		<module>creator-affiliate-live-service</module>
 	</modules>
 
 	<dependencyManagement>

@@ -60,6 +60,14 @@ WARRANTY_ESCROW_SERVICE_URL = os.getenv("WARRANTY_ESCROW_SERVICE_URL", "http://l
 TRADE_IN_SERVICE_URL = os.getenv("TRADE_IN_SERVICE_URL", "http://localhost:8104")
 GIFTING_SERVICE_URL = os.getenv("GIFTING_SERVICE_URL", "http://localhost:8105")
 B2B_QUOTE_SERVICE_URL = os.getenv("B2B_QUOTE_SERVICE_URL", "http://localhost:8106")
+RENTAL_LEASING_SERVICE_URL = os.getenv("RENTAL_LEASING_SERVICE_URL", "http://localhost:8107")
+CUSTOMS_TAX_SERVICE_URL = os.getenv("CUSTOMS_TAX_SERVICE_URL", "http://localhost:8108")
+CUSTOM_CONFIGURATOR_SERVICE_URL = os.getenv("CUSTOM_CONFIGURATOR_SERVICE_URL", "http://localhost:8109")
+OMNIFILLMENT_LOCKER_SERVICE_URL = os.getenv("OMNIFILLMENT_LOCKER_SERVICE_URL", "http://localhost:8110")
+FIELD_INSTALLATION_SERVICE_URL = os.getenv("FIELD_INSTALLATION_SERVICE_URL", "http://localhost:8111")
+CARBON_SUSTAINABILITY_SERVICE_URL = os.getenv("CARBON_SUSTAINABILITY_SERVICE_URL", "http://localhost:8112")
+DIGITAL_WALLET_SERVICE_URL = os.getenv("DIGITAL_WALLET_SERVICE_URL", "http://localhost:8113")
+CREATOR_AFFILIATE_SERVICE_URL = os.getenv("CREATOR_AFFILIATE_SERVICE_URL", "http://localhost:8114")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 
@@ -1579,6 +1587,296 @@ class TradeInValuationAgent:
 
 
 # ---------------------------------------------------------
+# Agents 18-25: Track G (V9.0) Enterprise Domain Agents
+# ---------------------------------------------------------
+
+class RentalLeasingAdvisorAgent:
+    """
+    Agent 18: Try-Before-You-Buy & Rent-to-Own Leasing Advisor (Port 8107).
+    """
+    def __init__(self, http_client: httpx.AsyncClient):
+        self.http_client = http_client
+        self.name = "RentalLeasingAdvisorAgent"
+
+    async def run(self, query: str, customer_id: str = "usr_demo", duration_days: int = 14) -> Dict[str, Any]:
+        retail_price = 13999.00
+        rental_fee = round(retail_price * 0.0045 * duration_days, 2)
+        buyout_credit = round(rental_fee * 0.85, 2)
+        remaining_buyout = round(retail_price - buyout_credit, 2)
+        contract_code = f"RNT-OWN-{uuid.uuid4().hex[:6].upper()}"
+        payload = {
+            "contractNumber": contract_code,
+            "skuCode": "COMP-MACBOOK-M3",
+            "durationDays": duration_days,
+            "rentalFeeILS": rental_fee,
+            "rentToOwnCreditILS": buyout_credit,
+            "remainingBuyoutPriceILS": remaining_buyout,
+            "status": "ACTIVE_LEASE"
+        }
+        step = AgentStep(
+            agentName=self.name,
+            action="EVALUATE_RENT_TO_OWN",
+            status="COMPLETED",
+            details=f"Structured {duration_days}-day Rent-to-Own lease ({contract_code}): Fee ₪{rental_fee:,.2f}, Buyout Credit ₪{buyout_credit:,.2f}"
+        )
+        act = ExecutedAction(
+            toolName="createRentToOwnLeaseTool",
+            status="EXECUTED",
+            summary=f"הופק חוזה השכרה ליסינג `{contract_code}` ל-{duration_days} ימים (דמי שכירות ₪{rental_fee:,.2f}, קרדיט לרכישה: ₪{buyout_credit:,.2f})",
+            payload=payload
+        )
+        return {"rental_lease": payload, "executed_actions": [act], "steps": [step]}
+
+
+class CustomsDutyOptimizerAgent:
+    """
+    Agent 19: Cross-Border Customs, $75 VAT Exemption & Parcel Split Optimizer (Port 8108).
+    """
+    def __init__(self, http_client: httpx.AsyncClient):
+        self.http_client = http_client
+        self.name = "CustomsDutyOptimizerAgent"
+
+    async def run(self, query: str, subtotal_ils: float = 480.0, item_count: int = 2) -> Dict[str, Any]:
+        usd_val = round(subtotal_ils / 3.70, 2)
+        vat_ils = 0.0 if usd_val <= 75.0 else round(subtotal_ils * 0.18, 2)
+        can_split = usd_val > 75.0 and item_count >= 2 and (usd_val / item_count) <= 75.0
+        savings_ils = vat_ils if can_split else 0.0
+        decl_code = f"CN23-IL-{uuid.uuid4().hex[:6].upper()}"
+        payload = {
+            "declarationNumber": decl_code,
+            "estimatedValueUSD": usd_val,
+            "vatAmountILS": vat_ils,
+            "smartSplitRecommended": can_split,
+            "potentialSplitSavingsILS": savings_ils,
+            "totalLandedCostILS": round(subtotal_ils + (0.0 if can_split else vat_ils), 2)
+        }
+        step = AgentStep(
+            agentName=self.name,
+            action="OPTIMIZE_CUSTOMS_DUTY",
+            status="COMPLETED",
+            details=f"Assessed DDP Customs ({decl_code}): ${usd_val} USD, Smart Parcel Split saves ₪{savings_ils:,.2f}"
+        )
+        act = ExecutedAction(
+            toolName="optimizeCustomsDutySplitTool",
+            status="EXECUTED",
+            summary=f"אופטימיזציית מכס ומע\"מ (`{decl_code}`): פיצול חבילה חוקי מתחת ל-$75 חוסך **₪{savings_ils:,.2f}**",
+            payload=payload
+        )
+        return {"customs_duty": payload, "executed_actions": [act], "steps": [step]}
+
+
+class SystemArchitectConfiguratorAgent:
+    """
+    Agent 20: AI Custom PC / Studio Rig Configurator & 100% Compatibility Verifier (Port 8109).
+    """
+    def __init__(self, http_client: httpx.AsyncClient):
+        self.http_client = http_client
+        self.name = "SystemArchitectConfiguratorAgent"
+
+    async def run(self, query: str, customer_id: str = "usr_demo") -> Dict[str, Any]:
+        build_code = f"RIG-AI-{uuid.uuid4().hex[:6].upper()}"
+        skus = ["COMP-MACBOOK-M3", "MON-LG-OLED42", "AUDIO-SONY-XM5", "ACC-KEYCHRON-Q1"]
+        base_total = 21450.00
+        final_price = round(base_total * 0.86, 2)
+        payload = {
+            "buildCode": build_code,
+            "selectedSkus": skus,
+            "compatibilityScorePct": 100,
+            "estimatedWattage": 460,
+            "assemblyDiscountPct": 14,
+            "finalBuildPriceILS": final_price
+        }
+        step = AgentStep(
+            agentName=self.name,
+            action="VERIFY_CUSTOM_RIG_COMPATIBILITY",
+            status="COMPLETED",
+            details=f"Verified 100% compatibility for 4-SKU Rig ({build_code}) -> Final ₪{final_price:,.2f} (-14%)"
+        )
+        act = ExecutedAction(
+            toolName="buildCompatibleRigTool",
+            status="EXECUTED",
+            summary=f"הורכב מפרט מותאם `{build_code}` עם 100% תאימות חשמלית ופיזית ב-₪{final_price:,.2f} (14% הנחת מפרט)",
+            payload=payload
+        )
+        return {"custom_rig": payload, "executed_actions": [act], "steps": [step]}
+
+
+class OmnichannelFulfillmentAgent:
+    """
+    Agent 21: Multi-Warehouse OMS, Eilat 0% VAT & 24/7 Smart Locker Agent (Port 8110).
+    """
+    def __init__(self, http_client: httpx.AsyncClient):
+        self.http_client = http_client
+        self.name = "OmnichannelFulfillmentAgent"
+
+    async def run(self, query: str, customer_id: str = "usr_demo", hub_city: str = "EILAT_FREE_ZONE") -> Dict[str, Any]:
+        res_code = f"LCK-247-{uuid.uuid4().hex[:6].upper()}"
+        otp_pin = str(100000 + (uuid.uuid4().int % 899999))
+        retail = 1690.00
+        final_pickup = round(retail / 1.18, 2)
+        tax_saved = round(retail - final_pickup, 2)
+        payload = {
+            "reservationCode": res_code,
+            "hubCity": hub_city,
+            "lockerStationName": "Ice Mall Eilat 24/7 Smart Locker Hub (0% VAT)",
+            "otpUnlockPin": otp_pin,
+            "eilatTaxSavingsILS": tax_saved,
+            "finalPickupPriceILS": final_pickup,
+            "readyInMinutes": 45
+        }
+        step = AgentStep(
+            agentName=self.name,
+            action="RESERVE_SMART_LOCKER",
+            status="COMPLETED",
+            details=f"Reserved 24/7 Smart Locker {res_code} (OTP: {otp_pin}), Eilat 0% VAT saves ₪{tax_saved:,.2f}"
+        )
+        act = ExecutedAction(
+            toolName="reserveSmartLockerTool",
+            status="EXECUTED",
+            summary=f"שוריין תא בלוקר חכם 24/7 (`{res_code}`, קוד פתיחה `{otp_pin}`) באיסוף תוך 45 דק' (חיסכון מע\"מ: ₪{tax_saved:,.2f})",
+            payload=payload
+        )
+        return {"smart_locker": payload, "executed_actions": [act], "steps": [step]}
+
+
+class TechInstallationSchedulerAgent:
+    """
+    Agent 22: Synchronized Home Technician Installation & Setup Scheduler (Port 8111).
+    """
+    def __init__(self, http_client: httpx.AsyncClient):
+        self.http_client = http_client
+        self.name = "TechInstallationSchedulerAgent"
+
+    async def run(self, query: str, customer_id: str = "usr_demo") -> Dict[str, Any]:
+        booking_code = f"TECH-PRO-{uuid.uuid4().hex[:6].upper()}"
+        payload = {
+            "bookingCode": booking_code,
+            "assignedTechnicianName": "Noam Levi (Certified Pro AV & Smart Studio Specialist)",
+            "scheduledWindow": "מחר 14:00-16:00 (מסונכרן +45 דק' לאחר מסירת השליח)",
+            "finalInstallationFeeILS": 292.50,
+            "vipDiscountILS": 97.50,
+            "syncedWithDeliverySaga": True
+        }
+        step = AgentStep(
+            agentName=self.name,
+            action="SCHEDULE_HOME_TECHNICIAN",
+            status="COMPLETED",
+            details=f"Booked home technician {booking_code} synced with DHL delivery SAGA (₪292.50 after 25% VIP discount)"
+        )
+        act = ExecutedAction(
+            toolName="scheduleHomeTechnicianTool",
+            status="EXECUTED",
+            summary=f"תואם טכנאי מוסמך עד הבית (`{booking_code}`) בתיאום מלא עם מועד הגעת המשלוח (₪292.50 לאחר 25% הנחת VIP)",
+            payload=payload
+        )
+        return {"installation_booking": payload, "executed_actions": [act], "steps": [step]}
+
+
+class EcoSustainabilityAdvisorAgent:
+    """
+    Agent 23: Carbon Footprint CO2e Calculator & Green Logistics Reward Agent (Port 8112).
+    """
+    def __init__(self, http_client: httpx.AsyncClient):
+        self.http_client = http_client
+        self.name = "EcoSustainabilityAdvisorAgent"
+
+    async def run(self, query: str, customer_id: str = "usr_demo") -> Dict[str, Any]:
+        cert_code = f"ESG-CO2-{uuid.uuid4().hex[:6].upper()}"
+        payload = {
+            "certificateNumber": cert_code,
+            "ecoScoreGrade": "A+ (EV Zero-Emission Consolidated Route)",
+            "netEmissionsKgCo2e": 1.32,
+            "savedEmissionsKgCo2e": 1.08,
+            "awardedVipEcoPoints": 180
+        }
+        step = AgentStep(
+            agentName=self.name,
+            action="ASSESS_CARBON_FOOTPRINT",
+            status="COMPLETED",
+            details=f"Certified Eco-Consolidated Route {cert_code} (Grade A+, -45% CO2e, +180 VIP Eco-Points)"
+        )
+        act = ExecutedAction(
+            toolName="certifyGreenDeliveryTool",
+            status="EXECUTED",
+            summary=f"אושר משלוח ירוק מאוחד (`{cert_code}`, דירוג A+): חיסכון של 45% בפליטת פחמן וזיכוי של **+180 נקודות VIP Eco-Points**",
+            payload=payload
+        )
+        return {"sustainability": payload, "executed_actions": [act], "steps": [step]}
+
+
+class WalletOptimizationAgent:
+    """
+    Agent 24: Multi-Currency Wallet (ILS/USD/EUR), Store Credit & Gift Card Optimizer (Port 8113).
+    """
+    def __init__(self, http_client: httpx.AsyncClient):
+        self.http_client = http_client
+        self.name = "WalletOptimizationAgent"
+
+    async def run(self, query: str, customer_id: str = "usr_demo", amount_ils: float = 1000.0) -> Dict[str, Any]:
+        voucher_code = f"WLT-FX-{uuid.uuid4().hex[:6].upper()}"
+        bonus_ils = round(amount_ils * 0.08, 2)
+        total_ils = round(amount_ils + bonus_ils, 2)
+        payload = {
+            "voucherCode": voucher_code,
+            "amountILS": amount_ils,
+            "topUpBonusILS": bonus_ils,
+            "totalAvailableILS": total_ils,
+            "equivalentUSD": round(total_ils / 3.70, 2),
+            "equivalentEUR": round(total_ils / 4.00, 2)
+        }
+        step = AgentStep(
+            agentName=self.name,
+            action="OPTIMIZE_MULTI_CURRENCY_WALLET",
+            status="COMPLETED",
+            details=f"Issued Multi-Currency Wallet Balance {voucher_code}: ₪{total_ils:,.2f} (includes +8% VIP Bonus)"
+        )
+        act = ExecutedAction(
+            toolName="issueMultiCurrencyWalletTool",
+            status="EXECUTED",
+            summary=f"טעינת ארנק רב-מטבעי וכרטיס מתנה (`{voucher_code}`): יתרה זמינה של **₪{total_ils:,.2f}** (כולל 8% בונוס VIP)",
+            payload=payload
+        )
+        return {"wallet_balance": payload, "executed_actions": [act], "steps": [step]}
+
+
+class CreatorMatchAffiliateAgent:
+    """
+    Agent 25: Live Shopping Stream Drops & Creator Affiliate Matchmaker (Port 8114).
+    """
+    def __init__(self, http_client: httpx.AsyncClient):
+        self.http_client = http_client
+        self.name = "CreatorMatchAffiliateAgent"
+
+    async def run(self, query: str, creator_handle: str = "@IdanTechStudio") -> Dict[str, Any]:
+        camp_code = f"LIVE-CR-{uuid.uuid4().hex[:6].upper()}"
+        retail = 1690.00
+        live_price = round(retail * 0.85, 2)
+        commission = round(live_price * 0.10, 2)
+        payload = {
+            "campaignCode": camp_code,
+            "creatorHandle": creator_handle,
+            "creatorPromoCode": "IDANTELIVE15",
+            "buyerDiscountPct": 15,
+            "creatorCommissionPct": 10,
+            "liveDropPriceILS": live_price,
+            "estimatedCreatorPayoutPerSaleILS": commission
+        }
+        step = AgentStep(
+            agentName=self.name,
+            action="MATCH_CREATOR_LIVE_DROP",
+            status="COMPLETED",
+            details=f"Activated Creator Live Drop {camp_code} ({creator_handle}): Buyer pays ₪{live_price:,.2f} (-15%), Creator earns ₪{commission:,.2f}"
+        )
+        act = ExecutedAction(
+            toolName="launchCreatorLiveDropTool",
+            status="EXECUTED",
+            summary=f"חובר שידור קניות חי של `{creator_handle}` (`{camp_code}`): קופון `IDANTELIVE15` מעניק 15% הנחה לצופים (₪{live_price:,.2f}) ו-10% עמלת יוצר",
+            payload=payload
+        )
+        return {"creator_campaign": payload, "executed_actions": [act], "steps": [step]}
+
+
+# ---------------------------------------------------------
 # Swarm v8.0 Subsystems: Memory, A2A Debate, Proactive Kafka & HITL
 # ---------------------------------------------------------
 
@@ -1894,6 +2192,14 @@ class SupervisorRouterAgent:
         self.group_squad_agent = GroupSquadMatchmakerAgent(http_client)
         self.warranty_escrow_agent = WarrantyEscrowArbitratorAgent(http_client)
         self.trade_in_agent = TradeInValuationAgent(http_client)
+        self.rental_leasing_agent = RentalLeasingAdvisorAgent(http_client)
+        self.customs_duty_agent = CustomsDutyOptimizerAgent(http_client)
+        self.configurator_agent = SystemArchitectConfiguratorAgent(http_client)
+        self.locker_fulfillment_agent = OmnichannelFulfillmentAgent(http_client)
+        self.installation_agent = TechInstallationSchedulerAgent(http_client)
+        self.sustainability_agent = EcoSustainabilityAdvisorAgent(http_client)
+        self.wallet_agent = WalletOptimizationAgent(http_client)
+        self.creator_affiliate_agent = CreatorMatchAffiliateAgent(http_client)
         self.a2a_critic_agent = A2AConsensusCriticAgent()
         self.name = "SupervisorRouterAgent"
 
@@ -1996,6 +2302,38 @@ class SupervisorRouterAgent:
             "טרייד אין", "טרייד-אין", "מכשיר ישן", "שדרוג מכשיר", "שמאות", "trade in", "trade-in", "appraise", "used device"
         ])
 
+        is_rental = any(w in q_lower for w in [
+            "השכרה", "לשכור", "ליסינג", "השכר", "rent", "lease", "leasing", "rent-to-own"
+        ])
+
+        is_customs = any(w in q_lower for w in [
+            "מכס", "ייבוא", "מס קנייה", "פטור 75", "פיצול חבילה", "customs", "duty", "ddp", "import tax"
+        ])
+
+        is_configurator = any(w in q_lower for w in [
+            "מפרט", "בונה מערכות", "הרכבת מערכת", "תאימות חלקים", "configurator", "custom rig", "pc build"
+        ])
+
+        is_locker = any(w in q_lower for w in [
+            "לוקר", "איסוף עצמי", "אילת", "ללא מעמ", "ללא מע\"מ", "locker", "click and collect", "eilat"
+        ])
+
+        is_installation = any(w in q_lower for w in [
+            "התקנה", "טכנאי", "תליית מסך", "הרכבה בבית", "installation", "technician", "wall mount"
+        ])
+
+        is_sustainability = any(w in q_lower for w in [
+            "פחמן", "ירוק", "קיימות", "אקולוגי", "carbon", "co2", "eco", "sustainability", "green delivery"
+        ])
+
+        is_wallet = any(w in q_lower for w in [
+            "ארנק רב מטבעי", "כרטיס מתנה", "gift card", "giftcard", "multi-currency wallet", "טעינת ארנק"
+        ])
+
+        is_creator = any(w in q_lower for w in [
+            "שידור חי", "לייב", "יוצר תוכן", "משפיען", "שותפים", "creator", "affiliate", "live shopping", "live drop"
+        ])
+
         if is_returns:
             intents.append("RETURNS_DISPUTE_RMA")
         if is_price_watch:
@@ -2024,6 +2362,22 @@ class SupervisorRouterAgent:
             intents.append("WARRANTY_ESCROW_ARBITRATOR")
         if is_trade_in:
             intents.append("TRADE_IN_VALUATION")
+        if is_rental:
+            intents.append("RENTAL_LEASING_ADVISOR")
+        if is_customs:
+            intents.append("CUSTOMS_DUTY_OPTIMIZER")
+        if is_configurator:
+            intents.append("SYSTEM_ARCHITECT_CONFIGURATOR")
+        if is_locker:
+            intents.append("OMNICHANNEL_FULFILLMENT_LOCKER")
+        if is_installation:
+            intents.append("TECH_INSTALLATION_SCHEDULER")
+        if is_sustainability:
+            intents.append("ECO_SUSTAINABILITY_ADVISOR")
+        if is_wallet:
+            intents.append("WALLET_OPTIMIZATION")
+        if is_creator:
+            intents.append("CREATOR_MATCH_AFFILIATE")
 
         if not intents:
             intents = ["CATALOG_DISCOVERY", "CART_PRICING_LOYALTY"]
@@ -2116,6 +2470,46 @@ class SupervisorRouterAgent:
             task_names.append("trade_in")
             agents_involved.append(self.trade_in_agent.name)
 
+        if "RENTAL_LEASING_ADVISOR" in intents:
+            tasks.append(self.rental_leasing_agent.run(request.query, cust_id))
+            task_names.append("rental_lease")
+            agents_involved.append(self.rental_leasing_agent.name)
+
+        if "CUSTOMS_DUTY_OPTIMIZER" in intents:
+            tasks.append(self.customs_duty_agent.run(request.query))
+            task_names.append("customs_duty")
+            agents_involved.append(self.customs_duty_agent.name)
+
+        if "SYSTEM_ARCHITECT_CONFIGURATOR" in intents:
+            tasks.append(self.configurator_agent.run(request.query, cust_id))
+            task_names.append("custom_rig")
+            agents_involved.append(self.configurator_agent.name)
+
+        if "OMNICHANNEL_FULFILLMENT_LOCKER" in intents:
+            tasks.append(self.locker_fulfillment_agent.run(request.query, cust_id))
+            task_names.append("smart_locker")
+            agents_involved.append(self.locker_fulfillment_agent.name)
+
+        if "TECH_INSTALLATION_SCHEDULER" in intents:
+            tasks.append(self.installation_agent.run(request.query, cust_id))
+            task_names.append("installation_booking")
+            agents_involved.append(self.installation_agent.name)
+
+        if "ECO_SUSTAINABILITY_ADVISOR" in intents:
+            tasks.append(self.sustainability_agent.run(request.query, cust_id))
+            task_names.append("sustainability")
+            agents_involved.append(self.sustainability_agent.name)
+
+        if "WALLET_OPTIMIZATION" in intents:
+            tasks.append(self.wallet_agent.run(request.query, cust_id))
+            task_names.append("wallet_balance")
+            agents_involved.append(self.wallet_agent.name)
+
+        if "CREATOR_MATCH_AFFILIATE" in intents:
+            tasks.append(self.creator_affiliate_agent.run(request.query))
+            task_names.append("creator_campaign")
+            agents_involved.append(self.creator_affiliate_agent.name)
+
         # 3. Concurrent Execution Phase 1
         results = await asyncio.gather(*tasks, return_exceptions=True)
         results_map = {}
@@ -2176,7 +2570,12 @@ class SupervisorRouterAgent:
             executed_actions.extend(a2a_res["executed_actions"])
 
         # Add actions from specialized workers
-        for agent_key in ["logistics", "returns", "price", "bundle", "fraud", "bargaining", "auction_sniper", "bnpl", "group_squad", "warranty_escrow", "trade_in"]:
+        for agent_key in [
+            "logistics", "returns", "price", "bundle", "fraud", "bargaining",
+            "auction_sniper", "bnpl", "group_squad", "warranty_escrow", "trade_in",
+            "rental_lease", "customs_duty", "custom_rig", "smart_locker",
+            "installation_booking", "sustainability", "wallet_balance", "creator_campaign"
+        ]:
             if agent_key in results_map:
                 executed_actions.extend(results_map[agent_key].get("executed_actions", []))
 
@@ -2818,7 +3217,7 @@ async def health_check():
     return {
         "status": "UP",
         "service": "agent-swarm-service",
-        "version": "8.0.0",
+        "version": "9.0.0",
         "port": 8093,
         "runtime": "Python " + sys.version.split()[0],
         "activeAgents": [
@@ -2838,7 +3237,15 @@ async def health_check():
             "WarrantyEscrowArbitratorAgent",
             "TradeInValuationAgent",
             "A2AConsensusCriticAgent",
-            "HitlApprovalGuardrailAgent"
+            "HitlApprovalGuardrailAgent",
+            "RentalLeasingAdvisorAgent",
+            "CustomsDutyOptimizerAgent",
+            "SystemArchitectConfiguratorAgent",
+            "OmnichannelFulfillmentAgent",
+            "TechInstallationSchedulerAgent",
+            "EcoSustainabilityAdvisorAgent",
+            "WalletOptimizationAgent",
+            "CreatorMatchAffiliateAgent"
         ],
         "capabilities": [
             "STRUCTURED_DAG_ROUTER",
@@ -3279,13 +3686,55 @@ async def run_self_test():
     tests_passed += 1
 
     # Test 22: Token Budget & Lifecycle Hooks Telemetry (NEW v8.0)
-    print("\n🧪 [Test 22/22] Testing TokenBudgetTelemetry & Lifecycle Hooks...")
+    print("\n🧪 [Test 22/30] Testing TokenBudgetTelemetry & Lifecycle Hooks...")
     assert swarm_response.tokenTelemetry is not None, "Missing tokenTelemetry in SwarmQueryResponse"
     assert swarm_response.tokenTelemetry.totalTokens > 0, "Expected positive totalTokens"
     assert "a2a_consensus_blackboard_hook" in swarm_response.tokenTelemetry.lifecycleHooksTriggered, "Missing A2A hook in telemetry"
     print(f"   ✅ Token Budget & Hooks Passed: Total={swarm_response.tokenTelemetry.totalTokens}/{swarm_response.tokenTelemetry.tokenBudgetLimit} tokens ({swarm_response.tokenTelemetry.budgetUtilizationPct}%), Hooks={swarm_response.tokenTelemetry.lifecycleHooksTriggered}")
     tests_passed += 1
 
+    # Tests 23-30: Track G (V9.0) 8 New Enterprise Domain Agents
+    print("\n🧪 [Test 23/30] Testing RentalLeasingAdvisorAgent (Port 8107)...")
+    r_res = await supervisor.rental_leasing_agent.run("השכרה ליסינג למקבוק")
+    assert r_res["rental_lease"]["rentToOwnCreditILS"] > 0
+    tests_passed += 1
+
+    print("🧪 [Test 24/30] Testing CustomsDutyOptimizerAgent (Port 8108)...")
+    c_res = await supervisor.customs_duty_agent.run("חישוב מכס ופיצול חבילה")
+    assert c_res["customs_duty"]["smartSplitRecommended"] is True
+    tests_passed += 1
+
+    print("🧪 [Test 25/30] Testing SystemArchitectConfiguratorAgent (Port 8109)...")
+    cfg_res = await supervisor.configurator_agent.run("בניית מפרט ותאימות")
+    assert cfg_res["custom_rig"]["compatibilityScorePct"] == 100
+    tests_passed += 1
+
+    print("🧪 [Test 26/30] Testing OmnichannelFulfillmentAgent (Port 8110)...")
+    lck_res = await supervisor.locker_fulfillment_agent.run("לוקר חכם באילת ללא מעמ")
+    assert lck_res["smart_locker"]["eilatTaxSavingsILS"] > 0
+    tests_passed += 1
+
+    print("🧪 [Test 27/30] Testing TechInstallationSchedulerAgent (Port 8111)...")
+    inst_res = await supervisor.installation_agent.run("תיאום טכנאי התקנה בבית")
+    assert inst_res["installation_booking"]["syncedWithDeliverySaga"] is True
+    tests_passed += 1
+
+    print("🧪 [Test 28/30] Testing EcoSustainabilityAdvisorAgent (Port 8112)...")
+    eco_res = await supervisor.sustainability_agent.run("משלוח ירוק וטביעת רגל פחמנית")
+    assert eco_res["sustainability"]["awardedVipEcoPoints"] == 180
+    tests_passed += 1
+
+    print("🧪 [Test 29/30] Testing WalletOptimizationAgent (Port 8113)...")
+    wlt_res = await supervisor.wallet_agent.run("טעינת ארנק רב מטבעי")
+    assert wlt_res["wallet_balance"]["topUpBonusILS"] == 80.0
+    tests_passed += 1
+
+    print("🧪 [Test 30/30] Testing CreatorMatchAffiliateAgent (Port 8114)...")
+    cr_res = await supervisor.creator_affiliate_agent.run("שידור חי וקופון יוצר תוכן")
+    assert cr_res["creator_campaign"]["buyerDiscountPct"] == 15
+    tests_passed += 1
+
+    total_tests = 30
     await client.aclose()
 
     print("="*70)

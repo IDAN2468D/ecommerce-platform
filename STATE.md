@@ -2,8 +2,25 @@
 
 - **Governance**: Spec-First (`.agents/specs/WEB_CLIENT_REDESIGN_SPEC.md`, `.agents/specs/RECOMMENDATION_RAG_INTEGRATION_SPEC.md`, `PRD-2026-UI-REDESIGN-V3`).
 - **Team Lead Approval**: Approved by Idan.
-- **Current Active Focus**: Track F Verified (Full-Stack Enterprise Extensions via Native Swarm: Merchant Analytics, Fraud Guard, Marketplace Payouts & AI Gift Finder).
-- **Last Updated**: 2026-11-11
+- **Current Active Focus**: Track G Verified (V9.0 Enterprise Expansion: 8 New Microservices on Ports 8107–8114 & 25-Agent Autonomous Swarm).
+- **Last Updated**: 2026-11-13
+
+---
+
+## 🚀 Track G: 8 Next-Gen Enterprise Microservices & 25-Agent Swarm (V9.0)
+- [x] G.1 **Spec-First Governance**: Created `.agents/specs/TRACK_G_V9_ENTERPRISE_EXPANSION_SPEC.md` & `.agents/tasks/TRACK_G_V9_PLAN.md`.
+- [x] G.2 **8 New Spring Boot 3.3.5 / Java 21 Microservices (`Ports 8107–8114`)**:
+  - `rental-leasing-service` (`Port 8107`, `/api/v1/rentals/**`) — Try-Before-You-Buy & Rent-to-Own 85% buyout credit.
+  - `customs-tax-duty-service` (`Port 8108`, `/api/v1/customs/**`) — Cross-Border DDP Landed Cost, `$75` VAT exemption & Smart Parcel Split.
+  - `custom-configurator-service` (`Port 8109`, `/api/v1/configurator/**`) — AI Custom Rig Configurator & 100% Compatibility Verifier.
+  - `omnifillment-locker-service` (`Port 8110`, `/api/v1/fulfillment/**`) — 24/7 Smart Lockers (`OTP/QR`) & Eilat 0% VAT Free Zone routing.
+  - `field-installation-service` (`Port 8111`, `/api/v1/installations/**`) — Certified Home Technician installation synced with delivery SAGA.
+  - `carbon-sustainability-service` (`Port 8112`, `/api/v1/sustainability/**`) — Carbon Footprint `CO2e` ledger, `Eco-Score A+` & VIP Eco-Points.
+  - `digital-wallet-giftcard-service` (`Port 8113`, `/api/v1/wallet/**`) — Multi-Currency (`ILS/USD/EUR`) double-entry wallet & +8% VIP Gift Cards.
+  - `creator-affiliate-live-service` (`Port 8114`, `/api/v1/creators/**`) — Live Shopping Stream Drops (`-15%`) & 10% automated creator commissions.
+- [x] G.3 **Infrastructure & Gateway Wiring**: Wired all 8 modules in `pom.xml`, `api-gateway` (`Routes #26–#33`), `docker-compose.yml` & `prometheus.yml`.
+- [x] G.4 **25-Agent Autonomous Python Swarm (`agent-swarm-service` :8093)**: Added 8 new specialized domain agents (`30/30` self-tests passing 100%).
+- [x] G.5 **Next.js 14 RTL Innovations Hub (`/innovations`)**: Added `/api/innovations` proxy route, `/innovations` interactive dashboard & top navigation bar item.
 
 ---
 

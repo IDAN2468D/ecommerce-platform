@@ -127,6 +127,7 @@ export const HeaderNav: React.FC = () => {
     { href: "/", label: "קטלוג מוצרים", icon: Store, active: pathname === "/" },
     { href: "/arena", label: "זירת Flash & קבוצתיות", icon: Layers, active: pathname.startsWith("/arena"), highlight: true },
     { href: "/gifting", label: "מתנות, טרייד-אין ו-B2B", icon: Coins, active: pathname.startsWith("/gifting") },
+    { href: "/innovations", label: "חדשנות V9 (8 שירותים)", icon: ShieldCheck, active: pathname.startsWith("/innovations"), highlight: true },
     { href: "/orders", label: "מעקב הזמנות", icon: Package, active: pathname.startsWith("/orders") },
     { href: "/profile", label: "מועדון VIP ואחריות", icon: Crown, active: pathname.startsWith("/profile") },
     { href: "/admin", label: "בקרה SAGA", icon: ShieldCheck, active: pathname.startsWith("/admin") },

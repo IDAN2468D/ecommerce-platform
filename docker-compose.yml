@@ -417,6 +417,21 @@ services:
       ANALYTICS_SERVICE_URL: http://merchant-analytics-service:8097
       SUBSCRIPTION_SERVICE_URL: http://subscription-billing-service:8098
       MARKETPLACE_SERVICE_URL: http://marketplace-vendor-service:8099
+      FLASH_SALE_SERVICE_URL: http://flash-sale-auction-service:8100
+      BNPL_SERVICE_URL: http://bnpl-credit-service:8101
+      GROUP_BUY_SERVICE_URL: http://group-buy-referral-service:8102
+      WARRANTY_ESCROW_SERVICE_URL: http://warranty-escrow-service:8103
+      TRADE_IN_SERVICE_URL: http://trade-in-circular-service:8104
+      GIFTING_SERVICE_URL: http://gift-registry-splitpay-service:8105
+      B2B_QUOTE_SERVICE_URL: http://b2b-wholesale-quote-service:8106
+      RENTAL_LEASING_SERVICE_URL: http://rental-leasing-service:8107
+      CUSTOMS_TAX_SERVICE_URL: http://customs-tax-duty-service:8108
+      CUSTOM_CONFIGURATOR_SERVICE_URL: http://custom-configurator-service:8109
+      OMNIFILLMENT_LOCKER_SERVICE_URL: http://omnifillment-locker-service:8110
+      FIELD_INSTALLATION_SERVICE_URL: http://field-installation-service:8111
+      CARBON_SUSTAINABILITY_SERVICE_URL: http://carbon-sustainability-service:8112
+      DIGITAL_WALLET_SERVICE_URL: http://digital-wallet-giftcard-service:8113
+      CREATOR_AFFILIATE_SERVICE_URL: http://creator-affiliate-live-service:8114
     mem_limit: 224m
     depends_on:
       - redis
@@ -451,6 +466,14 @@ services:
       PRICING_SERVICE_URL: http://dynamic-pricing-service:8095
       FRAUD_SERVICE_URL: http://fraud-risk-service:8096
       ANALYTICS_SERVICE_URL: http://merchant-analytics-service:8097
+      RENTAL_LEASING_SERVICE_URL: http://rental-leasing-service:8107
+      CUSTOMS_TAX_SERVICE_URL: http://customs-tax-duty-service:8108
+      CUSTOM_CONFIGURATOR_SERVICE_URL: http://custom-configurator-service:8109
+      OMNIFILLMENT_LOCKER_SERVICE_URL: http://omnifillment-locker-service:8110
+      FIELD_INSTALLATION_SERVICE_URL: http://field-installation-service:8111
+      CARBON_SUSTAINABILITY_SERVICE_URL: http://carbon-sustainability-service:8112
+      DIGITAL_WALLET_SERVICE_URL: http://digital-wallet-giftcard-service:8113
+      CREATOR_AFFILIATE_SERVICE_URL: http://creator-affiliate-live-service:8114
       WORKSPACE_MCP_URL: http://google-workspace-mcp:8000
       JWT_SECRET: ${JWT_SECRET:-order-service-default-secret-key-32-bytes!!}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-demo_key}
@@ -589,6 +612,174 @@ services:
     restart: unless-stopped
     ports:
       - "8099:8099"
+    environment:
+      JAVA_TOOL_OPTIONS: "-XX:+UseSerialGC -Xms24m -Xmx112m -XX:MaxMetaspaceSize=72m -XX:ReservedCodeCacheSize=24m -Dspring.threads.virtual.enabled=true"
+      MONGODB_URI: ${MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=10&minPoolSize=1&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    mem_limit: 192m
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    networks:
+      - platform-network
+
+  rental-leasing-service:
+    build:
+      context: ./rental-leasing-service
+      dockerfile: Dockerfile
+    container_name: rental-leasing-service
+    restart: unless-stopped
+    ports:
+      - "8107:8107"
+    environment:
+      JAVA_TOOL_OPTIONS: "-XX:+UseSerialGC -Xms24m -Xmx112m -XX:MaxMetaspaceSize=72m -XX:ReservedCodeCacheSize=24m -Dspring.threads.virtual.enabled=true"
+      MONGODB_URI: ${MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=10&minPoolSize=1&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    mem_limit: 192m
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    networks:
+      - platform-network
+
+  customs-tax-duty-service:
+    build:
+      context: ./customs-tax-duty-service
+      dockerfile: Dockerfile
+    container_name: customs-tax-duty-service
+    restart: unless-stopped
+    ports:
+      - "8108:8108"
+    environment:
+      JAVA_TOOL_OPTIONS: "-XX:+UseSerialGC -Xms24m -Xmx112m -XX:MaxMetaspaceSize=72m -XX:ReservedCodeCacheSize=24m -Dspring.threads.virtual.enabled=true"
+      MONGODB_URI: ${MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=10&minPoolSize=1&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    mem_limit: 192m
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    networks:
+      - platform-network
+
+  custom-configurator-service:
+    build:
+      context: ./custom-configurator-service
+      dockerfile: Dockerfile
+    container_name: custom-configurator-service
+    restart: unless-stopped
+    ports:
+      - "8109:8109"
+    environment:
+      JAVA_TOOL_OPTIONS: "-XX:+UseSerialGC -Xms24m -Xmx112m -XX:MaxMetaspaceSize=72m -XX:ReservedCodeCacheSize=24m -Dspring.threads.virtual.enabled=true"
+      MONGODB_URI: ${MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=10&minPoolSize=1&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    mem_limit: 192m
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    networks:
+      - platform-network
+
+  omnifillment-locker-service:
+    build:
+      context: ./omnifillment-locker-service
+      dockerfile: Dockerfile
+    container_name: omnifillment-locker-service
+    restart: unless-stopped
+    ports:
+      - "8110:8110"
+    environment:
+      JAVA_TOOL_OPTIONS: "-XX:+UseSerialGC -Xms24m -Xmx112m -XX:MaxMetaspaceSize=72m -XX:ReservedCodeCacheSize=24m -Dspring.threads.virtual.enabled=true"
+      MONGODB_URI: ${MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=10&minPoolSize=1&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    mem_limit: 192m
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    networks:
+      - platform-network
+
+  field-installation-service:
+    build:
+      context: ./field-installation-service
+      dockerfile: Dockerfile
+    container_name: field-installation-service
+    restart: unless-stopped
+    ports:
+      - "8111:8111"
+    environment:
+      JAVA_TOOL_OPTIONS: "-XX:+UseSerialGC -Xms24m -Xmx112m -XX:MaxMetaspaceSize=72m -XX:ReservedCodeCacheSize=24m -Dspring.threads.virtual.enabled=true"
+      MONGODB_URI: ${MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=10&minPoolSize=1&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    mem_limit: 192m
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    networks:
+      - platform-network
+
+  carbon-sustainability-service:
+    build:
+      context: ./carbon-sustainability-service
+      dockerfile: Dockerfile
+    container_name: carbon-sustainability-service
+    restart: unless-stopped
+    ports:
+      - "8112:8112"
+    environment:
+      JAVA_TOOL_OPTIONS: "-XX:+UseSerialGC -Xms24m -Xmx112m -XX:MaxMetaspaceSize=72m -XX:ReservedCodeCacheSize=24m -Dspring.threads.virtual.enabled=true"
+      MONGODB_URI: ${MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=10&minPoolSize=1&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    mem_limit: 192m
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    networks:
+      - platform-network
+
+  digital-wallet-giftcard-service:
+    build:
+      context: ./digital-wallet-giftcard-service
+      dockerfile: Dockerfile
+    container_name: digital-wallet-giftcard-service
+    restart: unless-stopped
+    ports:
+      - "8113:8113"
+    environment:
+      JAVA_TOOL_OPTIONS: "-XX:+UseSerialGC -Xms24m -Xmx112m -XX:MaxMetaspaceSize=72m -XX:ReservedCodeCacheSize=24m -Dspring.threads.virtual.enabled=true"
+      MONGODB_URI: ${MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=10&minPoolSize=1&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    mem_limit: 192m
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    networks:
+      - platform-network
+
+  creator-affiliate-live-service:
+    build:
+      context: ./creator-affiliate-live-service
+      dockerfile: Dockerfile
+    container_name: creator-affiliate-live-service
+    restart: unless-stopped
+    ports:
+      - "8114:8114"
     environment:
       JAVA_TOOL_OPTIONS: "-XX:+UseSerialGC -Xms24m -Xmx112m -XX:MaxMetaspaceSize=72m -XX:ReservedCodeCacheSize=24m -Dspring.threads.virtual.enabled=true"
       MONGODB_URI: ${MONGODB_URI:-mongodb://mongodb:27017/ecommerce_db?maxPoolSize=10&minPoolSize=1&maxIdleTimeMS=300000&connectTimeoutMS=5000&socketTimeoutMS=30000&serverSelectionTimeoutMS=5000&waitQueueTimeoutMS=5000&uuidRepresentation=standard}

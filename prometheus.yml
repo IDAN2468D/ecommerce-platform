@@ -62,3 +62,43 @@ scrape_configs:
     metrics_path: '/actuator/prometheus'
     static_configs:
       - targets: ['rag-service:8092']
+
+  - job_name: 'rental-leasing-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['rental-leasing-service:8107']
+
+  - job_name: 'customs-tax-duty-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['customs-tax-duty-service:8108']
+
+  - job_name: 'custom-configurator-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['custom-configurator-service:8109']
+
+  - job_name: 'omnifillment-locker-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['omnifillment-locker-service:8110']
+
+  - job_name: 'field-installation-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['field-installation-service:8111']
+
+  - job_name: 'carbon-sustainability-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['carbon-sustainability-service:8112']
+
+  - job_name: 'digital-wallet-giftcard-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['digital-wallet-giftcard-service:8113']
+
+  - job_name: 'creator-affiliate-live-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['creator-affiliate-live-service:8114']

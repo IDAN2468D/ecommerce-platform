@@ -177,6 +177,54 @@ spring:
           predicates:
             - Path=/api/v1/b2b-quotes/**
 
+        # 26. Equipment Rental & Rent-to-Own Leasing Service Route
+        - id: rental-leasing-service-route
+          uri: ${RENTAL_LEASING_SERVICE_URL:http://localhost:8107}
+          predicates:
+            - Path=/api/v1/rentals/**
+
+        # 27. Cross-Border Customs, VAT & DDP Tax Engine Route
+        - id: customs-tax-duty-service-route
+          uri: ${CUSTOMS_TAX_SERVICE_URL:http://localhost:8108}
+          predicates:
+            - Path=/api/v1/customs/**
+
+        # 28. AI Custom Rig & Setup Configurator Service Route
+        - id: custom-configurator-service-route
+          uri: ${CUSTOM_CONFIGURATOR_SERVICE_URL:http://localhost:8109}
+          predicates:
+            - Path=/api/v1/configurator/**
+
+        # 29. Omnichannel Smart Lockers & Multi-Warehouse OMS Route
+        - id: omnifillment-locker-service-route
+          uri: ${OMNIFILLMENT_LOCKER_SERVICE_URL:http://localhost:8110}
+          predicates:
+            - Path=/api/v1/fulfillment/**
+
+        # 30. Home Installation & Certified Technician Setup Route
+        - id: field-installation-service-route
+          uri: ${FIELD_INSTALLATION_SERVICE_URL:http://localhost:8111}
+          predicates:
+            - Path=/api/v1/installations/**
+
+        # 31. Green Logistics & Carbon Sustainability Service Route
+        - id: carbon-sustainability-service-route
+          uri: ${CARBON_SUSTAINABILITY_SERVICE_URL:http://localhost:8112}
+          predicates:
+            - Path=/api/v1/sustainability/**
+
+        # 32. Smart Multi-Currency Wallet & Digital Gift Cards Route
+        - id: digital-wallet-giftcard-service-route
+          uri: ${DIGITAL_WALLET_SERVICE_URL:http://localhost:8113}
+          predicates:
+            - Path=/api/v1/wallet/**
+
+        # 33. Live Shopping & Creator Affiliate Hub Route
+        - id: creator-affiliate-live-service-route
+          uri: ${CREATOR_AFFILIATE_SERVICE_URL:http://localhost:8114}
+          predicates:
+            - Path=/api/v1/creators/**
+
 jwt:
   secret: ${JWT_SECRET:order-service-default-secret-key-32-bytes!!}
 
