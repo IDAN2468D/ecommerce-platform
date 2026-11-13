@@ -48,7 +48,7 @@ export const STORE_NAV_ITEMS: NavItem[] = [
   {
     href: "/marketplace",
     label: "מרכז סוחרים",
-    shortLabel: "Marketplace",
+    shortLabel: "סוחרים",
     description: "חנויות מאומתות, פיצול תשלומים ועמלות",
     icon: Building2,
     category: "commerce",
@@ -77,7 +77,7 @@ export const STORE_NAV_ITEMS: NavItem[] = [
   {
     href: "/gifting",
     label: "מתנות, טרייד-אין ו-B2B",
-    shortLabel: "טרייד-אין & B2B",
+    shortLabel: "מתנות וטרייד",
     description: "מתנות משותפות, שמאות מכשירים והצעות עסקיות",
     icon: Gift,
     category: "innovation",

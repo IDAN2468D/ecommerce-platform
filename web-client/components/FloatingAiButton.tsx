@@ -12,7 +12,7 @@ export const FloatingAiButton: React.FC = () => {
 
   return (
     <div
-      className="fixed bottom-20 md:bottom-6 start-4 md:start-6 z-40 flex flex-col items-start select-none"
+      className="fixed bottom-6 start-6 z-40 hidden md:flex flex-col items-start select-none"
       dir="rtl"
     >
       {/* Sleek Tooltip on Hover */}
@@ -54,7 +54,7 @@ export const FloatingAiButton: React.FC = () => {
             עוזר קניות AI
           </span>
           <span className="text-[9px] text-slate-400 font-mono mt-0.5">
-            5 סוכני Swarm פעילים
+            25 סוכני Swarm פעילים
           </span>
         </div>
       </button>

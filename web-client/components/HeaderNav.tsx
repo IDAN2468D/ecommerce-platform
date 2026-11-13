@@ -20,7 +20,6 @@ import {
   ChevronDown,
   Bot,
   LayoutGrid,
-  Sparkles,
 } from "lucide-react";
 import { useNotificationStream } from "../lib/useNotificationStream";
 import { NotificationToast } from "./NotificationToast";
@@ -124,8 +123,18 @@ export const HeaderNav: React.FC = () => {
         setIsUserMenuOpen(false);
       }
     };
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsMegaMenuOpen(false);
+        setIsUserMenuOpen(false);
+      }
+    };
     document.addEventListener("mousedown", handleOutsideClick);
-    return () => document.removeEventListener("mousedown", handleOutsideClick);
+    window.addEventListener("keydown", handleEsc);
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+      window.removeEventListener("keydown", handleEsc);
+    };
   }, []);
 
   const handleLogout = () => {
@@ -156,26 +165,26 @@ export const HeaderNav: React.FC = () => {
 
       <div
         ref={headerRef}
-        className="sticky top-0 z-40 w-full transition-all duration-300 pt-safe"
+        className="sticky top-0 z-40 w-full transition-all duration-300"
         dir="rtl"
         onMouseLeave={() => setIsMegaMenuOpen(false)}
       >
-        {/* TIER 1: Announcement & Quick Utility Strip */}
+        {/* TIER 1: Slim Utility & Promo Strip (No transparent top gap) */}
         <div className="bg-slate-950 text-slate-300 border-b border-white/10 text-[11px] py-1.5 px-3 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 overflow-x-auto no-scrollbar">
-            <div className="flex items-center gap-3 sm:gap-4 shrink-0">
-              <span className="inline-flex items-center gap-1.5 font-semibold text-slate-200">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <Truck className="w-3.5 h-3.5 text-emerald-400" />
-                <span>משלוח אקספרס חינם מעל ₪500</span>
+          <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
+            <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+              <span className="inline-flex items-center gap-1.5 font-semibold text-slate-200 truncate">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                <Truck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <span className="truncate">משלוח אקספרס חינם מעל ₪500</span>
               </span>
               <span className="text-slate-700 hidden sm:inline">|</span>
-              <span className="hidden sm:inline-flex items-center gap-1 text-amber-400 font-bold">
+              <span className="hidden sm:inline-flex items-center gap-1 text-amber-400 font-bold shrink-0">
                 <Crown className="w-3.5 h-3.5" />
                 <span>5% Cashback VIP בכל רכישה</span>
               </span>
-              <span className="text-slate-700 hidden md:inline">|</span>
-              <span className="hidden md:inline-flex items-center gap-1 text-cyan-400 font-medium">
+              <span className="text-slate-700 hidden lg:inline">|</span>
+              <span className="hidden lg:inline-flex items-center gap-1 text-cyan-400 font-medium shrink-0">
                 <ShieldCheck className="w-3.5 h-3.5" />
                 <span>לוקרים 24/7 ואיסוף באילת 0% מע״מ</span>
               </span>
@@ -188,7 +197,7 @@ export const HeaderNav: React.FC = () => {
                 className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-300 font-medium transition active:scale-95"
                 title="לחץ להעתקת קוד קופון ל-10% הנחה"
               >
-                <span className="hidden xs:inline">10% הנחה:</span>
+                <span className="hidden sm:inline">10% הנחה:</span>
                 <strong className="font-mono tracking-wider text-amber-200">WELCOME10</strong>
                 {copiedCoupon ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3 text-amber-400/80" />}
               </button>
@@ -206,12 +215,12 @@ export const HeaderNav: React.FC = () => {
           </div>
         </div>
 
-        {/* TIER 2: Main Flagship Header (Brand + Omnibox Search + Action Dock) */}
+        {/* TIER 2: Main Header (Brand + Search + Action Dock) */}
         <header
-          className={`w-full transition-all duration-300 ${
+          className={`w-full transition-all duration-300 backdrop-blur-xl ${
             isScrolled
-              ? "bg-white/88 dark:bg-[#060608]/88 backdrop-blur-2xl shadow-[0_12px_32px_-12px_rgba(0,0,0,0.22)] dark:shadow-[0_14px_36px_-10px_rgba(0,0,0,0.75)] border-b border-slate-200/80 dark:border-amber-500/20"
-              : "bg-white/95 dark:bg-[#090a0f]/92 backdrop-blur-xl border-b border-slate-200/70 dark:border-white/10"
+              ? "bg-white/95 dark:bg-slate-950/95 shadow-lg border-b border-slate-200 dark:border-amber-500/25"
+              : "bg-white/95 dark:bg-slate-950/90 border-b border-slate-200/80 dark:border-white/10"
           }`}
         >
           <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2.5 lg:gap-5">
@@ -221,7 +230,7 @@ export const HeaderNav: React.FC = () => {
                 type="button"
                 onClick={() => setIsMobileDrawerOpen(true)}
                 aria-label="פתח תפריט ניווט"
-                className="lg:hidden p-2 rounded-xl bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 border border-slate-200/90 dark:border-white/10 hover:border-amber-500/40 active:scale-95 transition"
+                className="md:hidden p-2 rounded-xl bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-white/10 hover:border-amber-500/40 active:scale-95 transition"
               >
                 <Menu className="w-5 h-5" />
               </button>
@@ -398,93 +407,67 @@ export const HeaderNav: React.FC = () => {
             </div>
           </div>
 
-          {/* TIER 3: Dedicated Desktop Category & Mega-Menu Strip (All 9 Primary Routes + Flyout) */}
-          <div className="hidden lg:block border-t border-slate-200/70 dark:border-white/10 bg-slate-50/75 dark:bg-slate-950/60">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-11 flex items-center justify-between gap-3">
-              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-                {/* Mega-Menu Trigger */}
-                <button
-                  type="button"
-                  onMouseEnter={() => setIsMegaMenuOpen(true)}
-                  onClick={() => setIsMegaMenuOpen((prev) => !prev)}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black transition shrink-0 ${
-                    isMegaMenuOpen
-                      ? "bg-slate-900 dark:bg-amber-500 text-white dark:text-slate-950 shadow-sm"
-                      : "bg-slate-200/75 dark:bg-slate-900 text-slate-900 dark:text-amber-300 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-300/60 dark:border-amber-500/25"
-                  }`}
-                >
-                  <LayoutGrid className="w-3.5 h-3.5" />
-                  <span>כל המחלקות</span>
-                  <ChevronDown
-                    className={`w-3.5 h-3.5 transition-transform ${isMegaMenuOpen ? "rotate-180" : ""}`}
-                  />
-                </button>
-
-                <span className="h-4 w-px bg-slate-300/80 dark:bg-white/10 mx-1 shrink-0" />
-
-                {/* All Primary Store Navigation Pills */}
-                <nav aria-label="קטגוריות וניווט ראשי" className="flex items-center gap-1">
-                  {topStripLinks.map((item) => {
-                    const Icon = item.icon;
-                    const isActive =
-                      item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
-                    return (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[11px] xl:text-xs font-bold whitespace-nowrap transition-all ${
-                          isActive
-                            ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-amber-300 shadow-xs border border-slate-200/80 dark:border-amber-500/35"
-                            : "text-slate-600 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white hover:bg-white/70 dark:hover:bg-slate-800/60"
-                        }`}
-                      >
-                        <Icon
-                          className={`w-3.5 h-3.5 shrink-0 ${
-                            isActive ? "text-amber-500 dark:text-amber-400" : "text-slate-400"
-                          }`}
-                        />
-                        <span>{item.shortLabel}</span>
-                        {item.badge && (
-                          <span
-                            className={`px-1.5 py-0.2 rounded-md text-[9px] font-mono font-black leading-tight ${
-                              PILL_BADGE_COLORS[item.badgeTone || "amber"]
-                            }`}
-                          >
-                            {item.badge}
-                          </span>
-                        )}
-                      </Link>
-                    );
-                  })}
-                </nav>
-              </div>
-
-              {/* Quick Cloud Status Pill */}
-              <Link
-                href="/innovations"
-                className="hidden xl:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/25 text-[11px] font-bold text-amber-700 dark:text-amber-300 shrink-0 transition"
+          {/* TIER 3: Responsive Non-Clipping Desktop & Tablet Category Strip */}
+          <div className="hidden md:block border-t border-slate-200/80 dark:border-white/10 bg-slate-100/90 dark:bg-slate-900/90">
+            <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2 flex flex-wrap items-center gap-1.5">
+              {/* Mega-Menu Trigger */}
+              <button
+                type="button"
+                onMouseEnter={() => setIsMegaMenuOpen(true)}
+                onClick={() => setIsMegaMenuOpen((prev) => !prev)}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black transition shrink-0 ${
+                  isMegaMenuOpen
+                    ? "bg-slate-900 dark:bg-amber-500 text-white dark:text-slate-950 shadow-sm"
+                    : "bg-white dark:bg-slate-800 text-slate-900 dark:text-amber-300 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-amber-500/30 shadow-sm"
+                }`}
               >
-                <Sparkles className="w-3 h-3" />
-                <span>V9 Live</span>
-              </Link>
-            </div>
-          </div>
+                <LayoutGrid className="w-3.5 h-3.5" />
+                <span>כל המחלקות</span>
+                <ChevronDown
+                  className={`w-3.5 h-3.5 transition-transform ${isMegaMenuOpen ? "rotate-180" : ""}`}
+                />
+              </button>
 
-          {/* Mobile Quick Search Pill Strip (< 768px) */}
-          <div className="md:hidden px-3 pb-2.5 pt-0.5">
-            <button
-              type="button"
-              onClick={() => window.dispatchEvent(new Event("open-command-palette"))}
-              className="w-full flex items-center justify-between gap-2 px-3.5 py-2 rounded-2xl bg-slate-100/95 dark:bg-slate-900/95 border border-slate-200/90 dark:border-white/10 text-xs text-slate-500 dark:text-slate-400"
-            >
-              <span className="flex items-center gap-2 truncate">
-                <Search className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                <span className="truncate">חפש מוצר, מק״ט או שאל את 25 סוכני ה-AI...</span>
-              </span>
-              <span className="px-2 py-0.5 rounded-lg bg-amber-500/15 text-amber-600 dark:text-amber-300 text-[10px] font-bold shrink-0">
-                חיפוש חכם
-              </span>
-            </button>
+              <span className="h-5 w-px bg-slate-300 dark:bg-white/15 mx-1 shrink-0" />
+
+              {/* All Store Navigation Pills — wrapped cleanly so NOTHING clips off-screen */}
+              <nav aria-label="קטגוריות וניווט ראשי" className="flex flex-wrap items-center gap-1">
+                {topStripLinks.map((item) => {
+                  const Icon = item.icon;
+                  const isActive =
+                    item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
+                        isActive
+                          ? "bg-slate-900 dark:bg-amber-500 text-white dark:text-slate-950 shadow-sm"
+                          : "text-slate-700 dark:text-slate-200 hover:text-slate-950 dark:hover:text-white hover:bg-white dark:hover:bg-slate-800"
+                      }`}
+                    >
+                      <Icon
+                        className={`w-3.5 h-3.5 shrink-0 ${
+                          isActive ? "text-amber-400 dark:text-slate-950" : "text-slate-500 dark:text-slate-400"
+                        }`}
+                      />
+                      <span>{item.shortLabel}</span>
+                      {item.badge && (
+                        <span
+                          className={`px-1.5 py-0.5 rounded-md text-[9px] font-mono font-black leading-none ${
+                            isActive
+                              ? "bg-white/20 dark:bg-slate-950/20 text-current"
+                              : PILL_BADGE_COLORS[item.badgeTone || "amber"]
+                          }`}
+                        >
+                          {item.badge}
+                        </span>
+                      )}
+                    </Link>
+                  );
+                })}
+              </nav>
+            </div>
           </div>
         </header>
 

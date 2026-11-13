@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Store, Gavel, Gift, Bot, ShoppingBag, User } from "lucide-react";
+import { Store, Gavel, Sparkles, Bot, ShoppingBag, User } from "lucide-react";
 
 export const MobileBottomNav: React.FC = () => {
   const pathname = usePathname();
@@ -42,7 +42,7 @@ export const MobileBottomNav: React.FC = () => {
 
   const isCatalog = pathname === "/";
   const isArena = pathname === "/arena";
-  const isGifting = pathname === "/gifting";
+  const isInnovations = pathname === "/innovations";
   const isCart = pathname === "/cart";
   const isProfile = pathname === "/profile";
 
@@ -96,22 +96,22 @@ export const MobileBottomNav: React.FC = () => {
           <span className="text-[10px] tracking-tight">זירה חיה</span>
         </Link>
 
-        {/* 3. Gifting, Trade-In & B2B */}
+        {/* 3. V9 Innovations Hub */}
         <Link
-          href="/gifting"
+          href="/innovations"
           className={`flex flex-col items-center justify-center gap-1 h-full py-1 active:scale-95 transition-transform ${
-            isGifting
-              ? "text-emerald-600 dark:text-emerald-400 font-bold"
+            isInnovations
+              ? "text-amber-600 dark:text-amber-400 font-bold"
               : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
           }`}
         >
           <div className="relative">
-            <Gift className="w-5 h-5" />
-            {isGifting && (
-              <span className="absolute -bottom-1 inset-x-0 mx-auto w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            <Sparkles className="w-5 h-5" />
+            {isInnovations && (
+              <span className="absolute -bottom-1 inset-x-0 mx-auto w-1.5 h-1.5 rounded-full bg-amber-500" />
             )}
           </div>
-          <span className="text-[10px] tracking-tight">טרייד/מתנה</span>
+          <span className="text-[10px] tracking-tight">חדשנות</span>
         </Link>
 
         {/* 4. 25-Agent AI Swarm Command */}
@@ -139,11 +139,11 @@ export const MobileBottomNav: React.FC = () => {
         >
           <div className="relative">
             <ShoppingBag className="w-5 h-5" />
-            {cartCount > 0 && (
-              <span className="absolute -top-1.5 -right-2 px-1.5 py-0.2 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-brand-600 dark:bg-amber-500 text-white dark:text-slate-950 text-[10px] font-extrabold shadow-md animate-pulse">
-                {cartCount}
-              </span>
-            )}
+              {cartCount > 0 && (
+                <span className="absolute -top-1.5 -right-2 px-1.5 py-0.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-brand-600 dark:bg-amber-500 text-white dark:text-slate-950 text-[10px] font-extrabold shadow-md animate-pulse">
+                  {cartCount}
+                </span>
+              )}
           </div>
           <span className="text-[10px] tracking-tight">עגלה</span>
         </button>

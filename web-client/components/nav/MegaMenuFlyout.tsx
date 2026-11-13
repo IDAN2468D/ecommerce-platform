@@ -24,10 +24,10 @@ export const MegaMenuFlyout: React.FC<MegaMenuFlyoutProps> = ({ isOpen, pathname
 
   return (
     <div
-      className="hidden lg:block absolute inset-x-0 top-full z-50 pt-2 px-4 sm:px-6 lg:px-8"
+      className="hidden md:block absolute inset-x-0 top-full z-50 pt-1 px-4 sm:px-6 lg:px-8"
       dir="rtl"
     >
-      <div className="max-w-7xl mx-auto rounded-3xl bg-white/95 dark:bg-[#0b0d14]/95 backdrop-blur-2xl border border-slate-200/90 dark:border-amber-500/25 shadow-[0_24px_60px_-15px_rgba(0,0,0,0.35)] p-6">
+      <div className="max-w-7xl mx-auto rounded-3xl bg-white/95 dark:bg-slate-950/95 backdrop-blur-2xl border border-slate-200/90 dark:border-amber-500/25 shadow-[0_24px_60px_-15px_rgba(0,0,0,0.35)] p-6">
         <div className="grid grid-cols-12 gap-6">
           {/* 3 Navigation Category Columns (9 cols) */}
           <div className="col-span-9 grid grid-cols-3 gap-5">
@@ -75,7 +75,7 @@ export const MegaMenuFlyout: React.FC<MegaMenuFlyoutProps> = ({ isOpen, pathname
                               </span>
                               {item.badge && (
                                 <span
-                                  className={`px-1.5 py-0.2 text-[9px] font-mono font-black rounded-md border ${
+                                  className={`px-1.5 py-0.5 text-[9px] font-mono font-black rounded-md border ${
                                     BADGE_CLASSES[item.badgeTone || "amber"]
                                   }`}
                                 >

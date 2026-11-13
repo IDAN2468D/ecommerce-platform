@@ -22,14 +22,16 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
   return (
     <div className="relative">
       <button
+        type="button"
         onClick={() => {
           setIsOpen(!isOpen);
           if (!isOpen && unreadCount > 0) {
             onMarkAllAsRead();
           }
         }}
-        className="relative p-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 transition text-slate-700 bg-white shadow-sm flex items-center justify-center"
+        className="relative p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-700 text-slate-700 dark:text-slate-200 shadow-sm transition flex items-center justify-center"
         title={connected ? "מחובר לשידור התראות חי (SSE)" : "מנסה להתחבר לשידור חי..."}
+        aria-label="התראות מערכת"
       >
         <Bell className="w-4 h-4" />
 

@@ -57,7 +57,7 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 lg:hidden flex" dir="rtl">
+    <div className="fixed inset-0 z-50 md:hidden flex" dir="rtl">
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm transition-opacity"
@@ -164,7 +164,7 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
                         onClick={onClose}
                         className={`flex items-center gap-3 p-3 rounded-2xl border transition-all active:scale-[0.98] ${
                           isActive
-                            ? "bg-amber-500/10 border-amber-500/40 text-slate-900 dark:text-amber-300 shadow-xs"
+                            ? "bg-amber-500/10 border-amber-500/40 text-slate-900 dark:text-amber-300 shadow-sm"
                             : "bg-slate-50/80 dark:bg-slate-900/60 border-slate-200/70 dark:border-white/5 text-slate-700 dark:text-slate-200 hover:border-amber-500/30"
                         }`}
                       >
@@ -182,7 +182,7 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
                           <div className="flex items-center gap-1.5">
                             <span className="text-xs font-extrabold truncate">{item.label}</span>
                             {item.badge && (
-                              <span className="px-1.5 py-0.2 rounded-md bg-amber-500/20 text-amber-600 dark:text-amber-300 text-[9px] font-mono font-black">
+                              <span className="px-1.5 py-0.5 rounded-md bg-amber-500/20 text-amber-600 dark:text-amber-300 text-[9px] font-mono font-black">
                                 {item.badge}
                               </span>
                             )}
