@@ -537,7 +537,7 @@ export const RagAssistantDrawer: React.FC = () => {
           </div>
 
           {/* Quick-Jump Microservice Hubs Bar */}
-          <div className="px-4 py-2 border-b border-slate-200/80 dark:border-slate-800/80 bg-slate-100/70 dark:bg-slate-950/80 flex items-center gap-1.5 overflow-x-auto no-scrollbar text-[11px]">
+          <div className="px-4 py-2 border-b border-slate-200/80 dark:border-slate-800/80 bg-slate-100/70 dark:bg-slate-950/80 flex flex-wrap items-center gap-1.5 text-[11px]">
             <button
               type="button"
               onClick={() => {
@@ -604,7 +604,7 @@ export const RagAssistantDrawer: React.FC = () => {
               </div>
 
               {/* Categories */}
-              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+              <div className="flex flex-wrap items-center gap-1.5 py-0.5">
                 {[
                   { id: "ALL", label: "כל הקטלוג" },
                   { id: "מחשבים", label: "מחשבים" },

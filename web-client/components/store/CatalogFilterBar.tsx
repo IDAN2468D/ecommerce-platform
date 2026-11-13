@@ -1,7 +1,20 @@
 "use client";
 
 import React from "react";
-import { Search, ArrowUpDown, Filter, X, SlidersHorizontal, Mic, MicOff, Camera, ChevronDown, Check } from "lucide-react";
+import {
+  Search,
+  ArrowUpDown,
+  X,
+  SlidersHorizontal,
+  Mic,
+  MicOff,
+  Camera,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  LayoutGrid,
+  Check,
+} from "lucide-react";
 import { Button } from "../ui/Button";
 
 const SORT_OPTIONS: { id: "featured" | "price-asc" | "price-desc" | "name" | "stock"; label: string }[] = [
@@ -48,7 +61,112 @@ export const CatalogFilterBar: React.FC<CatalogFilterBarProps> = ({
   const [isFilterPanelOpen, setIsFilterPanelOpen] = React.useState(false);
   const [isListening, setIsListening] = React.useState(false);
   const [isSortOpen, setIsSortOpen] = React.useState(false);
+  const [isCategoriesExpanded, setIsCategoriesExpanded] = React.useState(false);
+  const [canScrollRight, setCanScrollRight] = React.useState(false);
+  const [canScrollLeft, setCanScrollLeft] = React.useState(false);
+  const [isDraggingCats, setIsDraggingCats] = React.useState(false);
   const sortRef = React.useRef<HTMLDivElement>(null);
+  const catScrollRef = React.useRef<HTMLDivElement>(null);
+  const dragStateRef = React.useRef<{ active: boolean; startX: number; scrollLeft: number; moved: boolean }>({
+    active: false,
+    startX: 0,
+    scrollLeft: 0,
+    moved: false,
+  });
+
+  // Track RTL horizontal overflow bounds reliably across browsers
+  const updateScrollArrows = React.useCallback(() => {
+    const el = catScrollRef.current;
+    if (!el || isCategoriesExpanded) {
+      setCanScrollRight(false);
+      setCanScrollLeft(false);
+      return;
+    }
+    const maxScroll = el.scrollWidth - el.clientWidth;
+    if (maxScroll <= 4) {
+      setCanScrollRight(false);
+      setCanScrollLeft(false);
+      return;
+    }
+    // In modern RTL browsers scrollLeft is 0 at right edge and negative toward left edge (-maxScroll)
+    if (el.scrollLeft <= 0) {
+      setCanScrollRight(el.scrollLeft < -4);
+      setCanScrollLeft(el.scrollLeft > -(maxScroll - 4));
+    } else {
+      // Legacy positive-RTL fallback
+      setCanScrollRight(el.scrollLeft < maxScroll - 4);
+      setCanScrollLeft(el.scrollLeft > 4);
+    }
+  }, [isCategoriesExpanded]);
+
+  React.useEffect(() => {
+    updateScrollArrows();
+    const el = catScrollRef.current;
+    if (!el) return;
+
+    const resizeObs = typeof ResizeObserver !== "undefined" ? new ResizeObserver(updateScrollArrows) : null;
+    resizeObs?.observe(el);
+    window.addEventListener("resize", updateScrollArrows);
+
+    // Smooth non-passive wheel listener: vertical mouse wheel scrolls category bar horizontally
+    const handleWheel = (e: WheelEvent) => {
+      if (isCategoriesExpanded) return;
+      if (el.scrollWidth <= el.clientWidth + 4) return;
+      const delta = Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
+      if (delta === 0) return;
+      e.preventDefault();
+      // Scrolling wheel down (delta > 0) advances left in RTL to reveal more categories
+      el.scrollLeft -= delta;
+      updateScrollArrows();
+    };
+
+    el.addEventListener("wheel", handleWheel, { passive: false });
+    return () => {
+      resizeObs?.disconnect();
+      window.removeEventListener("resize", updateScrollArrows);
+      el.removeEventListener("wheel", handleWheel);
+    };
+  }, [categories, isCategoriesExpanded, updateScrollArrows]);
+
+  const scrollCategoriesBy = (direction: "left" | "right") => {
+    const el = catScrollRef.current;
+    if (!el) return;
+    el.scrollBy({
+      left: direction === "left" ? -240 : 240,
+      behavior: "smooth",
+    });
+  };
+
+  const handleCatMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    const el = catScrollRef.current;
+    if (!el || isCategoriesExpanded || el.scrollWidth <= el.clientWidth + 4) return;
+    dragStateRef.current = {
+      active: true,
+      startX: e.pageX,
+      scrollLeft: el.scrollLeft,
+      moved: false,
+    };
+  };
+
+  const handleCatMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const el = catScrollRef.current;
+    if (!el || !dragStateRef.current.active) return;
+    const dx = e.pageX - dragStateRef.current.startX;
+    if (Math.abs(dx) > 5) {
+      dragStateRef.current.moved = true;
+      setIsDraggingCats(true);
+      el.scrollLeft = dragStateRef.current.scrollLeft - dx;
+      updateScrollArrows();
+    }
+  };
+
+  const endCatDrag = () => {
+    dragStateRef.current.active = false;
+    setTimeout(() => {
+      dragStateRef.current.moved = false;
+      setIsDraggingCats(false);
+    }, 0);
+  };
 
   // Close dropdown on outside click
   React.useEffect(() => {
@@ -160,7 +278,7 @@ export const CatalogFilterBar: React.FC<CatalogFilterBarProps> = ({
             <button
               type="button"
               onClick={() => setIsSortOpen((v) => !v)}
-              className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700/80 px-3.5 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-100 transition-all active:scale-95 shadow-xs"
+              className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700/80 px-3.5 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-100 transition-all active:scale-95 shadow-sm"
               title="מיון מוצרים"
             >
               <ArrowUpDown className="w-3.5 h-3.5 text-amber-500 shrink-0" />
@@ -248,21 +366,99 @@ export const CatalogFilterBar: React.FC<CatalogFilterBarProps> = ({
         </div>
       )}
 
-      {/* Category Pills (Horizontal Scrollable) */}
-      <div className="flex overflow-x-auto no-scrollbar gap-2 pt-2 border-t border-slate-200/60 dark:border-slate-800 scroll-smooth">
-        {categories.map((cat) => (
+      {/* Category Pills: Interactive Horizontal Scroller (Wheel + Drag + Arrows) & Expand Toggle */}
+      <div className="pt-2.5 border-t border-slate-200/70 dark:border-slate-800 flex items-center gap-2">
+        {/* Right Arrow (RTL Start) */}
+        {!isCategoriesExpanded && canScrollRight && (
           <button
-            key={cat}
-            onClick={() => onSelectCategory(cat)}
-            className={`px-4 py-2 rounded-2xl text-xs font-black transition-all shrink-0 active:scale-95 ${
-              selectedCategory === cat
-                ? "bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20"
-                : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+            type="button"
+            onClick={() => scrollCategoriesBy("right")}
+            aria-label="גלול קטגוריות ימינה"
+            title="גלול ימינה"
+            className="hidden sm:inline-flex items-center justify-center w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-amber-500 hover:text-slate-950 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 transition shrink-0 shadow-sm"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        )}
+
+        <div className="relative flex-1 min-w-0">
+          <div
+            ref={catScrollRef}
+            onScroll={updateScrollArrows}
+            onMouseDown={handleCatMouseDown}
+            onMouseMove={handleCatMouseMove}
+            onMouseUp={endCatDrag}
+            onMouseLeave={endCatDrag}
+            className={`flex gap-2 pb-1.5 select-none ${
+              isCategoriesExpanded
+                ? "flex-wrap items-center"
+                : `overflow-x-auto ${isDraggingCats ? "cursor-grabbing" : "cursor-grab"}`
+            }`}
+            style={
+              isCategoriesExpanded
+                ? undefined
+                : { WebkitOverflowScrolling: "touch", touchAction: "pan-x" }
+            }
+          >
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                type="button"
+                onClick={(e) => {
+                  if (dragStateRef.current.moved) {
+                    e.preventDefault();
+                    return;
+                  }
+                  onSelectCategory(cat);
+                  e.currentTarget.scrollIntoView({
+                    behavior: "smooth",
+                    inline: "nearest",
+                    block: "nearest",
+                  });
+                }}
+                className={`px-4 py-2 rounded-2xl text-xs font-black transition-all shrink-0 active:scale-95 ${
+                  selectedCategory === cat
+                    ? "bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20"
+                    : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700"
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Left Arrow (RTL End) */}
+        {!isCategoriesExpanded && canScrollLeft && (
+          <button
+            type="button"
+            onClick={() => scrollCategoriesBy("left")}
+            aria-label="גלול קטגוריות שמאלה"
+            title="גלול שמאלה"
+            className="hidden sm:inline-flex items-center justify-center w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-amber-500 hover:text-slate-950 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 transition shrink-0 shadow-sm"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+        )}
+
+        {/* Expand / Collapse All Categories Toggle */}
+        {categories.length > 5 && (
+          <button
+            type="button"
+            onClick={() => setIsCategoriesExpanded((prev) => !prev)}
+            title={isCategoriesExpanded ? "חזור לשורה נגללת" : "הצג את כל הקטגוריות בפריסה"}
+            className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-2xl text-[11px] font-bold border transition shrink-0 ${
+              isCategoriesExpanded
+                ? "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/40"
+                : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-amber-500/40"
             }`}
           >
-            {cat}
+            <LayoutGrid className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">
+              {isCategoriesExpanded ? "צמצם" : `הכל (${categories.length})`}
+            </span>
           </button>
-        ))}
+        )}
       </div>
     </div>
   );
